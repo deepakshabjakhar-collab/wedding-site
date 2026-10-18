@@ -57,6 +57,13 @@ async function shot(page, name, fullPage = false) {
 {
   const page = await newPage(DESK);
   await settle(page, `${BASE}/templates`, 1800);
+  // Scroll through so reveal-on-scroll cards all mount before the stitched shot.
+  for (let y = 0; y <= 4200; y += 600) {
+    await page.evaluate((yy) => window.scrollTo(0, yy), y);
+    await page.waitForTimeout(220);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(600);
   await shot(page, 'templates-grid.png', true);
   await page.close();
 }
