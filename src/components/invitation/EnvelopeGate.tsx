@@ -11,7 +11,7 @@ const EASE_SILK = [0.22, 0.61, 0.36, 1] as const;
 const EASE_SEAL = [0.16, 0.84, 0.24, 1] as const;
 
 /** An arch — nothing in this sequence is allowed to be a plain rectangle. */
-const ARCH_TOP = '52% 52% 14px 14px / 34% 34% 14px 14px';
+const ARCH_TOP = '0.75rem 0.75rem 0.75rem 0.75rem';
 
 export function EnvelopeGate({
   data,
@@ -60,19 +60,20 @@ export function EnvelopeGate({
 
     setOpening(true);
     const schedule: [number, number][] = [
-      [110, 1], // the seal cracks in two
-      [420, 2], // the flap lifts
-      [900, 3], // the card rises clear of the envelope
-      [1500, 4], // and opens out into the invitation
+      [700, 1], // let the invitation settle before the seal cracks
+      [1500, 2], // the flap lifts slowly
+      [2700, 3], // the card rises clear of the envelope
+      [4100, 4], // the letter opens into the invitation
     ];
     schedule.forEach(([delay, next]) => {
       timers.current.push(window.setTimeout(() => setPhase(next), delay));
     });
-    timers.current.push(window.setTimeout(onOpen, 2350));
+    timers.current.push(window.setTimeout(onOpen, 5900));
   };
 
   const envelope = data.settings.envelopeAnimation;
   const isCurtain = envelope === 'curtain';
+  const isCeleste = templateId === 'celeste';
   const isRibbon = envelope === 'ribbon' || templateId === 'maison';
 
   const opening2 = phase >= 2;
@@ -164,8 +165,8 @@ export function EnvelopeGate({
 
         <span className="mt-3 block overflow-hidden">
           <motion.span
-            className="block text-[clamp(2.8rem,9vw,4rem)] leading-[1.05] text-[var(--inv-accent)]"
-            style={{ fontFamily: 'var(--inv-script)' }}
+            className={`block text-[clamp(2.8rem,9vw,4rem)] leading-[1.05] text-[var(--inv-accent)] ${isCeleste ? 'tracking-[-0.035em]' : ''}`}
+            style={{ fontFamily: isCeleste ? 'var(--inv-display)' : 'var(--inv-script)' }}
             initial={reduce ? false : { y: '108%' }}
             animate={{ y: '0%' }}
             transition={{ duration: 1.15, delay: 0.24, ease: EASE_SILK }}
@@ -287,7 +288,7 @@ export function EnvelopeGate({
                   style={{
                     bottom: '8%',
                     height: '84%',
-                    borderRadius: '46% 46% 12px 12px / 40% 40% 12px 12px',
+                    borderRadius: isCeleste ? '0.5rem' : '46% 46% 12px 12px / 40% 40% 12px 12px',
                     boxShadow: '0 26px 60px -30px rgba(0,0,0,0.6)',
                   }}
                   animate={
