@@ -923,6 +923,25 @@ input[type='range']::-webkit-slider-thumb {
   transform: none;
 }
 
+/* The reference envelope is a single stationery artwork; keep the legacy CSS construction behind it. */
+.sponsalia-envelope-art ~ div {
+  visibility: hidden;
+}
+
+.inv-gate-maison .relative.mt-9 > div > div {
+  width: 78%;
+  max-width: 22rem;
+  aspect-ratio: 3 / 4.2;
+  overflow: hidden;
+  border-radius: 1.1rem;
+  background: url('/images/villa-aurora-envelope.png') center / cover no-repeat;
+  box-shadow: 0 44px 90px -36px rgb(0 0 0 / 0.75);
+}
+
+.inv-gate-maison .relative.mt-9 > div > div > div {
+  visibility: hidden;
+}
+
 /* Soft, arched surfaces only — no square corners anywhere in the invitation. */
 .inv-card {
   background: var(--inv-surface);

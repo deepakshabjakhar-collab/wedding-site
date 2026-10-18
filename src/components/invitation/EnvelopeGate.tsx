@@ -236,8 +236,32 @@ export function EnvelopeGate({
               </div>
             </div>
           ) : (
-            <div className="mx-auto w-[86%] max-w-[24rem]" style={{ perspective: '1200px' }}>
-              <div className="relative aspect-[1.52/1]">
+            <div className="mx-auto w-[78%] max-w-[22rem]" style={{ perspective: '1200px' }}>
+              <div className="relative aspect-[3/4.2] overflow-visible">
+                <motion.div
+                  className="sponsalia-envelope-art absolute inset-0 z-[2] overflow-hidden rounded-[1.1rem] shadow-[0_44px_90px_-36px_rgba(0,0,0,0.75)]"
+                  animate={opening2 ? { scale: 1.02, filter: 'brightness(1.04)' } : { scale: 1, filter: 'brightness(1)' }}
+                  transition={{ duration: 1.05, ease: EASE_SILK }}
+                >
+                  <img
+                    src="/images/villa-aurora-envelope.png"
+                    alt="An ornate floral wedding invitation tied with a gold ribbon"
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-x-[8%] top-[17%] flex min-h-[4.4rem] items-center justify-center bg-[#f8f1df]/95 px-3 text-center shadow-[0_8px_18px_-12px_rgba(41,27,15,0.8)]">
+                    <span className="text-[clamp(1.5rem,5vw,2.15rem)] text-[#46372a]" style={{ fontFamily: 'var(--inv-script)' }}>
+                      {data.coupleA} &amp; {data.coupleB}
+                    </span>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-[8%] text-center text-[0.57rem] font-semibold uppercase tracking-[0.42em] text-[#4d4034]/80">
+                    Tap to open
+                  </div>
+                </motion.div>
+                <motion.div
+                  className="absolute inset-0 z-[1] rounded-[1.1rem] bg-[var(--inv-surface)]"
+                  animate={opening2 ? { rotateX: -172, opacity: 0 } : { rotateX: 0, opacity: 0 }}
+                  transition={{ duration: 1.05, ease: EASE_SILK }}
+                />
                 <div
                   className="absolute inset-0 shadow-[0_44px_90px_-36px_rgba(0,0,0,0.75)]"
                   style={{
