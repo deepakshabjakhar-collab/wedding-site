@@ -12,7 +12,6 @@ import {
   MapPin,
   QrCode,
   Shirt,
-  Sparkles,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { EventDetails, InvitationData, PhotoRecord, RsvpRecord } from '@shared/types';
@@ -28,33 +27,6 @@ import { MessageWall } from './MessageWall';
 import { t, type InvitationLang } from './i18n';
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
-
-/** The single drawn ornament that sits under the names on every cover. */
-function CoverFlourish({ kind }: { kind: 'none' | 'rule' | 'star' | 'sprig' }) {
-  if (kind === 'none') return <span className="block h-4" aria-hidden />;
-  return (
-    <span className="mx-auto flex h-4 items-center justify-center gap-3 text-[var(--inv-accent)]" aria-hidden>
-      <span className="h-px w-12 bg-current opacity-60" />
-      {kind === 'rule' && <span className="h-1.5 w-1.5 rotate-45 border border-current" />}
-      {kind === 'star' && (
-        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5">
-          <path
-            d="M12 1.6l1.9 8.5 8.5 1.9-8.5 1.9L12 22.4l-1.9-8.5L1.6 12l8.5-1.9Z"
-            fill="currentColor"
-            fillOpacity="0.75"
-          />
-        </svg>
-      )}
-      {kind === 'sprig' && (
-        <svg viewBox="0 0 34 16" className="h-3.5 w-8" fill="none" stroke="currentColor" strokeWidth="0.9">
-          <path d="M17 15c0-6 0-11 0-13" />
-          <path d="M17 6c-3-1-5-3-5-6 3 0 5 2 5 6ZM17 6c3-1 5-3 5-6-3 0-5 2-5 6ZM17 11c-2-1-4-2-4-4 2 0 4 1 4 4ZM17 11c2-1 4-2 4-4-2 0-4 1-4 4Z" />
-        </svg>
-      )}
-      <span className="h-px w-12 bg-current opacity-60" />
-    </span>
-  );
-}
 
 function Header({
   eyebrow,
@@ -81,144 +53,174 @@ function Header({
   );
 }
 
+const INVITE_LINE = 'With all our love, we invite you';
+const HERO_GOLD = 'color-mix(in srgb, var(--inv-accent) 40%, #fff)';
+
+function splitDate(iso: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!match) return null;
+  return { year: match[1], month: match[2], day: match[3] };
+}
+
+function DiamondRule({ color, width = 'w-14' }: { color: string; width?: string }) {
+  return (
+    <span className="flex items-center justify-center gap-3" style={{ color }} aria-hidden>
+      <span className={`h-px ${width} bg-current opacity-70`} />
+      <span className="size-[5px] rotate-45 bg-current" />
+      <span className={`h-px ${width} bg-current opacity-70`} />
+    </span>
+  );
+}
+
 export function Hero({
   data,
   theme,
   guest,
-  mode,
 }: {
   data: InvitationData;
   theme: ResolvedTheme;
   guest: { name: string; partySize: number } | null;
   mode: 'live' | 'sample' | 'preview';
 }) {
-  const templateId = theme.template.id;
   const reduce = useReducedMotion();
-  const centered = ['garden', 'georgian', 'celestial', 'vintage', 'playful'].includes(theme.layout);
-  const minimal = theme.layout === 'minimal';
-  const stacked = centered || minimal;
   const cover = theme.template.cover;
-  const heroRef = useRef<HTMLDivElement>(null);
+  const art = theme.template.art;
+  const upper = cover.namesCase === 'upper';
+  const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const artY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '9%']);
-  const artScale = useTransform(scrollYProgress, [0, 1], [1, reduce ? 1 : 1.06]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '-14%']);
-  const contentFade = useTransform(scrollYProgress, [0, 0.85], [1, reduce ? 1 : 0]);
+  const artY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '7%']);
+  const artScale = useTransform(scrollYProgress, [0, 1], [1, reduce ? 1 : 1.08]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '-9%']);
+  const contentFade = useTransform(scrollYProgress, [0, 0.8], [1, reduce ? 1 : 0]);
+  const date = splitDate(data.weddingDate);
 
   const reveal = (delay: number) => ({
-    initial: reduce ? { opacity: 1 } : { y: '112%', opacity: 0 },
+    initial: reduce ? { opacity: 1 } : { y: '110%', opacity: 0 },
     animate: { y: '0%', opacity: 1 },
-    transition: { duration: 1.15, ease: EASE, delay },
+    transition: { duration: 1.4, ease: EASE, delay },
   });
 
   return (
     <header ref={heroRef} className="inv-hero" id="top">
       <motion.div
-        className="absolute inset-0"
-        style={{ y: artY, scale: artScale, background: `linear-gradient(165deg, ${theme.palette.deep}, ${theme.palette.ink})` }}
+        className="absolute inset-x-0 -top-[7%] h-[114%]"
+        style={{ y: artY, scale: artScale }}
       >
-        <TemplateArt
-          templateId={templateId as TemplateId}
-          className="absolute inset-0 h-full w-full text-[var(--inv-accent)] opacity-[0.55]"
-        />
+        <img src={art.hero} alt="" className="h-full w-full object-cover" />
       </motion.div>
       <div className="inv-hero-scrim" />
-      <motion.div className="inv-hero-inner" style={{ y: contentY, opacity: contentFade }}>
-        <div className={centered ? 'mx-auto max-w-4xl text-center' : 'max-w-4xl'}>
-          <span className="block overflow-hidden">
-            <motion.p className="inv-eyebrow !text-[#f0e4d2]/70" {...reveal(0.05)}>
-              {guest && data.settings.showGuestName
-                ? `${t(data.settings.language, 'forGuest')} ${guest.name}${guest.partySize > 1 ? ` · ${guest.partySize} guests` : ''}`
-                : data.welcomeHeading}
-            </motion.p>
-          </span>
 
-          <h1
-            className={`inv-names mt-5 text-[#fdf7ea] ${cover.namesCase === 'upper' ? 'uppercase' : ''}`}
-            style={{ letterSpacing: cover.tracking }}
-          >
-            {stacked ? (
-              <>
-                <span className="block overflow-hidden">
-                  <motion.span className="block" {...reveal(0.16)}>
-                    {data.coupleA}
-                  </motion.span>
-                </span>
-                <span className="block overflow-hidden py-[0.04em]">
-                  <motion.span
-                    className="amp block !text-[0.34em] leading-none"
-                    {...reveal(0.3)}
-                  >
-                    &amp;
-                  </motion.span>
-                </span>
-                <span className="block overflow-hidden">
-                  <motion.span className="block" {...reveal(0.42)}>
-                    {data.coupleB}
-                  </motion.span>
-                </span>
-              </>
-            ) : (
-              <motion.span className="block" {...reveal(0.16)}>
-                {data.coupleA}
-                <span className="amp">&amp;</span>
-                {data.coupleB}
-              </motion.span>
-            )}
-          </h1>
-
-          <span className={`block overflow-hidden ${centered ? '' : 'max-w-lg'}`}>
-            <motion.span className={`mt-6 block ${centered ? '' : ''}`} {...reveal(0.58)}>
-              <CoverFlourish kind={cover.flourish} />
-            </motion.span>
-          </span>
-
-          {data.tagline && (
+      <motion.div
+        className="inv-hero-inner relative z-[2] flex min-h-[inherit] flex-1 flex-col items-center text-center"
+        style={{ y: contentY, opacity: contentFade }}
+      >
+        <div className="mt-[17svh] flex w-full max-w-4xl flex-col items-center text-[#fdf7ea]">
+          {guest && data.settings.showGuestName && (
             <span className="block overflow-hidden">
-              <motion.p className="inv-scripture mt-5 !text-[#f3e7d4]/85" {...reveal(0.68)}>
-                {data.tagline}
+              <motion.p
+                className="mb-5 text-[0.78rem] font-semibold uppercase tracking-[0.34em]"
+                style={{ fontFamily: 'var(--inv-body)', color: HERO_GOLD }}
+                {...reveal(0.1)}
+              >
+                {t(data.settings.language, 'forGuest')} {guest.name}
               </motion.p>
             </span>
           )}
 
-          <span className="block overflow-hidden">
-            <motion.div
-              className={`mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#f1e4d1]/80 ${centered ? 'justify-center' : ''}`}
-              {...reveal(0.8)}
+          <h1
+            className={`inv-names ${upper ? 'uppercase' : ''}`}
+            style={{ letterSpacing: cover.tracking, textShadow: '0 2px 34px rgba(0,0,0,0.38)' }}
+          >
+            <span className="block overflow-hidden py-[0.05em]">
+              <motion.span className="block" {...reveal(0.2)}>
+                {data.coupleA}
+              </motion.span>
+            </span>
+            <span className="block overflow-hidden py-[0.05em]">
+              <motion.span className="block" {...reveal(0.38)}>
+                <span className="amp">&amp;</span>
+                {data.coupleB}
+              </motion.span>
+            </span>
+          </h1>
+
+          <span className="mt-7 block overflow-hidden">
+            <motion.p
+              className="mx-auto max-w-[17rem] text-[0.86rem] font-medium uppercase leading-[1.9] tracking-[0.3em] sm:max-w-none"
+              style={{ fontFamily: 'var(--inv-display)', textShadow: '0 1px 14px rgba(0,0,0,0.45)' }}
+              {...reveal(0.7)}
             >
-              <span>{formatDate(data.weddingDate)}</span>
-              <span className="h-1 w-1 rounded-full bg-[var(--inv-accent)]" />
-              <span>{data.location}</span>
-            </motion.div>
+              {INVITE_LINE}
+            </motion.p>
           </span>
 
-          <div className={`mt-10 flex items-center gap-3 ${centered ? 'justify-center' : ''}`}>
-            <a href="#rsvp" className="inv-btn">
-              {t(data.settings.language, 'rsvpCta')}
-              <ArrowRight size={13} />
-            </a>
-            <a href="#schedule" className="hidden text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#f1e4d1]/70 transition hover:text-[#f1e4d1] sm:inline-block">
-              The celebrations
-            </a>
-          </div>
-
-          {mode !== 'live' && (
-            <p className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-[#f1e4d1]/25 px-3 py-1 text-[0.55rem] uppercase tracking-[0.2em] text-[#f1e4d1]/60">
-              <Sparkles size={10} /> Design preview
-            </p>
-          )}
-        </div>
-
-        <div className={`mt-12 flex ${centered ? 'justify-center' : 'justify-start'}`}>
-          <a
-            href="#welcome"
-            className="flex flex-col items-center gap-2 text-[0.52rem] uppercase tracking-[0.28em] text-[#f1e4d1]/55 transition hover:text-[#f1e4d1]"
-            aria-label="Scroll to the welcome"
+          <motion.div
+            className="mt-6 w-full max-w-[16rem]"
+            initial={reduce ? false : { opacity: 0, scaleX: 0.4 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 1.2, delay: 1.0, ease: EASE }}
           >
-            <span className="inv-scroll-cue" />
-            Scroll
-          </a>
+            <DiamondRule color={HERO_GOLD} width="w-20" />
+          </motion.div>
         </div>
+
+        <motion.div
+          className="mt-auto w-full max-w-[22rem] px-1 pt-10"
+          initial={reduce ? false : { opacity: 0, y: 46 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.3, delay: 1.1, ease: EASE }}
+        >
+          <div
+            className="relative overflow-hidden px-7 pb-4 pt-6 text-center shadow-[0_30px_70px_-34px_rgba(0,0,0,0.7)]"
+            style={{
+              background: 'color-mix(in srgb, var(--inv-surface) 94%, transparent)',
+              color: 'var(--inv-ink)',
+              borderRadius: '0.5rem',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            <p
+              className="text-[1.22rem] italic leading-tight"
+              style={{ fontFamily: 'var(--inv-display)', color: 'var(--inv-accent)' }}
+            >
+              {data.location}
+            </p>
+            <div className="mt-3">
+              <DiamondRule color="var(--inv-accent)" width="w-[4.5rem]" />
+            </div>
+            <div
+              className="mt-4 flex items-center justify-center gap-6 text-[2.15rem] leading-none tracking-[0.06em]"
+              style={{ fontFamily: 'var(--inv-display)' }}
+            >
+              {date ? (
+                <>
+                  <span>
+                    {date.day}.{date.month}
+                  </span>
+                  <span className="h-9 w-px bg-[var(--inv-accent)]/70" aria-hidden />
+                  <span>{date.year}</span>
+                </>
+              ) : (
+                <span>{formatDate(data.weddingDate)}</span>
+              )}
+            </div>
+            <div
+              className="mt-5 flex items-center justify-between border-t pt-3 text-[0.74rem] font-semibold uppercase tracking-[0.28em]"
+              style={{
+                fontFamily: 'var(--inv-body)',
+                borderColor: 'color-mix(in srgb, var(--inv-accent) 28%, transparent)',
+                color: 'var(--inv-accent)',
+              }}
+            >
+              <a href="#rsvp" className="transition hover:opacity-70">
+                {t(data.settings.language, 'rsvpCta')}
+              </a>
+              <a href="#welcome" className="transition hover:opacity-70" aria-label="Scroll to the welcome">
+                Scroll &darr;
+              </a>
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
     </header>
   );

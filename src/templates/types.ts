@@ -20,8 +20,20 @@ export type LayoutKind =
   | 'vintage'
   | 'playful';
 
+export interface TemplateArtDef {
+  /** Portrait (768x1376) gatefold invitation cover shown before opening. */
+  gate: string;
+  /** Portrait full-bleed scene behind the names on the cover section. */
+  hero: string;
+  /** Colour of the table the invitation lies on. */
+  gateBg: string;
+  /** Text colour used on top of that table. */
+  gateInk: string;
+}
+
 export interface TemplateDefinition {
   id: TemplateId;
+  art: TemplateArtDef;
   name: string;
   descriptor: string;
   tagline: string;
@@ -55,7 +67,7 @@ export const FONT_STACKS = {
   cinzel: "'Cinzel', 'Marcellus', Georgia, serif",
   cinzelDecorative: "'Cinzel Decorative', 'Cinzel', Georgia, serif",
   fraunces: "'Fraunces', 'Playfair Display', Georgia, serif",
-  josefin: "'Josefin Sans', 'Jost', sans-serif",
+  josefin: "'Hanken Grotesk', 'Josefin Sans', 'Jost', sans-serif",
   jost: "'Jost', 'Josefin Sans', sans-serif",
   pinyon: "'Pinyon Script', 'Snell Roundhand', cursive",
   allura: "'Allura', 'Italianno', cursive",

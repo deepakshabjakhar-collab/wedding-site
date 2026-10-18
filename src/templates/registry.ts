@@ -1,14 +1,27 @@
 import type { CSSProperties } from 'react';
 import type { Palette } from '@shared/types';
-import type { TemplateDefinition, TemplateId } from './types';
+import type { TemplateArtDef, TemplateDefinition, TemplateId } from './types';
 import { FONT_PAIRS, FONT_STACKS, SCRIPT_FONTS } from './types';
 
+const IMG = '/images/templates';
+
+/** Each template is a finished piece of stationery: a gatefold cover and a scene. */
+const ART: Record<TemplateId, TemplateArtDef> = {
+  aurelia: { gate: `${IMG}/aurelia-gate.png`, hero: `${IMG}/aurelia-hero.png`, gateBg: '#e9e0cf', gateInk: '#5b4a2f' },
+  maison: { gate: `${IMG}/maison-gate.png`, hero: `${IMG}/maison-hero.png`, gateBg: '#e4e7d6', gateInk: '#47533b' },
+  belgrave: { gate: `${IMG}/belgrave-gate.png`, hero: `${IMG}/belgrave-hero.png`, gateBg: '#131c17', gateInk: '#e9dfc5' },
+  celeste: { gate: `${IMG}/celeste-gate.png`, hero: `${IMG}/celeste-hero.png`, gateBg: '#070a18', gateInk: '#d9d4ee' },
+  salento: { gate: `${IMG}/salento-gate.png`, hero: `${IMG}/salento-hero.png`, gateBg: '#efe0c8', gateInk: '#6a4a30' },
+  noir: { gate: `${IMG}/noir-gate.png`, hero: `${IMG}/noir-hero.png`, gateBg: '#0d0c0b', gateInk: '#e8e2d6' },
+  heirloom: { gate: `${IMG}/heirloom-gate.png`, hero: `${IMG}/heirloom-hero.png`, gateBg: '#e3d3b4', gateInk: '#5a4630' },
+  miel: { gate: `${IMG}/miel-gate.png`, hero: `${IMG}/miel-hero.png`, gateBg: '#f1d9d3', gateInk: '#6b4448' },
+};
+
 /**
- * Eight typographic worlds. No stock photography anywhere — each cover is
- * built from type, a hairline rule and a single drawn ornament, the way a
- * British letterpress studio would set it.
+ * Eight stationery worlds, each with its own illustrated gatefold cover,
+ * a photographic scene, and a Cormorant-led type system.
  */
-export const TEMPLATES: TemplateDefinition[] = [
+const RAW_TEMPLATES: Omit<TemplateDefinition, 'art'>[] = [
   {
     id: 'aurelia',
     name: 'Aurelia',
@@ -30,7 +43,7 @@ export const TEMPLATES: TemplateDefinition[] = [
       deepInk: '#f9f2e6',
     },
     display: FONT_STACKS.bodoni,
-    body: FONT_STACKS.josefin,
+    body: FONT_STACKS.cormorant,
     script: FONT_STACKS.pinyon,
     scriptFamily: 'pinyon',
     layout: 'editorial',
@@ -60,7 +73,7 @@ export const TEMPLATES: TemplateDefinition[] = [
       deepInk: '#f5f4ec',
     },
     display: FONT_STACKS.cormorant,
-    body: FONT_STACKS.josefin,
+    body: FONT_STACKS.cormorant,
     script: FONT_STACKS.allura,
     scriptFamily: 'allura',
     layout: 'garden',
@@ -90,7 +103,7 @@ export const TEMPLATES: TemplateDefinition[] = [
       deepInk: '#f6f3e8',
     },
     display: FONT_STACKS.italiana,
-    body: FONT_STACKS.josefin,
+    body: FONT_STACKS.cormorant,
     script: FONT_STACKS.pinyon,
     scriptFamily: 'pinyon',
     layout: 'georgian',
@@ -119,9 +132,9 @@ export const TEMPLATES: TemplateDefinition[] = [
       deep: '#080b16',
       deepInk: '#f1eef8',
     },
-    display: FONT_STACKS.cinzelDecorative,
-    body: FONT_STACKS.josefin,
-    script: FONT_STACKS.italianno,
+    display: FONT_STACKS.cormorant,
+    body: FONT_STACKS.cormorant,
+    script: FONT_STACKS.pinyon,
     scriptFamily: 'pinyon',
     layout: 'celestial',
     envelope: 'seal',
@@ -150,7 +163,7 @@ export const TEMPLATES: TemplateDefinition[] = [
       deepInk: '#faf3e7',
     },
     display: FONT_STACKS.gilda,
-    body: FONT_STACKS.josefin,
+    body: FONT_STACKS.cormorant,
     script: FONT_STACKS.allura,
     scriptFamily: 'allura',
     layout: 'coastal',
@@ -180,7 +193,7 @@ export const TEMPLATES: TemplateDefinition[] = [
       deepInk: '#f6f3ec',
     },
     display: FONT_STACKS.bodoni,
-    body: FONT_STACKS.josefin,
+    body: FONT_STACKS.cormorant,
     script: FONT_STACKS.delafield,
     scriptFamily: 'pinyon',
     layout: 'minimal',
@@ -210,7 +223,7 @@ export const TEMPLATES: TemplateDefinition[] = [
       deepInk: '#f7efe0',
     },
     display: FONT_STACKS.playfair,
-    body: FONT_STACKS.josefin,
+    body: FONT_STACKS.cormorant,
     script: FONT_STACKS.tangerine,
     scriptFamily: 'allura',
     layout: 'vintage',
@@ -240,7 +253,7 @@ export const TEMPLATES: TemplateDefinition[] = [
       deepInk: '#fff8f4',
     },
     display: FONT_STACKS.marcellus,
-    body: FONT_STACKS.josefin,
+    body: FONT_STACKS.cormorant,
     script: FONT_STACKS.allura,
     scriptFamily: 'allura',
     layout: 'playful',
@@ -250,6 +263,11 @@ export const TEMPLATES: TemplateDefinition[] = [
     cover: { ruleWidth: '0.5px', namesCase: 'title', tracking: '-0.025em', flourish: 'sprig' },
   },
 ];
+
+export const TEMPLATES: TemplateDefinition[] = RAW_TEMPLATES.map((template) => ({
+  ...template,
+  art: ART[template.id],
+}));
 
 const BY_ID = new Map(TEMPLATES.map((t) => [t.id, t]));
 

@@ -2,17 +2,17 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-ivory: #f7f3ea;
-  --color-paper: #fffdf9;
-  --color-ink: #17130e;
-  --color-ink-soft: #3d3529;
-  --color-muted: #776a58;
-  --color-gold: #9d7b36;
-  --color-gold-light: #d8bd88;
-  --color-sage: #6f815c;
-  --color-rose: #bd8d84;
-  --color-burgundy: #4d1a26;
-  --color-line: #e0d4bf;
+  --color-ivory: #f8f7f4;
+  --color-paper: #fffefa;
+  --color-ink: #17171a;
+  --color-ink-soft: #3e3a3c;
+  --color-muted: #777174;
+  --color-gold: #8f6b52;
+  --color-gold-light: #d8c5b8;
+  --color-sage: #748276;
+  --color-rose: #b8898b;
+  --color-burgundy: #612c3a;
+  --color-line: #e6e1dd;
   /* Reference stack, lifted from sponsalia.app's own stylesheet:
      Cormorant Garamond + Playfair Display + Hanken Grotesk (+ Pinyon Script). */
   --font-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
@@ -420,9 +420,9 @@ input[type='range']::-webkit-slider-thumb {
 .texture-paper {
   background-color: var(--color-ivory);
   background-image:
-    radial-gradient(ellipse at 12% 6%, rgb(255 255 255 / 0.85), transparent 55%),
-    radial-gradient(ellipse at 92% 0%, rgb(213 194 164 / 0.22), transparent 45%),
-    radial-gradient(ellipse at 50% 100%, rgb(195 174 145 / 0.18), transparent 55%);
+    radial-gradient(ellipse at 15% 0%, rgb(255 255 255 / 0.96), transparent 52%),
+    radial-gradient(ellipse at 88% 12%, rgb(232 214 214 / 0.3), transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgb(224 215 213 / 0.18), transparent 58%);
 }
 
 .grain {
@@ -768,9 +768,9 @@ input[type='range']::-webkit-slider-thumb {
 
 .inv-eyebrow {
   font-family: var(--inv-body);
-  font-size: clamp(0.58rem, 1.8cqw, 0.7rem);
+  font-size: clamp(0.72rem, 2.1cqw, 0.84rem);
   font-weight: 600;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.36em;
   text-transform: uppercase;
   color: var(--inv-muted);
 }
@@ -790,8 +790,9 @@ input[type='range']::-webkit-slider-thumb {
 
 .inv-body-copy {
   font-family: var(--inv-body);
-  font-size: clamp(0.9rem, 2.5cqw, 1.02rem);
-  line-height: 1.85;
+  font-size: clamp(1.08rem, 3cqw, 1.24rem);
+  font-weight: 500;
+  line-height: 1.65;
   color: var(--inv-muted);
 }
 
@@ -832,8 +833,7 @@ input[type='range']::-webkit-slider-thumb {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgb(12 9 6 / 0.5) 0%, rgb(12 9 6 / 0.02) 34%, rgb(12 9 6 / 0.6) 78%, rgb(12 9 6 / 0.82) 100%),
-    linear-gradient(90deg, rgb(12 9 6 / 0.32), transparent 60%);
+    linear-gradient(180deg, rgb(12 9 6 / 0.28) 0%, rgb(12 9 6 / 0.08) 30%, rgb(12 9 6 / 0.34) 62%, rgb(12 9 6 / 0.5) 100%);
 }
 
 .inv-hero-inner {
@@ -853,11 +853,12 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 .inv-names .amp {
-  font-family: var(--inv-script);
-  font-size: 0.62em;
-  color: var(--inv-accent);
-  padding-inline: 0.04em;
-  vertical-align: 0.06em;
+  font-family: var(--inv-display);
+  font-style: italic;
+  font-size: 0.7em;
+  color: inherit;
+  padding-inline: 0 0.06em;
+  vertical-align: 0.02em;
 }
 
 .inv-rule {
@@ -921,6 +922,23 @@ input[type='range']::-webkit-slider-thumb {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
+}
+
+/* The invitation artwork owns its opening surface; older construction layers stay inert. */
+.sponsalia-envelope-art ~ div {
+  visibility: hidden;
+}
+
+/* Maison is the ribbon-led stationery opening, never the legacy wax-seal control. */
+.inv-gate-maison button[aria-label*='Break the seal'] {
+  display: none;
+}
+
+.inv-gate-maison .relative.mt-9 > div > div {
+  background:
+    linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--inv-accent) 88%, #3d2814) 45% 55%, transparent 55%),
+    linear-gradient(90deg, transparent 47%, color-mix(in srgb, var(--inv-accent) 88%, #3d2814) 47% 53%, transparent 53%),
+    linear-gradient(145deg, #fffdf7, #eee2cf);
 }
 
 /* Soft, arched surfaces only — no square corners anywhere in the invitation. */
@@ -993,9 +1011,9 @@ input[type='range']::-webkit-slider-thumb {
 
 .inv-label {
   font-family: var(--inv-body);
-  font-size: 0.6rem;
+  font-size: 0.74rem;
   font-weight: 600;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--inv-muted);
 }
@@ -1081,9 +1099,149 @@ input[type='range']::-webkit-slider-thumb {
     box-shadow 0.4s var(--ease-silk);
 }
 
-.inv-seal:hover {
+  .inv-seal:hover {
   transform: scale(1.05) rotate(-2deg);
+  }
+
+  /* The gate is a miniature theatre: a pool of light, a velvet floor and a
+     distinct envelope world for each invitation family. */
+  .inv-gate::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 31%;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent, rgb(0 0 0 / 0.28)),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--inv-accent) 12%, transparent) 0 1px, transparent 1px 52px);
+  transform: perspective(520px) rotateX(58deg) scale(1.45) translateY(20%);
+  transform-origin: bottom center;
+  opacity: 0.72;
+  }
+
+  .inv-gate::after {
+  content: '';
+  position: absolute;
+  width: min(72vw, 38rem);
+  height: min(72vw, 38rem);
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--inv-accent) 16%, transparent), transparent 67%);
+  filter: blur(10px);
+  opacity: 0.85;
+  }
+
+  .inv-gate-ribbon::before {
+  height: 38%;
+  background:
+    linear-gradient(180deg, transparent, rgb(38 10 19 / 0.46)),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--inv-accent) 18%, transparent) 0 2px, transparent 2px 46px),
+    linear-gradient(90deg, color-mix(in srgb, var(--inv-deep) 92%, #5b172a), var(--inv-deep), color-mix(in srgb, var(--inv-deep) 92%, #5b172a));
+  }
+
+  .inv-gate-curtain::before {
+  height: 40%;
+  background:
+    linear-gradient(180deg, transparent, rgb(0 0 0 / 0.55)),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 2px, transparent 2px 30px),
+    linear-gradient(90deg, var(--inv-deep), color-mix(in srgb, var(--inv-deep) 76%, var(--inv-accent)), var(--inv-deep));
+  }
+
+  .inv-gate-maison::after,
+  .inv-gate-miel::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--inv-accent) 24%, transparent), transparent 68%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+  .inv-gate::before,
+  .inv-gate::after {
+  transition: none;
+  }
+  }
+
+/* Sponsalia-inspired stationery treatment: the invitation should feel printed,
+   not assembled from app panels. */
+.invite-root {
+  background-image:
+    radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--inv-accent-soft) 34%, transparent), transparent 44%),
+    linear-gradient(180deg, color-mix(in srgb, var(--inv-bg) 92%, #fff), var(--inv-bg));
 }
+
+.inv-hero {
+  isolation: isolate;
+  min-height: min(100svh, 56rem);
+}
+
+.inv-hero-inner {
+  padding: 0 1.25rem 4.5rem;
+}
+
+.inv-names {
+  font-weight: 400;
+  text-shadow: 0 2px 26px rgb(0 0 0 / 0.12);
+}
+
+.inv-section {
+  background-color: var(--inv-bg);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--inv-bg) 72%, transparent), color-mix(in srgb, var(--inv-bg) 72%, transparent)),
+    url('/images/templates/linen.png');
+  background-size: auto, 560px;
+}
+
+.invite-root[data-layout='celestial'] .inv-section {
+  background-image: linear-gradient(135deg, color-mix(in srgb, var(--inv-accent-soft) 40%, transparent), transparent 40%);
+}
+
+.inv-section + .inv-section {
+  border-top: 1px solid color-mix(in srgb, var(--inv-line) 72%, transparent);
+}
+
+.inv-section-divider {
+  margin-block: 0.5rem;
+}
+
+.inv-detail-card,
+.inv-event-row {
+  background: color-mix(in srgb, var(--inv-surface) 76%, transparent);
+  border-color: color-mix(in srgb, var(--inv-line) 70%, transparent);
+  box-shadow: 0 20px 50px -40px rgb(42 27 17 / 0.5);
+}
+
+.inv-gate {
+  background:
+    radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--inv-accent) 13%, transparent), transparent 42%),
+    var(--inv-deep);
+}
+
+.inv-gate > .relative {
+  max-width: 42rem;
+}
+
+.inv-gate .inv-label {
+  font-family: var(--inv-body);
+  letter-spacing: 0.34em;
+}
+
+.inv-gate .inv-btn {
+  min-height: 3.25rem;
+  padding-inline: 2rem;
+  letter-spacing: 0.22em;
+  box-shadow: 0 18px 45px -22px color-mix(in srgb, var(--inv-accent) 80%, #000);
+}
+
+.inv-gate-maison .inv-gate-card,
+.inv-gate-miel .inv-gate-card {
+  filter: drop-shadow(0 32px 60px rgb(0 0 0 / 0.32));
+}
+
+@media (max-width: 640px) {
+  .inv-hero { min-height: 100svh; }
+}
+
 
 .inv-envelope {
   position: relative;
