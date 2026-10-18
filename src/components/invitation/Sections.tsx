@@ -16,7 +16,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import type { EventDetails, InvitationData, PhotoRecord, RsvpRecord } from '@shared/types';
 import type { WallMessage } from './MessageWall';
-import { TemplateArt, TemplateMark } from '@/templates/art';
+import { StarField, TemplateArt, TemplateMark } from '@/templates/art';
 import type { TemplateId } from '@/templates/types';
 import type { ResolvedTheme } from '@/templates/registry';
 import { formatDate, formatDateShort, formatDayMonth, formatTime, groupEventsByDate } from '@/lib/format';
@@ -33,15 +33,18 @@ function Header({
   title,
   description,
   centered = true,
+  index,
 }: {
   eyebrow: string;
   title: string;
   description?: string;
   centered?: boolean;
+  index?: number;
 }) {
   return (
     <div className={centered ? 'text-center' : ''}>
-      <p className="inv-eyebrow">{eyebrow}</p>
+      {index != null && <p className="inv-index">{String(index).padStart(2, '0')}</p>}
+      <p className={`inv-eyebrow ${index != null ? 'mt-2' : ''}`}>{eyebrow}</p>
       <h2 className="inv-display mt-3 text-[clamp(2rem,7.5cqw,3.3rem)] leading-[1.05] text-[var(--inv-ink)]">
         {title}
       </h2>
@@ -72,6 +75,50 @@ function DiamondRule({ color, width = 'w-14' }: { color: string; width?: string 
   );
 }
 
+/**
+ * Céleste — and only Céleste — sets the names one letter at a time,
+ * each character rising out of the dark like a star coming out.
+ */
+function CelesteNameLines({ a, b }: { a: string; b: string }) {
+  const reduce = useReducedMotion();
+  const renderLine = (text: string, base: number, keyPrefix: string, lead?: React.ReactNode) => (
+    <span className="block overflow-hidden py-[0.06em]" aria-label={lead ? undefined : text}>
+      {lead}
+      {text.split('').map((ch, i) => (
+        <motion.span
+          key={`${keyPrefix}-${i}`}
+          className="inline-block will-change-transform"
+          aria-hidden="true"
+          initial={reduce ? { opacity: 1 } : { y: '118%', opacity: 0, rotate: 5 }}
+          animate={{ y: '0%', opacity: 1, rotate: 0 }}
+          transition={{ duration: 1.15, ease: EASE, delay: base + i * 0.048 }}
+        >
+          {ch === ' ' ? ' ' : ch}
+        </motion.span>
+      ))}
+    </span>
+  );
+  const ampDelay = 0.3 + a.length * 0.048;
+  return (
+    <>
+      {renderLine(a, 0.3, 'a')}
+      {renderLine(
+        b,
+        ampDelay + 0.22,
+        'b',
+        <motion.span
+          className="amp inline-block"
+          initial={reduce ? { opacity: 1 } : { y: '118%', opacity: 0 }}
+          animate={{ y: '0%', opacity: 1 }}
+          transition={{ duration: 1.1, ease: EASE, delay: ampDelay }}
+        >
+          &
+        </motion.span>,
+      )}
+    </>
+  );
+}
+
 export function Hero({
   data,
   theme,
@@ -84,8 +131,8 @@ export function Hero({
 }) {
   const reduce = useReducedMotion();
   const cover = theme.template.cover;
-  const art = theme.template.art;
   const upper = cover.namesCase === 'upper';
+  const isCeleste = theme.template.id === 'celeste';
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const artY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '7%']);
@@ -106,20 +153,72 @@ export function Hero({
         className="absolute inset-x-0 -top-[7%] h-[114%]"
         style={{ y: artY, scale: artScale }}
       >
-        <img src={art.hero} alt="" className="h-full w-full object-cover" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, color-mix(in srgb, var(--inv-deep) 86%, #000) 0%, var(--inv-deep) 46%, color-mix(in srgb, var(--inv-deep) 78%, var(--inv-accent)) 100%)',
+          }}
+        />
+        <TemplateArt
+          templateId={theme.template.id as TemplateId}
+          className="absolute inset-0 h-full w-full text-[var(--inv-accent)] opacity-[0.24]"
+        />
+        {isCeleste && (
+          <StarField className="absolute inset-0 h-full w-full text-[#efeaff] opacity-70" count={90} />
+        )}
+        {isCeleste && (
+          <div
+            className="absolute left-1/2 top-[12%] h-24 w-24 -translate-x-1/2 rounded-full"
+            style={{
+              background: 'radial-gradient(circle at 38% 34%, #f4f0ff, #cfc6ef 55%, transparent 72%)',
+              boxShadow: '0 0 80px 24px rgba(203,185,230,0.35)',
+            }}
+          />
+        )}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 28%, color-mix(in srgb, var(--inv-accent) 24%, transparent), transparent 55%)',
+          }}
+        />
       </motion.div>
       <div className="inv-hero-scrim" />
+      <div className="inv-hero-frame" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
 
       <motion.div
         className="inv-hero-inner relative z-[2] flex min-h-[inherit] flex-1 flex-col items-center text-center"
         style={{ y: contentY, opacity: contentFade }}
       >
-        <div className="mt-[17svh] flex w-full max-w-4xl flex-col items-center text-[#fdf7ea]">
+        <div className="mt-[12svh] flex w-full max-w-4xl flex-col items-center text-[#fdf7ea]">
+          <span className="block overflow-hidden">
+            <motion.span
+              className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-full border"
+              style={{
+                borderColor: 'color-mix(in srgb, var(--inv-accent) 65%, #fff)',
+                color: HERO_GOLD,
+                fontFamily: 'var(--inv-script)',
+                fontSize: '1.5rem',
+                background: 'rgba(0,0,0,0.2)',
+                backdropFilter: 'blur(4px)',
+                boxShadow: '0 0 0 5px rgba(0,0,0,0.12), 0 10px 30px -12px rgba(0,0,0,0.6)',
+              }}
+              {...reveal(0.05)}
+            >
+              {data.monogram}
+            </motion.span>
+          </span>
           {guest && data.settings.showGuestName && (
             <span className="block overflow-hidden">
               <motion.p
                 className="mb-5 text-[0.78rem] font-semibold uppercase tracking-[0.34em]"
-                style={{ fontFamily: 'var(--inv-body)', color: HERO_GOLD }}
+                style={{ fontFamily: 'var(--inv-caps)', color: HERO_GOLD }}
                 {...reveal(0.1)}
               >
                 {t(data.settings.language, 'forGuest')} {guest.name}
@@ -131,23 +230,29 @@ export function Hero({
             className={`inv-names ${upper ? 'uppercase' : ''}`}
             style={{ letterSpacing: cover.tracking, textShadow: '0 2px 34px rgba(0,0,0,0.38)' }}
           >
-            <span className="block overflow-hidden py-[0.05em]">
-              <motion.span className="block" {...reveal(0.2)}>
-                {data.coupleA}
-              </motion.span>
-            </span>
-            <span className="block overflow-hidden py-[0.05em]">
-              <motion.span className="block" {...reveal(0.38)}>
-                <span className="amp">&amp;</span>
-                {data.coupleB}
-              </motion.span>
-            </span>
+            {isCeleste ? (
+              <CelesteNameLines a={data.coupleA} b={data.coupleB} />
+            ) : (
+              <>
+                <span className="block overflow-hidden py-[0.05em]">
+                  <motion.span className="block" {...reveal(0.2)}>
+                    {data.coupleA}
+                  </motion.span>
+                </span>
+                <span className="block overflow-hidden py-[0.05em]">
+                  <motion.span className="block" {...reveal(0.38)}>
+                    <span className="amp">&amp;</span>
+                    {data.coupleB}
+                  </motion.span>
+                </span>
+              </>
+            )}
           </h1>
 
           <span className="mt-7 block overflow-hidden">
             <motion.p
-              className="mx-auto max-w-[17rem] text-[0.86rem] font-medium uppercase leading-[1.9] tracking-[0.3em] sm:max-w-none"
-              style={{ fontFamily: 'var(--inv-display)', textShadow: '0 1px 14px rgba(0,0,0,0.45)' }}
+              className="mx-auto max-w-[17rem] text-[0.72rem] font-medium uppercase leading-[2] tracking-[0.32em] sm:max-w-none"
+              style={{ fontFamily: 'var(--inv-caps)', textShadow: '0 1px 14px rgba(0,0,0,0.45)' }}
               {...reveal(0.7)}
             >
               {INVITE_LINE}
@@ -175,10 +280,16 @@ export function Hero({
             style={{
               background: 'color-mix(in srgb, var(--inv-surface) 94%, transparent)',
               color: 'var(--inv-ink)',
-              borderRadius: '0.5rem',
+              borderRadius: '0.25rem',
               backdropFilter: 'blur(6px)',
+              border: '1px solid color-mix(in srgb, var(--inv-accent) 40%, transparent)',
             }}
           >
+            <div
+              className="pointer-events-none absolute inset-1.5"
+              style={{ border: '1px solid color-mix(in srgb, var(--inv-accent) 22%, transparent)' }}
+              aria-hidden
+            />
             <p
               className="text-[1.22rem] italic leading-tight"
               style={{ fontFamily: 'var(--inv-display)', color: 'var(--inv-accent)' }}
@@ -205,9 +316,9 @@ export function Hero({
               )}
             </div>
             <div
-              className="mt-5 flex items-center justify-between border-t pt-3 text-[0.74rem] font-semibold uppercase tracking-[0.28em]"
+              className="mt-5 flex items-center justify-between border-t pt-3 text-[0.66rem] font-medium uppercase tracking-[0.3em]"
               style={{
-                fontFamily: 'var(--inv-body)',
+                fontFamily: 'var(--inv-caps)',
                 borderColor: 'color-mix(in srgb, var(--inv-accent) 28%, transparent)',
                 color: 'var(--inv-accent)',
               }}
@@ -226,7 +337,7 @@ export function Hero({
   );
 }
 
-export function Welcome({ data, theme }: { data: InvitationData; theme: ResolvedTheme }) {
+export function Welcome({ data, theme, index }: { data: InvitationData; theme: ResolvedTheme; index?: number }) {
   const reduce = useReducedMotion();
   const centered = ['garden', 'georgian', 'celestial', 'vintage', 'playful'].includes(theme.layout);
   return (
@@ -238,7 +349,8 @@ export function Welcome({ data, theme }: { data: InvitationData; theme: Resolved
         transition={{ duration: 0.8, ease: EASE }}
         className={`inv-narrow ${centered ? 'text-center' : ''}`}
       >
-        <div className={`flex items-center gap-4 ${centered ? 'justify-center' : ''}`}>
+        {index != null && <p className="inv-index">{String(index).padStart(2, '0')}</p>}
+        <div className={`flex items-center gap-4 ${centered ? 'justify-center' : ''} ${index != null ? 'mt-2' : ''}`}>
           <span className="h-px w-10 bg-[var(--inv-accent)]/50" />
           <span className="inv-label">{t(data.settings.language, 'welcome')}</span>
           <span className="h-px w-10 bg-[var(--inv-accent)]/50" />
@@ -247,7 +359,7 @@ export function Welcome({ data, theme }: { data: InvitationData; theme: Resolved
           {data.welcomeHeading}
         </h2>
         {data.welcomeNote && <p className="inv-body-copy mt-5 whitespace-pre-line">{data.welcomeNote}</p>}
-        <p className="inv-script mt-8 text-[clamp(1.8rem,6cqw,2.5rem)] text-[var(--inv-accent)]">
+        <p className="inv-script inv-foil mt-8 text-[clamp(1.8rem,6cqw,2.5rem)]">
           {data.coupleA} &amp; {data.coupleB}
         </p>
         <p className="inv-label mt-3 !text-[0.52rem]">{formatDate(data.weddingDate)}</p>
@@ -256,7 +368,7 @@ export function Welcome({ data, theme }: { data: InvitationData; theme: Resolved
   );
 }
 
-export function Story({ data, theme }: { data: InvitationData; theme: ResolvedTheme }) {
+export function Story({ data, theme, index }: { data: InvitationData; theme: ResolvedTheme; index?: number }) {
   const reduce = useReducedMotion();
   if (!data.story.length) return null;
   return (
@@ -266,10 +378,11 @@ export function Story({ data, theme }: { data: InvitationData; theme: ResolvedTh
           eyebrow={t(data.settings.language, 'ourStory')}
           title="How we got here"
           description={data.storyIntro}
+          index={index}
         />
         <div className="mt-12 space-y-12 sm:space-y-16">
-          {data.story.map((chapter, index) => {
-            const reverse = index % 2 === 1;
+          {data.story.map((chapter, chapterIndex) => {
+            const reverse = chapterIndex % 2 === 1;
             return (
               <motion.article
                 key={chapter.id}
@@ -280,7 +393,7 @@ export function Story({ data, theme }: { data: InvitationData; theme: ResolvedTh
                 className={`grid items-center gap-6 sm:grid-cols-2 sm:gap-10 ${reverse ? 'sm:[&>figure]:order-2' : ''}`}
               >
                 {chapter.image ? (
-                  <figure className={`relative ${theme.layout === 'editorial' ? 'arch-frame' : ''}`}>
+                  <figure className="frame-stationery relative">
                     <div className="overflow-hidden">
                       <img
                         src={chapter.image}
@@ -290,15 +403,16 @@ export function Story({ data, theme }: { data: InvitationData; theme: ResolvedTh
                       />
                     </div>
                     <figcaption className="inv-label mt-3 !text-[0.5rem]">
-                      Chapter {String(index + 1).padStart(2, '0')}
+                      Chapter {String(chapterIndex + 1).padStart(2, '0')}
                     </figcaption>
                   </figure>
                 ) : (
                   <div className="hidden sm:block" />
                 )}
                 <div className={chapter.image ? '' : 'sm:col-span-2 sm:mx-auto sm:max-w-2xl sm:text-center'}>
-                  <p className="inv-script text-[2rem] leading-none text-[var(--inv-accent)]">
-                    {String(index + 1).padStart(2, '0')}
+                  <TemplateMark templateId={theme.template.id as TemplateId} className="h-6 w-24 text-[var(--inv-accent)] opacity-60" />
+                  <p className="inv-script mt-2 text-[2rem] leading-none text-[var(--inv-accent)]">
+                    {String(chapterIndex + 1).padStart(2, '0')}
                   </p>
                   <h3 className="inv-display mt-3 text-[clamp(1.5rem,5cqw,2.1rem)] leading-tight">
                     {chapter.title}
@@ -314,7 +428,7 @@ export function Story({ data, theme }: { data: InvitationData; theme: ResolvedTh
   );
 }
 
-export function CountdownSection({ data, theme }: { data: InvitationData; theme: ResolvedTheme }) {
+export function CountdownSection({ data, theme, index }: { data: InvitationData; theme: ResolvedTheme; index?: number }) {
   if (!data.settings.countdown || !data.weddingDate) return null;
   const primary = [...data.events].sort((a, b) => a.date.localeCompare(b.date))[0];
   const target = primary?.date ?? data.weddingDate;
@@ -324,15 +438,29 @@ export function CountdownSection({ data, theme }: { data: InvitationData; theme:
         templateId={theme.template.id as TemplateId}
         className="pointer-events-none absolute inset-0 h-full w-full text-[var(--inv-accent)] opacity-[0.14]"
       />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--inv-accent) 16%, transparent), transparent 55%)' }}
+      />
       <div className="inv-narrow relative text-center">
-        <p className="inv-label !text-[var(--inv-deep-ink)]/50">{t(data.settings.language, 'countdown')}</p>
-        <p className="inv-display mt-3 text-[clamp(1.6rem,5.5cqw,2.4rem)] !text-[var(--inv-deep-ink)]">
+        {index != null && <p className="inv-index">{String(index).padStart(2, '0')}</p>}
+        <p className={`inv-label !text-[var(--inv-deep-ink)]/50 ${index != null ? 'mt-2' : ''}`}>{t(data.settings.language, 'countdown')}</p>
+        <p className="inv-script inv-foil mt-4 text-[clamp(2.2rem,8cqw,3.6rem)]">
+          {t(data.settings.language, 'forever')}
+        </p>
+        <p
+          className="mt-4 text-[0.72rem] font-medium uppercase tracking-[0.3em] text-[var(--inv-deep-ink)]/75"
+          style={{ fontFamily: 'var(--inv-caps)' }}
+        >
           {formatDate(target)}
         </p>
-        <div className="mt-8">
+        <div className="mx-auto mt-9 max-w-xl !text-[var(--inv-deep-ink)]">
           <Countdown date={target} time={primary?.startTime ?? data.weddingTime} lang={data.settings.language} />
         </div>
-        <p className="mt-8 text-[0.65rem] uppercase tracking-[0.24em] text-[var(--inv-deep-ink)]/45">
+        <p
+          className="mt-9 text-[0.62rem] uppercase tracking-[0.28em] text-[var(--inv-deep-ink)]/45"
+          style={{ fontFamily: 'var(--inv-caps)' }}
+        >
           {data.location}
         </p>
       </div>
@@ -387,9 +515,11 @@ function EventRow({ event, lang }: { event: EventDetails; lang: InvitationLang }
 export function Schedule({
   data,
   guestEventIds,
+  index,
 }: {
   data: InvitationData;
   guestEventIds?: string[];
+  index?: number;
 }) {
   const allowed = guestEventIds?.length
     ? data.events.filter((event) => guestEventIds.includes(event.id))
@@ -408,6 +538,7 @@ export function Schedule({
               ? `You are invited to ${guestEventIds.length} of our ${data.events.length} celebrations. Every detail of those days is below.`
               : 'Every ceremony, every venue, every time — so you can plan the weekend with ease.'
           }
+          index={index}
         />
         <div className="mt-10">
           {groups.map((group) => (
@@ -439,13 +570,14 @@ export function Schedule({
   );
 }
 
-export function Details({ data }: { data: InvitationData }) {
+export function Details({ data, theme, index }: { data: InvitationData; theme: ResolvedTheme; index?: number }) {
   const detail = data.details;
   const cards = [
     detail.dressCode && {
       icon: <Shirt size={16} />,
       title: 'Dress code',
       body: [detail.dressCode, detail.dressCodeNote].filter(Boolean).join(' — '),
+      swatches: true,
     },
     detail.travel && { icon: <Car size={16} />, title: 'Getting there', body: detail.travel },
     detail.accommodation && { icon: <BedDouble size={16} />, title: 'Where to stay', body: detail.accommodation },
@@ -455,7 +587,7 @@ export function Details({ data }: { data: InvitationData }) {
       title: detail.additionalTitle || 'A little more',
       body: detail.additional,
     },
-  ].filter(Boolean) as { icon: React.ReactNode; title: string; body: string }[];
+  ].filter(Boolean) as { icon: React.ReactNode; title: string; body: string; swatches?: boolean }[];
 
   if (!cards.length && !detail.address) return null;
 
@@ -466,6 +598,7 @@ export function Details({ data }: { data: InvitationData }) {
           eyebrow={t(data.settings.language, 'details')}
           title="A few practicalities"
           description="Everything you might want to know before you pack a bag."
+          index={index}
         />
         <div className="mt-10 grid gap-3 sm:grid-cols-2">
           {detail.address && (
@@ -498,6 +631,24 @@ export function Details({ data }: { data: InvitationData }) {
               <div className="min-w-0">
                 <p className="inv-label !text-[0.52rem]">{card.title}</p>
                 <p className="mt-1 whitespace-pre-line text-[0.83rem] leading-relaxed text-[var(--inv-muted)]">{card.body}</p>
+                {card.swatches && (
+                  <span className="mt-3 flex items-center gap-2.5">
+                    {[theme.palette.accentSoft, theme.palette.accent, theme.palette.deep, theme.palette.bg].map((color) => (
+                      <span
+                        key={color}
+                        className="h-5 w-5 rounded-full ring-1 ring-black/15"
+                        style={{ background: color }}
+                        aria-hidden="true"
+                      />
+                    ))}
+                    <span
+                      className="ml-1 text-[0.55rem] uppercase tracking-[0.22em] text-[var(--inv-muted)]"
+                      style={{ fontFamily: 'var(--inv-caps)' }}
+                    >
+                      {t(data.settings.language, 'colourStory')}
+                    </span>
+                  </span>
+                )}
               </div>
             </div>
           ))}
@@ -507,7 +658,7 @@ export function Details({ data }: { data: InvitationData }) {
   );
 }
 
-export function GallerySection({ data, templateId }: { data: InvitationData; templateId: string }) {
+export function GallerySection({ data, templateId, index }: { data: InvitationData; templateId: string; index?: number }) {
   if (!data.gallery.length) return null;
   return (
     <section className="inv-section">
@@ -516,6 +667,7 @@ export function GallerySection({ data, templateId }: { data: InvitationData; tem
           eyebrow={t(data.settings.language, 'gallery')}
           title="Moments, so far"
           description="A few frames from the road that brought us here. The rest will be taken on the day — by you, we hope."
+          index={index}
         />
         <div className="mt-9">
           <Gallery items={data.gallery} layout={templateId} />
@@ -539,6 +691,7 @@ export function RsvpSection({
   token,
   mode,
   onSubmitted,
+  index,
 }: {
   data: InvitationData;
   slug: string;
@@ -547,12 +700,14 @@ export function RsvpSection({
   token?: string;
   mode: 'live' | 'sample' | 'preview';
   onSubmitted?: (rsvp: RsvpRecord) => void;
+  index?: number;
 }) {
   return (
     <section id="rsvp" className="inv-section" style={{ background: 'var(--inv-deep)', color: 'var(--inv-deep-ink)' }}>
       <div className="inv-narrow !max-w-3xl">
         <div className="text-center">
-          <p className="inv-label !text-[var(--inv-deep-ink)]/50">{t(data.settings.language, 'rsvp')}</p>
+          {index != null && <p className="inv-index">{String(index).padStart(2, '0')}</p>}
+          <p className={`inv-label !text-[var(--inv-deep-ink)]/50 ${index != null ? 'mt-2' : ''}`}>{t(data.settings.language, 'rsvp')}</p>
           <p className="mx-auto mt-3 max-w-md text-[0.84rem] leading-relaxed text-[var(--inv-deep-ink)]/60">
             A reply helps us set a place for you, choose the menu, and plan the seating.
           </p>
@@ -581,6 +736,7 @@ export function MessagesSection({
   token,
   messages,
   mode,
+  index,
 }: {
   data: InvitationData;
   slug: string;
@@ -588,6 +744,7 @@ export function MessagesSection({
   token?: string;
   messages: WallMessage[];
   mode: 'live' | 'sample' | 'preview';
+  index?: number;
 }) {
   if (!data.settings.messagesEnabled) return null;
   return (
@@ -597,6 +754,7 @@ export function MessagesSection({
           eyebrow={t(data.settings.language, 'messages')}
           title="Blessings, from the people we love"
           description="Leave a note for the two of us — we will be reading every one, probably more than once."
+          index={index}
         />
         <div className="mt-9">
           <MessageWall
@@ -620,12 +778,14 @@ export function AlbumSection({
   photos,
   token,
   mode,
+  index,
 }: {
   data: InvitationData;
   slug: string;
   photos: PhotoRecord[];
   token?: string;
   mode: 'live' | 'sample' | 'preview';
+  index?: number;
 }) {
   if (!data.settings.albumEnabled) return null;
   const albumHref = `/i/${slug}/album${token ? `?token=${encodeURIComponent(token)}` : ''}`;
@@ -639,7 +799,8 @@ export function AlbumSection({
       <div className="inv-narrow !max-w-4xl">
         <div className="grid items-center gap-8 sm:grid-cols-[1fr_auto]">
           <div>
-            <p className="inv-label">{t(data.settings.language, 'album')}</p>
+            {index != null && <p className="inv-index">{String(index).padStart(2, '0')}</p>}
+            <p className={`inv-label ${index != null ? 'mt-2' : ''}`}>{t(data.settings.language, 'album')}</p>
             <h2 className="inv-display mt-3 text-[clamp(1.9rem,6.5cqw,2.8rem)] leading-[1.05]">
               Your photographs, together.
             </h2>
@@ -705,7 +866,7 @@ export function Closing({ data, theme }: { data: InvitationData; theme: Resolved
         <p className="inv-body-copy mx-auto mt-4 max-w-md">
           We cannot wait to see your face, hear your laugh, and dance badly with you.
         </p>
-        <p className="inv-script mt-6 text-[clamp(1.9rem,7cqw,2.8rem)] text-[var(--inv-accent)]">
+        <p className="inv-script inv-foil mt-6 text-[clamp(1.9rem,7cqw,2.8rem)]">
           {data.coupleA} &amp; {data.coupleB}
         </p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-[0.6rem] uppercase tracking-[0.22em] text-[var(--inv-muted)]">

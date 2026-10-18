@@ -128,6 +128,69 @@ function pluck(audio: AudioContext, output: AudioNode, note: number, at: number,
   }
 }
 
+/** Silk ribbon drawn loose — an ascending breath of filtered noise. */
+function silk(audio: AudioContext, output: AudioNode, at: number, duration = 1.4) {
+  const source = audio.createBufferSource();
+  source.buffer = noiseBuffer(audio, duration + 0.4);
+  source.playbackRate.value = 1.1;
+
+  const band = audio.createBiquadFilter();
+  band.type = 'bandpass';
+  band.Q.value = 1.4;
+  band.frequency.setValueAtTime(1100, at);
+  band.frequency.exponentialRampToValueAtTime(4600, at + duration * 0.75);
+  band.frequency.exponentialRampToValueAtTime(2200, at + duration);
+
+  const gain = audio.createGain();
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.linearRampToValueAtTime(0.16, at + duration * 0.4);
+  gain.gain.linearRampToValueAtTime(0.0001, at + duration);
+
+  source.connect(band).connect(gain).connect(output);
+  source.start(at);
+  source.stop(at + duration + 0.05);
+}
+
+/** Heavy curtains parting — a low, slow sweep with a soft swell beneath. */
+function drape(audio: AudioContext, output: AudioNode, at: number, duration = 2.2) {
+  const source = audio.createBufferSource();
+  source.buffer = noiseBuffer(audio, duration + 0.4);
+  source.playbackRate.value = 0.6;
+
+  const sweep = audio.createBiquadFilter();
+  sweep.type = 'lowpass';
+  sweep.frequency.setValueAtTime(320, at);
+  sweep.frequency.linearRampToValueAtTime(980, at + duration * 0.6);
+  sweep.frequency.linearRampToValueAtTime(420, at + duration);
+
+  const gain = audio.createGain();
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.linearRampToValueAtTime(0.2, at + duration * 0.45);
+  gain.gain.linearRampToValueAtTime(0.0001, at + duration);
+
+  source.connect(sweep).connect(gain).connect(output);
+  source.start(at);
+  source.stop(at + duration + 0.05);
+
+  const swell = audio.createOscillator();
+  swell.type = 'sine';
+  swell.frequency.setValueAtTime(96, at);
+  swell.frequency.linearRampToValueAtTime(64, at + duration);
+  const swellGain = audio.createGain();
+  swellGain.gain.setValueAtTime(0.0001, at);
+  swellGain.gain.linearRampToValueAtTime(0.1, at + duration * 0.5);
+  swellGain.gain.linearRampToValueAtTime(0.0001, at + duration);
+  swell.connect(swellGain).connect(output);
+  swell.start(at);
+  swell.stop(at + duration + 0.05);
+}
+
+/** Starlight unfurling — high, slow chimes for the celestial gatefold. */
+function starfall(audio: AudioContext, output: AudioNode, at: number) {
+  const notes = [1567.98, 2093, 1760, 2637.02, 1975.53];
+  notes.forEach((note, index) => pluck(audio, output, note, at + index * 0.34, 0.07));
+}
+
 export interface OpeningSoundHandle {
   /** Fade the whole opening sound out over `ms`. */
   release: (ms?: number) => void;
@@ -155,6 +218,65 @@ export function playOpeningSound(): OpeningSoundHandle | null {
   // D major, rising: the harp answers the crack.
   const notes = [587.33, 880, 1108.73, 1466.83];
   notes.forEach((note, index) => pluck(audio, out, note, now + 0.42 + index * 0.13, 0.16));
+
+  return {
+    release(ms = 700) {
+      const at = audio.currentTime;
+      out.gain.cancelScheduledValues(at);
+      out.gain.setValueAtTime(Math.max(0.0001, out.gain.value), at);
+      out.gain.exponentialRampToValueAtTime(0.0001, at + ms / 1000);
+    },
+  };
+}
+
+/**
+ * The full cinematic opening, scored across roughly eleven seconds to match
+ * the gate choreography: the lift, the breaking of the fastening, the letter
+ * drawn out, the reveal, and a warm resolution as the invitation lands.
+ * Call directly from the tap handler so the AudioContext may resume.
+ */
+export function playCinematicOpening(
+  kind: 'seal' | 'ribbon' | 'curtain' | 'celeste' = 'seal',
+): OpeningSoundHandle | null {
+  const audio = context();
+  if (!audio) return null;
+  if (audio.state === 'suspended') void audio.resume();
+
+  const out = bus(audio);
+  const now = audio.currentTime + 0.01;
+
+  out.gain.cancelScheduledValues(now);
+  out.gain.setValueAtTime(0.0001, now);
+  out.gain.exponentialRampToValueAtTime(0.9, now + 0.06);
+
+  // Act I — the invitation lifts and catches the light.
+  paper(audio, out, now + 0.15, 1.3);
+
+  // Act II — the fastening gives way.
+  if (kind === 'ribbon') {
+    silk(audio, out, now + 2.1, 1.5);
+    paper(audio, out, now + 2.4, 0.7);
+  } else if (kind === 'curtain') {
+    drape(audio, out, now + 2.1, 2.4);
+  } else if (kind === 'celeste') {
+    crack(audio, out, now + 2.35);
+    starfall(audio, out, now + 2.7);
+  } else {
+    crack(audio, out, now + 2.15);
+    paper(audio, out, now + 2.35, 0.9);
+  }
+
+  // Act III — the letter is drawn from the envelope.
+  paper(audio, out, now + 4.6, 2.5);
+
+  // Act IV — the reveal: a rising D-major answer, slower and wider.
+  const ascent = [587.33, 739.99, 880, 1108.73, 1318.51, 1466.83];
+  ascent.forEach((note, index) => pluck(audio, out, note, now + 7.1 + index * 0.17, 0.14));
+
+  // Act V — resolution as the invitation fills the screen.
+  const resolve = [293.66, 587.33, 880, 1174.66];
+  resolve.forEach((note, index) => pluck(audio, out, note, now + 9.2 + index * 0.09, 0.1));
+  pluck(audio, out, 1760, now + 9.9, 0.06);
 
   return {
     release(ms = 700) {

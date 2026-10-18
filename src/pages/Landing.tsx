@@ -22,6 +22,7 @@ import { MarketingNav } from '@/components/marketing/MarketingNav';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { EnvelopeTeaser } from '@/components/marketing/EnvelopeTeaser';
 import { MiniStudio } from '@/components/marketing/MiniStudio';
+import { TemplateCard } from '@/components/marketing/TemplateCard';
 import { SoundtrackDemo } from '@/components/marketing/SoundtrackDemo';
 import { Reveal } from '@/components/marketing/Reveal';
 import { buttonClass } from '@/components/ui/Button';
@@ -206,11 +207,13 @@ function Arrival() {
 
           <div className="relative">
             <Reveal>
-              <div className="arch-frame relative aspect-[4/3.4] overflow-hidden bg-[#221c15] sm:aspect-[4/3]">
+              <div className="relative aspect-[4/3.4] overflow-hidden rounded-[3px] border border-[#d9b87b]/25 bg-[#221c15] sm:aspect-[4/3]">
                 <TemplateArt
                   templateId="aurelia"
                   className="absolute inset-0 h-full w-full text-[#c9a877] opacity-50"
                 />
+                <div className="pointer-events-none absolute inset-3 border border-[#d9b87b]/30" />
+                <div className="pointer-events-none absolute inset-[18px] border border-[#d9b87b]/15" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(255,240,215,0.08),transparent_70%)]" />
                 <div className="relative flex h-full flex-col items-center justify-center px-8 text-center text-[#fcf5e8]">
                   <span className="font-script text-[2.4rem] leading-none text-[#d9b87b]">C&amp;J</span>
@@ -295,7 +298,6 @@ function TemplateRail() {
         className="no-scrollbar mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-[max(1.25rem,calc((100vw-76rem)/2))] pb-6"
       >
         {TEMPLATES.map((template, i) => {
-          const sample = sampleInvitation(template.id);
           return (
             <motion.div
               key={template.id}
@@ -305,47 +307,8 @@ function TemplateRail() {
               transition={{ duration: 0.6, delay: Math.min(i * 0.04, 0.24) }}
               className="w-[268px] flex-none snap-start sm:w-[300px]"
             >
-              <Link to={`/templates/${template.id}`} className="group block">
-                <div
-                  className="relative aspect-[3/4.1] overflow-hidden rounded-[2px] border border-line/80 shadow-[0_20px_50px_-35px_rgba(50,35,20,0.5)]"
-                  style={{ background: template.palette.deep }}
-                >
-                  <TemplateArt
-                    templateId={template.id}
-                    className="absolute inset-0 h-full w-full text-[#d9b87b] opacity-80"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/5 to-black/80" />
-                  <div className="absolute inset-x-5 top-5 h-px bg-[#fcf5e8]/25" />
-                  <div className="relative flex h-full flex-col items-center justify-between p-6 text-center text-[#fcf5e8]">
-                    <span className="text-[0.48rem] font-semibold uppercase tracking-[0.32em] opacity-80">
-                      {template.descriptor}
-                    </span>
-                    <div>
-                      <p
-                        className={`text-[2rem] leading-[1.02] ${template.cover.namesCase === 'upper' ? 'uppercase' : ''}`}
-                        style={{ fontFamily: template.display, letterSpacing: template.cover.tracking }}
-                      >
-                        {sample.coupleA}
-                        <span
-                          className="mx-1 text-[1.5rem] italic"
-                          style={{ fontFamily: template.script, color: template.palette.accent }}
-                        >
-                          &amp;
-                        </span>
-                        {sample.coupleB}
-                      </p>
-                      <p className="mt-3 text-[0.5rem] font-semibold uppercase tracking-[0.24em] opacity-80">
-                        {formatDateShort(sample.weddingDate)} · {sample.location.split(',')[0]}
-                      </p>
-                    </div>
-                    <div>
-                      <TemplateMark templateId={template.id} className="mx-auto h-6 w-20 opacity-80" />
-                      <span className="mt-3 inline-block border-b border-white/30 pb-0.5 text-[0.52rem] uppercase tracking-[0.24em] opacity-0 transition group-hover:opacity-100">
-                        Preview this design
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <div>
+                <TemplateCard template={template} cta="Preview this design" />
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <div>
                     <p className="font-display text-[1.25rem] text-ink">{template.name}</p>
@@ -361,7 +324,7 @@ function TemplateRail() {
                     ))}
                   </span>
                 </div>
-              </Link>
+              </div>
             </motion.div>
           );
         })}

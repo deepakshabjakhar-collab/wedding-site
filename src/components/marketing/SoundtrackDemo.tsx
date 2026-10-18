@@ -5,8 +5,8 @@ import { useAudioPlayer, formatAudioTime } from '@/lib/useAudioPlayer';
 import { TemplateArt } from '@/templates/art';
 
 const TRACKS = [
-  { id: 'golden-hour', title: 'Golden Hour', src: '/audio/golden-hour.mp3', mood: 'Harp · strings · 92s' },
-  { id: 'moonlit', title: 'Moonlit Vows', src: '/audio/moonlit.mp3', mood: 'Felt piano · pads · 96s' },
+  { id: 'golden-hour', title: 'Golden Hour', src: '/audio/golden-hour.wav', mood: 'Harp · strings · 92s' },
+  { id: 'moonlit', title: 'Moonlit Vows', src: '/audio/moonlit.wav', mood: 'Felt piano · pads · 96s' },
 ];
 
 export function SoundtrackDemo() {

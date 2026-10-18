@@ -22,7 +22,6 @@
   --font-body-serif: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
   --font-gilded: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
   --font-hand: 'Mrs Saint Delafield', 'Pinyon Script', cursive;
-  --radius-arch: clamp(6rem, 22vw, 15rem);
   --radius-soft: 1.75rem;
   --ease-silk: cubic-bezier(0.22, 0.61, 0.36, 1);
   --shadow-soft: 0 24px 70px -40px rgb(60 44 28 / 0.35);
@@ -447,8 +446,18 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 .arch-frame {
-  border-radius: 999px 999px 18px 18px;
+  border-radius: 3px;
   overflow: hidden;
+}
+
+/* Rectilinear stationery frame — hairline double border, square corners. */
+.frame-stationery {
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--inv-line, #d8c9b5) 75%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--inv-accent, #a9835b) 28%, transparent);
+  outline-offset: 5px;
+  box-shadow: 0 30px 60px -40px rgb(42 27 17 / 0.5);
 }
 
 .gold-rule {
@@ -743,6 +752,7 @@ input[type='range']::-webkit-slider-thumb {
   --inv-display: var(--font-editorial);
   --inv-body: var(--font-body-serif);
   --inv-script: var(--font-script);
+  --inv-caps: 'Cinzel', 'Marcellus', Georgia, serif;
 }
 
 .invite-root {
@@ -767,12 +777,46 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 .inv-eyebrow {
-  font-family: var(--inv-body);
-  font-size: clamp(0.72rem, 2.1cqw, 0.84rem);
-  font-weight: 600;
-  letter-spacing: 0.36em;
+  font-family: var(--inv-caps);
+  font-size: clamp(0.68rem, 2cqw, 0.8rem);
+  font-weight: 500;
+  letter-spacing: 0.38em;
   text-transform: uppercase;
   color: var(--inv-muted);
+}
+
+.inv-caps {
+  font-family: var(--inv-caps);
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+}
+
+/* Ghost section numerals, Sponsalia-style: 01 · 02 · 03 … */
+.inv-index {
+  font-family: var(--inv-display);
+  font-style: italic;
+  font-size: clamp(0.95rem, 2.6cqw, 1.2rem);
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--inv-accent) 75%, transparent);
+}
+
+/* Foil-stamped text for names and seals. */
+.inv-foil {
+  background: linear-gradient(100deg, #8a6a3c 0%, #e9d3a0 28%, #fff8e6 50%, #e9d3a0 72%, #8a6a3c 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: foil-drift 9s ease-in-out infinite;
+}
+
+@keyframes foil-drift {
+  0%, 100% {
+    background-position: 0% 0;
+  }
+  50% {
+    background-position: 100% 0;
+  }
 }
 
 .inv-display {
@@ -843,6 +887,30 @@ input[type='range']::-webkit-slider-thumb {
   padding: 0 clamp(1.5rem, 7cqw, 5rem) clamp(2.6rem, 7cqw, 5rem);
 }
 
+/* Keyline frame floating over the hero scene. */
+.inv-hero-frame {
+  position: absolute;
+  inset: clamp(0.9rem, 3.5cqw, 1.9rem);
+  z-index: 3;
+  pointer-events: none;
+  border: 1px solid rgb(255 248 232 / 0.3);
+  outline: 1px solid rgb(255 248 232 / 0.14);
+  outline-offset: 5px;
+}
+
+.inv-hero-frame i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: rgb(255 248 232 / 0.85);
+  transform: rotate(45deg);
+}
+
+.inv-hero-frame i:nth-child(1) { top: -4px; left: -4px; }
+.inv-hero-frame i:nth-child(2) { top: -4px; right: -4px; }
+.inv-hero-frame i:nth-child(3) { bottom: -4px; left: -4px; }
+.inv-hero-frame i:nth-child(4) { bottom: -4px; right: -4px; }
+
 .inv-names {
   font-family: var(--inv-display);
   font-size: clamp(3.5rem, 15cqw, 9rem);
@@ -853,12 +921,12 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 .inv-names .amp {
-  font-family: var(--inv-display);
-  font-style: italic;
-  font-size: 0.7em;
-  color: inherit;
-  padding-inline: 0 0.06em;
-  vertical-align: 0.02em;
+  font-family: var(--inv-script);
+  font-style: normal;
+  font-size: 0.72em;
+  color: color-mix(in srgb, var(--inv-accent) 62%, #fff8e8);
+  padding-inline: 0.04em 0.08em;
+  vertical-align: 0.04em;
 }
 
 .inv-rule {
@@ -888,10 +956,10 @@ input[type='range']::-webkit-slider-thumb {
   color: var(--inv-deep);
   padding: 0.8rem 1.5rem;
   min-height: 46px;
-  font-family: var(--inv-body);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-family: var(--inv-caps);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.25s var(--ease-silk);
@@ -941,20 +1009,25 @@ input[type='range']::-webkit-slider-thumb {
     linear-gradient(145deg, #fffdf7, #eee2cf);
 }
 
-/* Soft, arched surfaces only — no square corners anywhere in the invitation. */
+/* Stationery surfaces — rectilinear, hairline-ruled, foil-friendly. */
 .inv-card {
   background: var(--inv-surface);
   border: 1px solid color-mix(in srgb, var(--inv-line) 80%, transparent);
-  border-radius: clamp(1.5rem, 5cqw, 2.6rem) clamp(1.5rem, 5cqw, 2.6rem) 1.25rem 1.25rem;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 0 4px var(--inv-surface),
+    inset 0 0 0 5px color-mix(in srgb, var(--inv-accent) 22%, transparent),
+    0 24px 60px -45px rgb(42 27 17 / 0.55);
 }
 
 .inv-card-arch {
-  border-radius: 50% 50% 1.25rem 1.25rem / 22% 22% 1.25rem 1.25rem;
-}
-
-.inv-locket {
-  border-radius: 50% 50% 46% 46% / 42% 42% 42% 42%;
-  overflow: hidden;
+  background: var(--inv-surface);
+  border: 1px solid color-mix(in srgb, var(--inv-line) 80%, transparent);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 0 4px var(--inv-surface),
+    inset 0 0 0 5px color-mix(in srgb, var(--inv-accent) 22%, transparent),
+    0 24px 60px -45px rgb(42 27 17 / 0.55);
 }
 
 .inv-arc {
@@ -1000,20 +1073,20 @@ input[type='range']::-webkit-slider-thumb {
 
 .inv-field-label {
   display: block;
-  font-family: var(--inv-body);
-  font-size: 0.63rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-family: var(--inv-caps);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--inv-muted);
   margin-bottom: 0.4rem;
 }
 
 .inv-label {
-  font-family: var(--inv-body);
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.3em;
+  font-family: var(--inv-caps);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--inv-muted);
 }
@@ -1188,8 +1261,7 @@ input[type='range']::-webkit-slider-thumb {
   background-color: var(--inv-bg);
   background-image:
     linear-gradient(color-mix(in srgb, var(--inv-bg) 72%, transparent), color-mix(in srgb, var(--inv-bg) 72%, transparent)),
-    url('/images/templates/linen.png');
-  background-size: auto, 560px;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
 .invite-root[data-layout='celestial'] .inv-section {
@@ -1372,17 +1444,26 @@ input[type='range']::-webkit-slider-thumb {
 
 .inv-countdown {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
   gap: 0.35rem;
   text-align: center;
 }
 
 .inv-countdown-num {
   font-family: var(--inv-display);
-  font-size: clamp(1.8rem, 7.5cqw, 3.4rem);
+  font-size: clamp(2rem, 8.5cqw, 3.8rem);
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+}
+
+.inv-countdown-sep {
+  font-family: var(--inv-display);
+  font-size: clamp(1.4rem, 5cqw, 2.2rem);
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--inv-accent) 65%, transparent);
+  user-select: none;
 }
 
 .inv-event-row {
@@ -1403,9 +1484,9 @@ input[type='range']::-webkit-slider-thumb {
 
 .inv-event-date span {
   display: block;
-  font-family: var(--inv-body);
-  font-size: 0.54rem;
-  letter-spacing: 0.2em;
+  font-family: var(--inv-caps);
+  font-size: 0.52rem;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--inv-muted);
   margin-top: 0.35rem;

@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { Palette } from '@shared/types';
 import type { TemplateArtDef, TemplateDefinition, TemplateId } from './types';
-import { FONT_PAIRS, FONT_STACKS, SCRIPT_FONTS } from './types';
+import { CAPS_STACK, FONT_PAIRS, FONT_STACKS, SCRIPT_FONTS } from './types';
 
 const IMG = '/images/templates';
 
@@ -72,10 +72,10 @@ const RAW_TEMPLATES: Omit<TemplateDefinition, 'art'>[] = [
       deep: '#243027',
       deepInk: '#f5f4ec',
     },
-    display: FONT_STACKS.cormorant,
+    display: FONT_STACKS.fraunces,
     body: FONT_STACKS.cormorant,
-    script: FONT_STACKS.allura,
-    scriptFamily: 'allura',
+    script: FONT_STACKS.italianno,
+    scriptFamily: 'italianno',
     layout: 'garden',
     envelope: 'ribbon',
     keywords: ['Botanical', 'Cotswolds', 'Romantic'],
@@ -102,7 +102,7 @@ const RAW_TEMPLATES: Omit<TemplateDefinition, 'art'>[] = [
       deep: '#1d2a23',
       deepInk: '#f6f3e8',
     },
-    display: FONT_STACKS.italiana,
+    display: FONT_STACKS.cinzelDecorative,
     body: FONT_STACKS.cormorant,
     script: FONT_STACKS.pinyon,
     scriptFamily: 'pinyon',
@@ -162,10 +162,10 @@ const RAW_TEMPLATES: Omit<TemplateDefinition, 'art'>[] = [
       deep: '#39463f',
       deepInk: '#faf3e7',
     },
-    display: FONT_STACKS.gilda,
+    display: FONT_STACKS.fraunces,
     body: FONT_STACKS.cormorant,
-    script: FONT_STACKS.allura,
-    scriptFamily: 'allura',
+    script: FONT_STACKS.italianno,
+    scriptFamily: 'italianno',
     layout: 'coastal',
     envelope: 'ribbon',
     keywords: ['Destination', 'Coastal', 'Warm'],
@@ -195,7 +195,7 @@ const RAW_TEMPLATES: Omit<TemplateDefinition, 'art'>[] = [
     display: FONT_STACKS.bodoni,
     body: FONT_STACKS.cormorant,
     script: FONT_STACKS.delafield,
-    scriptFamily: 'pinyon',
+    scriptFamily: 'delafield',
     layout: 'minimal',
     envelope: 'curtain',
     keywords: ['Black tie', 'Minimal', 'Couture'],
@@ -225,7 +225,7 @@ const RAW_TEMPLATES: Omit<TemplateDefinition, 'art'>[] = [
     display: FONT_STACKS.playfair,
     body: FONT_STACKS.cormorant,
     script: FONT_STACKS.tangerine,
-    scriptFamily: 'allura',
+    scriptFamily: 'tangerine',
     layout: 'vintage',
     envelope: 'ribbon',
     keywords: ['Vintage', 'Country', 'Intimate'],
@@ -252,10 +252,10 @@ const RAW_TEMPLATES: Omit<TemplateDefinition, 'art'>[] = [
       deep: '#4b2f33',
       deepInk: '#fff8f4',
     },
-    display: FONT_STACKS.marcellus,
+    display: FONT_STACKS.fraunces,
     body: FONT_STACKS.cormorant,
-    script: FONT_STACKS.allura,
-    scriptFamily: 'allura',
+    script: FONT_STACKS.greatVibes,
+    scriptFamily: 'greatVibes',
     layout: 'playful',
     envelope: 'ribbon',
     keywords: ['Garden party', 'Sussex', 'Playful'],
@@ -281,6 +281,7 @@ export interface ResolvedTheme {
   display: string;
   body: string;
   script: string;
+  caps: string;
   layout: TemplateDefinition['layout'];
 }
 
@@ -297,6 +298,7 @@ export function resolveTheme(
     display: fontPair?.stack ?? template.display,
     body: template.body,
     script: script?.stack ?? template.script,
+    caps: CAPS_STACK,
     layout: template.layout,
   };
 }
@@ -315,5 +317,6 @@ export function themeStyle(theme: ResolvedTheme): CSSProperties {
     '--inv-display': theme.display,
     '--inv-body': theme.body,
     '--inv-script': theme.script,
+    '--inv-caps': theme.caps,
   } as CSSProperties;
 }

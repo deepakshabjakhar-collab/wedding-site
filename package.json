@@ -12,7 +12,8 @@
     "typecheck": "tsc -b --noEmit false --emitDeclarationOnly false && tsc -p server/tsconfig.json",
     "seed": "tsx server/seed.ts",
     "generate:media": "node scripts/generate-media.mjs",
-    "fonts": "node scripts/fetch-fonts.mjs"
+    "fonts": "node scripts/fetch-fonts.mjs",
+    "media:audio": "node scripts/synth-audio.mjs"
   },
   "dependencies": {
     "@types/canvas-confetti": "^1.9.0",

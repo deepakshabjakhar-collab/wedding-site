@@ -13,33 +13,45 @@ export const TEMPLATE_IDS = [
 
 export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
+/** The opening ceremony each template was art-directed around. */
+export const TEMPLATE_ENVELOPE_DEFAULTS: Record<TemplateId, 'seal' | 'ribbon' | 'curtain'> = {
+  aurelia: 'seal',
+  maison: 'ribbon',
+  belgrave: 'curtain',
+  celeste: 'seal',
+  salento: 'ribbon',
+  noir: 'curtain',
+  heirloom: 'ribbon',
+  miel: 'ribbon',
+};
+
 export const BUILT_IN_TRACKS = [
   {
     id: 'golden-hour',
     title: 'Golden Hour',
     artist: 'The Vellum Ensemble',
-    src: '/audio/golden-hour.mp3',
+    src: '/audio/golden-hour.wav',
     mood: 'Harp, warm strings, a slow waltz',
   },
   {
     id: 'moonlit',
     title: 'Moonlit Vows',
     artist: 'The Vellum Ensemble',
-    src: '/audio/moonlit.mp3',
+    src: '/audio/moonlit.wav',
     mood: 'Celestial pads and felt piano',
   },
   {
     id: 'garden',
     title: 'In the Garden',
     artist: 'The Vellum Ensemble',
-    src: '/audio/garden.mp3',
+    src: '/audio/garden.wav',
     mood: 'Nylon guitar and birdsong air',
   },
   {
     id: 'first-dance',
     title: 'First Dance',
     artist: 'The Vellum Ensemble',
-    src: '/audio/first-dance.mp3',
+    src: '/audio/first-dance.wav',
     mood: 'A tender, unhurried piano theme',
   },
 ] as const;
@@ -109,7 +121,7 @@ function inDays(days: number): string {
 
 /** A complete, valid invitation, used for new projects and template previews. */
 export function createInvitationData(
-  _templateId: string = 'aurelia',
+  templateId: string = 'aurelia',
   overrides: Partial<InvitationData> = {},
 ): InvitationData {
   const date = inDays(210);
@@ -205,7 +217,17 @@ export function createInvitationData(
     },
     ...overrides,
   };
-  return { ...base, ...overrides, settings: { ...defaultSettings, ...(overrides.settings ?? {}) } };
+  const envelopeDefault =
+    TEMPLATE_ENVELOPE_DEFAULTS[templateId as TemplateId] ?? 'seal';
+  return {
+    ...base,
+    ...overrides,
+    settings: {
+      ...defaultSettings,
+      envelopeAnimation: envelopeDefault,
+      ...(overrides.settings ?? {}),
+    },
+  };
 }
 
 export function slugify(value: string): string {

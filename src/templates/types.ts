@@ -79,6 +79,12 @@ export const FONT_STACKS = {
   sacramento: "'Sacramento', 'Italianno', cursive",
 } as const;
 
+/**
+ * Engraved inscriptional capitals for eyebrows, labels, buttons and numerals.
+ * Cinzel is never a body face — it only ever whispers in small caps.
+ */
+export const CAPS_STACK = FONT_STACKS.cinzel;
+
 export const FONT_PAIRS = [
   { id: 'italiana', label: 'Italiana · fashion-house capitals', stack: FONT_STACKS.italiana },
   { id: 'gilda', label: 'Gilda Display · deco elegance', stack: FONT_STACKS.gilda },

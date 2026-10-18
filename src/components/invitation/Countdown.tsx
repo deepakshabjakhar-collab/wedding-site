@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { timeLeft } from '@/lib/format';
 import { t, type InvitationLang } from './i18n';
 
@@ -40,12 +40,19 @@ export function Countdown({
   ];
 
   return (
-    <div className={compact ? 'inv-countdown' : 'inv-countdown gap-2'}>
-      {units.map((unit) => (
-        <div key={unit.label} className="min-w-0">
-          <p className="inv-countdown-num tabular-nums">{String(unit.value).padStart(2, '0')}</p>
-          <p className="inv-label mt-1.5">{unit.label}</p>
-        </div>
+    <div className={compact ? 'inv-countdown' : 'inv-countdown gap-2'} role="timer" aria-label={`${left.days} days, ${left.hours} hours remaining`}>
+      {units.map((unit, i) => (
+        <Fragment key={unit.label}>
+          {i > 0 && (
+            <span className="inv-countdown-sep" aria-hidden="true">
+              :
+            </span>
+          )}
+          <div className="min-w-0">
+            <p className="inv-countdown-num tabular-nums">{String(unit.value).padStart(2, '0')}</p>
+            <p className="inv-label mt-1.5">{unit.label}</p>
+          </div>
+        </Fragment>
       ))}
     </div>
   );
