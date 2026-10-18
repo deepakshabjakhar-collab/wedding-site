@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, Check, ChevronRight, Heart, Music2, ShieldCheck,
 import { QRCodeSVG } from 'qrcode.react';
 import { MarketingNav } from '@/components/marketing/MarketingNav';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
-import { EnvelopeTeaser } from '@/components/marketing/EnvelopeTeaser';
+import { EnvelopeTeaser } from '@/components/marketing/EnvelopeTeaser.jsx';
 import { MiniStudio } from '@/components/marketing/MiniStudio';
 import { SoundtrackDemo } from '@/components/marketing/SoundtrackDemo';
 import { Reveal } from '@/components/marketing/Reveal';
