@@ -239,7 +239,7 @@ export function EnvelopeGate({
             <div className="mx-auto w-[78%] max-w-[22rem]" style={{ perspective: '1200px' }}>
               <div className="relative aspect-[3/4.2] overflow-visible">
                 <motion.div
-                  className="sponsalia-envelope-art absolute inset-0 z-[2] overflow-hidden rounded-[1.1rem] shadow-[0_44px_90px_-36px_rgba(0,0,0,0.75)]"
+                  className={`sponsalia-envelope-art absolute inset-0 z-[2] overflow-hidden rounded-[1.1rem] shadow-[0_44px_90px_-36px_rgba(0,0,0,0.75)] ${isRibbon ? 'rounded-none' : ''}`}
                   animate={opening2 ? { scale: 1.02, filter: 'brightness(1.04)' } : { scale: 1, filter: 'brightness(1)' }}
                   transition={{ duration: 1.05, ease: EASE_SILK }}
                 >
@@ -272,7 +272,7 @@ export function EnvelopeGate({
 
                 {/* the card inside, rising */}
                 <motion.div
-                  className="absolute left-[6%] right-[6%] z-[3] flex flex-col items-center justify-center gap-2 border border-[var(--inv-line)]/60 bg-[var(--inv-bg)] px-4 text-center"
+                  className={`absolute left-[6%] right-[6%] z-[3] flex flex-col items-center justify-center gap-2 border border-[var(--inv-line)]/60 bg-[var(--inv-bg)] px-4 text-center ${isRibbon ? 'opacity-0' : ''}`}
                   style={{
                     bottom: '8%',
                     height: '84%',
@@ -307,26 +307,36 @@ export function EnvelopeGate({
                 </motion.div>
 
                 {isRibbon && (
-                  <motion.div
-                    className="absolute inset-y-[-6%] left-1/2 z-[5] w-16 -translate-x-1/2"
-                    style={{
-                      borderRadius: '999px',
-                      background:
-                        'linear-gradient(90deg, color-mix(in srgb, var(--inv-accent) 76%, #000), var(--inv-accent), color-mix(in srgb, var(--inv-accent) 76%, #000))',
-                      opacity: 0.92,
-                    }}
+                  <motion.button
+                    type="button"
+                    onClick={open}
+                    aria-label="Draw the ribbon and open the invitation"
+                    className="absolute inset-y-[-6%] left-1/2 z-[7] w-16 -translate-x-1/2 cursor-pointer"
                     animate={
                       opening2
                         ? { opacity: 0, scaleY: 0.6, y: -40, rotate: 8 }
-                        : { opacity: 0.92, scaleY: 1, y: 0, rotate: 0 }
+                        : { opacity: 1, scaleY: 1, y: 0, rotate: 0 }
                     }
                     transition={{ duration: 0.85, ease: EASE_SILK }}
-                  />
+                  >
+                    <span
+                      className="absolute inset-y-0 left-1/2 w-4 -translate-x-1/2 shadow-[0_10px_18px_-12px_rgba(42,24,8,0.9)]"
+                      style={{
+                        background:
+                          'linear-gradient(90deg, color-mix(in srgb, var(--inv-accent) 68%, #000), var(--inv-accent), color-mix(in srgb, var(--inv-accent) 72%, #000))',
+                      }}
+                    />
+                    <span className="absolute left-1/2 top-1/2 grid size-20 -translate-x-1/2 -translate-y-1/2 place-items-center">
+                      <span className="absolute left-0 size-11 -translate-x-1/2 rotate-[28deg] rounded-[75%_25%_75%_25%] border border-[var(--inv-accent)]/70 bg-[var(--inv-accent)]/90 shadow-lg" />
+                      <span className="absolute right-0 size-11 translate-x-1/2 rotate-[-28deg] rounded-[25%_75%_25%_75%] border border-[var(--inv-accent)]/70 bg-[var(--inv-accent)]/90 shadow-lg" />
+                      <span className="relative size-7 rounded-full border border-[var(--inv-accent)]/80 bg-[var(--inv-accent)] shadow-md" />
+                    </span>
+                  </motion.button>
                 )}
 
                 {/* the pocket */}
                 <div
-                  className="absolute inset-0 z-[4] border border-[var(--inv-line)]/45"
+                  className={`absolute inset-0 z-[4] border border-[var(--inv-line)]/45 ${isRibbon ? 'opacity-0' : ''}`}
                   style={{
                     clipPath: 'polygon(0 100%, 0 22%, 50% 66%, 100% 22%, 100% 100%)',
                     background:
@@ -335,7 +345,7 @@ export function EnvelopeGate({
                 />
                 {/* the flap */}
                 <motion.div
-                  className="absolute inset-0 z-[6] border border-[var(--inv-line)]/35"
+                  className={`absolute inset-0 z-[6] border border-[var(--inv-line)]/35 ${isRibbon ? 'opacity-0' : ''}`}
                   style={{
                     clipPath: 'polygon(0 0, 100% 0, 50% 66%)',
                     background:
@@ -355,8 +365,8 @@ export function EnvelopeGate({
             ref={buttonRef}
             type="button"
             onClick={open}
-            aria-label="Break the seal and open the invitation"
-            className="absolute left-1/2 top-[52%] z-[8] grid h-[86px] w-[86px] -translate-x-1/2 -translate-y-1/2 place-items-center"
+            aria-label={isRibbon ? 'Draw the ribbon and open the invitation' : 'Break the seal and open the invitation'}
+            className={`absolute left-1/2 top-[52%] z-[8] grid h-[86px] w-[86px] -translate-x-1/2 -translate-y-1/2 place-items-center ${isRibbon ? 'pointer-events-none opacity-0' : ''}`}
             animate={opening ? { scale: 1.24, opacity: 0, filter: 'blur(6px)' } : { scale: 1, opacity: 1 }}
             transition={{ duration: 0.7, ease: EASE_SEAL }}
           >
