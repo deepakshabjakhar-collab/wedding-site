@@ -6,7 +6,7 @@ import { TemplateMark } from '@/templates/art';
 
 export function NotFound() {
   return (
-    <div className="texture-paper flex min-h-svh flex-col">
+    <div className="mkt-scope texture-paper flex min-h-svh flex-col">
       <MarketingNav />
       <main className="flex flex-1 items-center justify-center px-6 py-32">
         <div className="max-w-lg text-center">

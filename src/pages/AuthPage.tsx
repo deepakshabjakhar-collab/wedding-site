@@ -82,7 +82,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   };
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-[1.05fr_1fr]">
+    <div className="mkt-scope grid min-h-svh lg:grid-cols-[1.05fr_1fr]">
       <div className="relative hidden overflow-hidden bg-[#241d17] lg:block">
         <TemplateArt templateId="noir" className="absolute inset-0 h-full w-full text-[#c2a67d] opacity-40" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#150f0a] via-[#241d17]/70 to-[#241d17]/40" />

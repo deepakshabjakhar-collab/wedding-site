@@ -21,6 +21,7 @@
   --font-script: 'Pinyon Script', 'Italianno', cursive;
   --font-body-serif: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
   --font-gilded: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  --font-caps: 'Cinzel', 'Marcellus', Georgia, serif;
   --font-hand: 'Mrs Saint Delafield', 'Pinyon Script', cursive;
   --radius-soft: 1.75rem;
   --ease-silk: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -87,8 +88,9 @@ img {
 /* ------------------------------------------------------------------ */
 
 .eyebrow {
+  font-family: var(--font-caps);
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--color-muted);
@@ -99,6 +101,27 @@ img {
   letter-spacing: -0.015em;
   line-height: 1.02;
   font-weight: 400;
+}
+
+/* Marketing type voices — every word on the public site is set, never defaulted. */
+.mkt-scope {
+  font-family: var(--font-body-serif);
+}
+
+.mkt-scope .uppercase:not(.font-display):not(.display):not(.font-script):not(.inv-names) {
+  font-family: var(--font-caps);
+  font-weight: 500;
+}
+
+.mkt-caps {
+  font-family: var(--font-caps);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-weight: 500;
+}
+
+.mkt-scope :is(input, textarea)::placeholder {
+  font-style: italic;
 }
 
 .editorial {
@@ -123,10 +146,10 @@ img {
   border-radius: 999px;
   padding: 0.82rem 1.45rem;
   min-height: 46px;
-  font-family: var(--font-sans);
+  font-family: var(--font-caps);
   font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
   transition:
@@ -791,6 +814,22 @@ input[type='range']::-webkit-slider-thumb {
   letter-spacing: 0.3em;
 }
 
+/* Every small-caps label inside the invitation speaks in engraved capitals —
+   hero eyebrows, map links, photo counts, player pills, top bar, footer. */
+.invite-shell .uppercase:not(.inv-names):not(.inv-script):not(.font-display) {
+  font-family: var(--inv-caps);
+  font-weight: 500;
+}
+
+.invite-overlay {
+  font-family: var(--inv-body);
+}
+
+.invite-shell :is(input, textarea)::placeholder {
+  font-style: italic;
+  color: color-mix(in srgb, var(--inv-muted) 75%, transparent);
+}
+
 /* Ghost section numerals, Sponsalia-style: 01 · 02 · 03 … */
 .inv-index {
   font-family: var(--inv-display);
@@ -838,6 +877,25 @@ input[type='range']::-webkit-slider-thumb {
   font-weight: 500;
   line-height: 1.65;
   color: var(--inv-muted);
+}
+
+/* Section ledes are set as editorial italic — clearly a voice, never filler. */
+.inv-lede {
+  font-style: italic;
+  font-size: clamp(1.02rem, 2.9cqw, 1.16rem);
+  color: color-mix(in srgb, var(--inv-ink) 72%, var(--inv-muted));
+}
+
+/* Drop capitals for the welcome letter and the first story chapter. */
+.inv-dropcap::first-letter {
+  font-family: var(--inv-display);
+  font-style: normal;
+  font-size: 3.1em;
+  float: left;
+  line-height: 0.82;
+  padding-right: 0.14em;
+  padding-top: 0.05em;
+  color: var(--inv-accent);
 }
 
 .inv-section {

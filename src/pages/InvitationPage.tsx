@@ -9,7 +9,7 @@ import { Logo } from '@/components/ui/Misc';
 
 function GuestShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-svh place-items-center bg-[#191410] px-5 py-16 text-center">
+    <div className="mkt-scope grid min-h-svh place-items-center bg-[#191410] px-5 py-16 text-center">
       <div className="w-full max-w-md">
         <Logo tone="light" />
         <div className="mt-10 rounded-2xl border border-white/10 bg-[#241d18] p-7 text-[#f3e8d7] shadow-2xl">
@@ -23,7 +23,7 @@ function GuestShell({ children }: { children: React.ReactNode }) {
 
 function Loading() {
   return (
-    <div className="grid min-h-svh place-items-center bg-[#f6f1e7]">
+    <div className="mkt-scope grid min-h-svh place-items-center bg-[#f6f1e7]">
       <div className="flex flex-col items-center gap-5">
         <span className="grid h-16 w-16 place-items-center rounded-full border border-[#d8c9b5]">
           <span className="font-script text-[1.8rem] text-[#a9835b]">V</span>

@@ -49,7 +49,7 @@ export function ShareDialog({
         <div className="rounded-xl border border-line bg-paper p-3 shadow-sm">
           <QRCodeSVG value={url} size={150} bgColor="#fffdf8" fgColor="#211b16" level="M" />
         </div>
-        <p className="text-center text-xs leading-relaxed text-muted">
+        <p className="text-center font-body-serif text-[0.85rem] leading-relaxed text-muted">
           Scan to open, or send the link directly. {guestName ? 'This link is personal to their household.' : 'Anyone with this link can open the invitation.'}
         </p>
         <div className="flex w-full items-stretch gap-2">

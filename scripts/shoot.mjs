@@ -1,6 +1,7 @@
 /**
  * Takes showcase screenshots of the site with Playwright (runs in CI,
  * where a real Chromium is available). Usage: SHOOT_BASE=http://127.0.0.1:4173 node scripts/shoot.mjs
+ * Re-run any time the design changes to refresh screenshots/.
  */
 import fs from 'node:fs';
 import path from 'node:path';

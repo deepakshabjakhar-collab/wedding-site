@@ -54,7 +54,7 @@ export function TemplatePreviewPage() {
   };
 
   return (
-    <div className="relative">
+    <div className="mkt-scope relative">
       <InvitationExperience
         invitation={invitation}
         messages={[]}
