@@ -5,3 +5,4 @@ data/
 vite.config.js
 .freebuff/
 *.log
+.env
