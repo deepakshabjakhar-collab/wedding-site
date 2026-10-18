@@ -4,10 +4,8 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { MarketingNav } from '@/components/marketing/MarketingNav';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { Reveal } from '@/components/marketing/Reveal';
-import { TemplateArt, TemplateMark } from '@/templates/art';
+import { TemplateCard } from '@/components/marketing/TemplateCard';
 import { TEMPLATES } from '@/templates/registry';
-import { sampleInvitation } from '@/templates/samples';
-import { formatDateShort } from '@/lib/format';
 import { buttonClass } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { api, ApiError } from '@/lib/api';
@@ -103,51 +101,10 @@ export function TemplatesPage() {
         <section className="shell pb-20">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((template, index) => {
-              const sample = sampleInvitation(template.id);
               return (
                 <Reveal key={template.id} delay={Math.min(index * 0.04, 0.2)}>
                   <article className="group flex h-full flex-col">
-                    <Link
-                      to={`/templates/${template.id}`}
-                      className="template-card relative block aspect-[3/4] overflow-hidden"
-                      style={{ background: template.palette.deep }}
-                    >
-                      <TemplateArt
-                        templateId={template.id}
-                        className="absolute inset-0 h-full w-full text-[#d9b87b] opacity-80"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/5 to-black/80" />
-                      <div className="absolute inset-x-6 top-6 h-px bg-[#fcf5e8]/25" />
-                      <div className="relative flex h-full flex-col items-center justify-between p-7 text-center text-[#fcf5e8]">
-                        <span className="text-[0.5rem] font-semibold uppercase tracking-[0.3em] opacity-80">
-                          {template.descriptor}
-                        </span>
-                        <div>
-                          <p
-                            className={`text-[2.1rem] leading-[1.02] ${template.cover.namesCase === 'upper' ? 'uppercase' : ''}`}
-                            style={{ fontFamily: template.display, letterSpacing: template.cover.tracking }}
-                          >
-                            {sample.coupleA}
-                            <span
-                              className="mx-1 text-[1.6rem] italic"
-                              style={{ fontFamily: template.script, color: template.palette.accent }}
-                            >
-                              &amp;
-                            </span>
-                            {sample.coupleB}
-                          </p>
-                          <p className="mt-3 text-[0.5rem] font-semibold uppercase tracking-[0.22em] opacity-80">
-                            {formatDateShort(sample.weddingDate)} · {sample.location.split(',')[0]}
-                          </p>
-                        </div>
-                        <div>
-                          <TemplateMark templateId={template.id} className="mx-auto h-6 w-20 opacity-70" />
-                          <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/30 px-3 py-1.5 text-[0.55rem] uppercase tracking-[0.2em] opacity-0 transition group-hover:opacity-100">
-                            Open the live preview
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
+                    <TemplateCard template={template} cta="Open the live preview" />
 
                     <div className="mt-4 flex flex-1 flex-col">
                       <div className="flex items-start justify-between gap-3">

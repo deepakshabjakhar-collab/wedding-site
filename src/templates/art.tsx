@@ -6,7 +6,7 @@ interface ArtProps {
 }
 
 /* ------------------------------------------------------------------ */
-/* Aurelia — a quiet Italian arch                                      */
+/* Aurelia — a Roman keyline frame (rectilinear, no arches)            */
 /* ------------------------------------------------------------------ */
 
 export function AureliaArt({ className }: ArtProps) {
@@ -19,19 +19,49 @@ export function AureliaArt({ className }: ArtProps) {
         </radialGradient>
       </defs>
       <rect width="600" height="800" fill="url(#aurelia-glow)" />
-      <g stroke="currentColor" strokeWidth="1" opacity="0.55">
-        <path d="M96 780V400C96 251 187 152 300 152s204 99 204 248v380" />
-        <path d="M122 780V404c0-133 80-224 178-224s178 91 178 224v376" strokeWidth="0.6" opacity="0.7" />
+      {/* double keyline frame */}
+      <g stroke="currentColor" opacity="0.55">
+        <rect x="52" y="36" width="496" height="728" strokeWidth="1" />
+        <rect x="68" y="52" width="464" height="696" strokeWidth="0.6" opacity="0.8" />
       </g>
-      <g stroke="currentColor" strokeWidth="0.55" opacity="0.4">
-        <path d="M300 86v40M290 96h20" />
-        <path d="M300 152v46" strokeDasharray="1 7" />
-        <path d="M60 300h-28M568 300h28" />
+      {/* dentil rows, top and bottom */}
+      <g stroke="currentColor" strokeWidth="1" opacity="0.4">
+        {Array.from({ length: 25 }).map((_, i) => (
+          <g key={i}>
+            <path d={`M${104 + i * 16.5} 62v10`} />
+            <path d={`M${104 + i * 16.5} 728v10`} />
+          </g>
+        ))}
       </g>
+      {/* corner palmettes */}
+      {[
+        'translate(68 52)',
+        'translate(532 52) scale(-1 1)',
+        'translate(68 748) scale(1 -1)',
+        'translate(532 748) scale(-1 -1)',
+      ].map((transform) => (
+        <g key={transform} transform={transform} stroke="currentColor" strokeWidth="0.9" opacity="0.6">
+          <path d="M0 34V10Q0 0 10 0h24" />
+          <path d="M10 34V16q0-6 6-6h18" opacity="0.6" />
+          <path d="M17 17l6 6-6 6-6-6Z" />
+          <circle cx="17" cy="23" r="1.4" fill="currentColor" stroke="none" />
+        </g>
+      ))}
+      {/* inscription medallion */}
+      <g transform="translate(300 108)" stroke="currentColor" opacity="0.6">
+        <path d="M-196 0h160M36 0h160" strokeWidth="0.7" />
+        <path d="M0-14l14 14-14 14-14-14Z" strokeWidth="0.9" />
+        <circle r="2.4" fill="currentColor" stroke="none" />
+        <path d="M-28 0h8M20 0h8" strokeWidth="1" />
+      </g>
+      {/* cypress sprigs, drawn straight */}
       <g stroke="currentColor" strokeWidth="0.9" opacity="0.55" strokeLinecap="round">
-        <path d="M140 752c38-18 60-48 64-92M158 736c-14-16-16-34-6-50M171 716c17-8 28-23 30-43M184 688c-13-16-14-33-4-48" />
-        <path d="M460 752c-30-14-47-39-51-75M446 738c12-12 14-27 6-40M437 722c-14-6-23-19-24-35" />
-        <path d="M240 782c16-10 26-24 30-40M360 782c-16-10-26-24-30-40" />
+        <path d="M150 700V560M150 560l-14-18M150 560l14-18M150 596l-12-14M150 596l12-14M150 632l-12-14M150 632l12-14M150 668l-10-12M150 668l10-12" />
+        <path d="M450 700V560M450 560l-14-18M450 560l14-18M450 596l-12-14M450 596l12-14M450 632l-12-14M450 632l12-14M450 668l-10-12M450 668l10-12" />
+      </g>
+      <g transform="translate(300 690)" stroke="currentColor" strokeWidth="0.8" opacity="0.5">
+        <path d="M-60 0h120" />
+        <path d="M0-8l8 8-8 8-8-8Z" />
       </g>
       <g fill="currentColor" opacity="0.38">
         <circle cx="300" cy="34" r="2.4" />
@@ -168,7 +198,7 @@ export function MaisonArt({ className }: ArtProps) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Belgrave — a Georgian fanlight                                      */
+/* Belgrave — a Georgian door with pediment (no fanlight dome)         */
 /* ------------------------------------------------------------------ */
 
 export function BelgraveArt({ className }: ArtProps) {
@@ -191,27 +221,38 @@ export function BelgraveArt({ className }: ArtProps) {
         <path d="M154 340h392" strokeWidth="0.6" opacity="0.6" />
       </g>
 
-      {/* fanlight */}
-      <g transform="translate(350 300)" stroke="currentColor" fill="none">
-        <path d="M-132 0a132 132 0 0 1 264 0Z" strokeWidth="1.2" opacity="0.7" />
-        <path d="M-114 0a114 114 0 0 1 228 0" strokeWidth="0.6" opacity="0.6" />
-        <path d="M-92 0a92 92 0 0 1 184 0" strokeWidth="0.45" opacity="0.45" />
-        {Array.from({ length: 7 }).map((_, i) => {
-          const angle = Math.PI * (i / 6);
-          const x = Math.cos(angle) * 132;
-          const y = -Math.sin(angle) * 132;
-          return <path key={i} d={`M0 0L${x.toFixed(2)} ${y.toFixed(2)}`} strokeWidth="0.65" opacity="0.55" />;
-        })}
-        <path d="M-132 0h264" strokeWidth="0.8" opacity="0.6" />
-        <circle r="4" fill="currentColor" opacity="0.35" stroke="none" />
+      {/* rectangular transom window with muntin grid */}
+      <g transform="translate(350 252)" stroke="currentColor" fill="none">
+        <rect x="-118" y="-56" width="236" height="96" strokeWidth="1.1" opacity="0.7" />
+        <rect x="-106" y="-44" width="212" height="72" strokeWidth="0.55" opacity="0.55" />
+        <path d="M-36-56v96M36-56v96M-118-8h236" strokeWidth="0.65" opacity="0.55" />
+        <path d="M-118 52h236" strokeWidth="0.8" opacity="0.6" />
+        <circle r="3" fill="currentColor" opacity="0.4" stroke="none" />
       </g>
 
-      {/* keystone and pediment line */}
-      <g transform="translate(350 148)" stroke="currentColor" strokeWidth="0.8" opacity="0.6">
-        <path d="M-150 0h300" />
-        <path d="M-150 0l26-26h248l26 26" strokeWidth="0.55" />
-        <path d="M0 26V2" strokeWidth="0.6" />
-        <circle cy="-4" r="2.6" fill="currentColor" stroke="none" opacity="0.6" />
+      {/* triangular pediment with dentils and keystone */}
+      <g transform="translate(350 176)" stroke="currentColor" opacity="0.65">
+        <path d="M-168 0L0-72 168 0" strokeWidth="1" fill="none" />
+        <path d="M-168 0h336" strokeWidth="1.1" />
+        <path d="M-150-8L0-66l150 58" strokeWidth="0.5" opacity="0.6" />
+        {Array.from({ length: 13 }).map((_, i) => (
+          <path key={i} d={`M${-144 + i * 24} 0v10`} strokeWidth="0.9" opacity="0.55" />
+        ))}
+        <g transform="translate(0 -72)">
+          <rect x="-9" y="-16" width="18" height="22" strokeWidth="0.9" fill="none" />
+          <path d="M-5-16v22M5-16v22" strokeWidth="0.45" opacity="0.6" />
+          <circle cy="-22" r="2.4" fill="currentColor" stroke="none" opacity="0.7" />
+        </g>
+      </g>
+
+      {/* door panels */}
+      <g stroke="currentColor" strokeWidth="0.7" opacity="0.45">
+        <rect x="236" y="420" width="90" height="150" />
+        <rect x="374" y="420" width="90" height="150" />
+        <rect x="236" y="592" width="90" height="150" />
+        <rect x="374" y="592" width="90" height="150" />
+        <circle cx="350" cy="586" r="5" opacity="0.7" />
+        <circle cx="350" cy="586" r="1.6" fill="currentColor" stroke="none" />
       </g>
 
       {/* pilasters */}
@@ -368,7 +409,7 @@ export function CelesteArt({ className }: ArtProps) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Salento — sun, sea and citrus                                       */
+/* Salento — sun, sea and citrus in a keyline frame                    */
 /* ------------------------------------------------------------------ */
 
 export function SalentoArt({ className }: ArtProps) {
@@ -382,14 +423,24 @@ export function SalentoArt({ className }: ArtProps) {
         </linearGradient>
       </defs>
 
-      {/* arch */}
-      <g stroke="currentColor" strokeWidth="1.1" opacity="0.55">
-        <path d="M70 862V430c0-172 125-286 280-286s280 114 280 286v432" />
-        <path d="M92 862V434c0-160 114-266 258-266s258 106 258 266v428" strokeWidth="0.55" opacity="0.6" />
+      {/* keyline frame with corner diamonds */}
+      <g stroke="currentColor" opacity="0.55">
+        <rect x="48" y="48" width="604" height="804" strokeWidth="1.1" />
+        <rect x="64" y="64" width="572" height="772" strokeWidth="0.55" opacity="0.65" />
+      </g>
+      <g fill="currentColor" opacity="0.5">
+        {[
+          [48, 48],
+          [652, 48],
+          [48, 852],
+          [652, 852],
+        ].map(([x, y], i) => (
+          <path key={i} d={`M${x} ${y - 7}l7 7-7 7-7-7Z`} />
+        ))}
       </g>
 
       {/* sun */}
-      <g transform="translate(350 330)">
+      <g transform="translate(350 310)">
         <circle r="88" fill={`url(#sun-${uid})`} opacity="0.55" />
         <circle r="66" stroke="currentColor" strokeWidth="0.8" opacity="0.6" />
         {Array.from({ length: 24 }).map((_, i) => (
@@ -436,11 +487,11 @@ export function SalentoArt({ className }: ArtProps) {
 
       {/* tiled base */}
       <g stroke="currentColor" strokeWidth="0.7" opacity="0.35">
-        <path d="M210 858h280" />
+        <path d="M210 800h280" />
         {Array.from({ length: 9 }).map((_, i) => (
           <path
             key={i}
-            d={`M${222 + i * 32} 846l8 8-8 8-8-8Z`}
+            d={`M${222 + i * 32} 788l8 8-8 8-8-8Z`}
             fill="currentColor"
             fillOpacity="0.1"
           />
@@ -572,24 +623,38 @@ export function HeirloomArt({ className }: ArtProps) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Miel — hand-drawn joy                                               */
+/* Miel — hand-drawn joy in a stitched rectangular frame               */
 /* ------------------------------------------------------------------ */
 
 export function MielArt({ className }: ArtProps) {
   return (
     <svg viewBox="0 0 700 900" className={className} aria-hidden="true" fill="none">
-      {/* woven arch border */}
-      <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" opacity="0.6">
-        <path d="M84 854V460c0-158 119-278 266-278s266 120 266 278v394" />
-        <path
-          d="M84 854V460c0-158 119-278 266-278s266 120 266 278v394"
+      {/* stitched rectangular border */}
+      <g stroke="currentColor" strokeLinecap="round" opacity="0.6">
+        <rect x="64" y="64" width="572" height="772" strokeWidth="2.2" />
+        <rect
+          x="80"
+          y="80"
+          width="540"
+          height="740"
+          strokeWidth="5"
           strokeDasharray="1 16"
-          strokeWidth="6"
+          opacity="0.9"
         />
+      </g>
+      <g fill="currentColor" opacity="0.6">
+        {[
+          [64, 64],
+          [636, 64],
+          [64, 836],
+          [636, 836],
+        ].map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r="5" />
+        ))}
       </g>
 
       {/* sun */}
-      <g transform="translate(350 232)" stroke="#e6a23c" strokeWidth="2.4" strokeLinecap="round">
+      <g transform="translate(350 252)" stroke="#e6a23c" strokeWidth="2.4" strokeLinecap="round">
         <circle r="54" fill="#f7c873" fillOpacity="0.55" />
         {Array.from({ length: 10 }).map((_, i) => (
           <path key={i} d="M0-74v-14" transform={`rotate(${i * 36})`} />
@@ -641,18 +706,18 @@ export function MielArt({ className }: ArtProps) {
       {/* confetti */}
       <g stroke="none">
         {[
-          [168, 330, '#f2c14e'],
-          [540, 350, '#e07a5f'],
+          [168, 350, '#f2c14e'],
+          [540, 370, '#e07a5f'],
           [196, 470, '#c98bb9'],
           [520, 470, '#7f9a6c'],
           [150, 640, '#f2a6a0'],
           [560, 660, '#f2c14e'],
-          [250, 800, '#c98bb9'],
-          [470, 810, '#e07a5f'],
+          [250, 780, '#c98bb9'],
+          [470, 790, '#e07a5f'],
         ].map(([x, y, fill], i) => (
           <circle key={i} cx={x} cy={y} r={i % 2 ? 5 : 3.4} fill={String(fill)} opacity="0.8" />
         ))}
-        <path d="M188 380c8-10 18-10 24 0s-4 18-12 18" stroke="#e07a5f" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+        <path d="M188 400c8-10 18-10 24 0s-4 18-12 18" stroke="#e07a5f" strokeWidth="2.2" strokeLinecap="round" fill="none" />
         <path d="M530 570c10-8 20-4 22 6s-8 16-16 12" stroke="#5c3a56" strokeWidth="2" strokeLinecap="round" fill="none" />
       </g>
     </svg>
@@ -713,13 +778,13 @@ export function TemplateMark({ templateId, className }: { templateId: TemplateId
     case 'belgrave':
       return (
         <svg viewBox="0 0 120 40" {...common}>
-          <path d="M8 26h26M86 26h26" stroke="currentColor" strokeWidth="0.8" opacity="0.7" />
-          <g transform="translate(60 26)" stroke="currentColor" strokeWidth="0.8">
-            <path d="M-14 0a14 14 0 0 1 28 0Z" />
-            {[-60, -30, 0, 30, 60].map((deg) => (
-              <path key={deg} d="M0 0L-14 0" transform={`rotate(${deg})`} opacity="0.6" />
-            ))}
-            <path d="M-16 4h32" strokeWidth="0.6" />
+          <path d="M6 30h24M90 30h24" stroke="currentColor" strokeWidth="0.8" opacity="0.7" />
+          <g transform="translate(60 30)" stroke="currentColor" strokeWidth="0.9">
+            <path d="M-22 0L0-18 22 0" fill="none" />
+            <path d="M-22 0h44" strokeWidth="0.7" />
+            <rect x="-7" y="-6" width="14" height="6" strokeWidth="0.7" fill="none" />
+            <path d="M0-18v-4" strokeWidth="0.8" />
+            <circle cy="-25" r="1.4" fill="currentColor" stroke="none" />
           </g>
         </svg>
       );
@@ -776,4 +841,171 @@ export function TemplateMark({ templateId, className }: { templateId: TemplateId
     default:
       return null;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* The opening ceremony — seals, bows, corners and starfields          */
+/* ------------------------------------------------------------------ */
+
+/** A corner flourish for stationery cards: an L-shaped engraved scroll. */
+export function CornerFlourish({ className }: ArtProps) {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1" className={className} aria-hidden="true">
+      <path d="M2 46 C2 22 22 2 46 2" />
+      <path d="M9 46 C9 26 26 9 46 9" strokeOpacity="0.55" />
+      <circle cx="15" cy="15" r="1.7" fill="currentColor" stroke="none" />
+      <path d="M21 21 c4 -2.5 8.5 -2 10.5 2" strokeOpacity="0.8" />
+    </svg>
+  );
+}
+
+/** Deterministic starfield — the same sky on every render. */
+export function StarField({ className, count = 60 }: ArtProps & { count?: number }) {
+  const stars = Array.from({ length: count }).map((_, i) => {
+    const x = (i * 97.3 + 31.7) % 800;
+    const y = (i * 57.1 + 13.3) % 600;
+    const r = ((i * 7) % 3) * 0.5 + 0.6;
+    const o = 0.22 + ((i * 13) % 10) / 16;
+    return { x, y, r, o, sparkle: r > 1.3 };
+  });
+  return (
+    <svg viewBox="0 0 800 600" className={className} aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+      {stars.map((s, i) => (
+        <g key={i} fill="currentColor" opacity={s.o}>
+          <circle cx={s.x} cy={s.y} r={s.r} />
+          {s.sparkle && (
+            <path
+              d={`M${s.x} ${s.y - s.r * 4}l${s.r * 0.7} ${s.r * 3.3} ${s.r * 3.3} ${s.r * 0.7}-${s.r * 3.3} ${s.r * 0.7}-${s.r * 0.7} ${s.r * 3.3}-${s.r * 0.7}-${s.r * 3.3}-${s.r * 3.3}-${s.r * 0.7} ${s.r * 3.3}-${s.r * 0.7}Z`}
+              opacity="0.55"
+            />
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/**
+ * A wax seal stamped with the couple's monogram. When `cracked`, the two
+ * halves separate along a jagged fault line.
+ */
+export function WaxSeal({
+  monogram,
+  cracked,
+  className,
+}: {
+  monogram: string;
+  cracked?: boolean;
+  className?: string;
+}) {
+  const uid = useId().replace(/:/g, '');
+  const body = `M60 9 C85 9 107 30 109 57 C111 85 90 109 61 110 C31 111 10 88 10 60 C10 33 35 9 60 9 Z`;
+  const inner = `M60 21 C79 21 97 37 98 59 C99 81 82 98 61 99 C39 100 23 82 23 60 C23 38 41 21 60 21 Z`;
+  const fault = `M58 10l5 14-7 12 6 13-8 12 7 13-5 12 6 12-4 12`;
+  return (
+    <svg viewBox="0 0 120 120" className={className} aria-hidden="true">
+      <defs>
+        <radialGradient id={`wax-${uid}`} cx="38%" cy="30%" r="75%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.34" />
+          <stop offset="34%" stopColor="currentColor" stopOpacity="1" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.42" />
+        </radialGradient>
+        <clipPath id={`wax-l-${uid}`}>
+          <rect x="0" y="0" width="60" height="120" />
+        </clipPath>
+        <clipPath id={`wax-r-${uid}`}>
+          <rect x="60" y="0" width="60" height="120" />
+        </clipPath>
+      </defs>
+      {[`wax-l-${uid}`, `wax-r-${uid}`].map((clip, side) => (
+        <g
+          key={clip}
+          clipPath={`url(#${clip})`}
+          style={{
+            transform: cracked ? (side === 0 ? 'translate(-9px, 3px) rotate(-14deg)' : 'translate(9px, 3px) rotate(14deg)') : 'none',
+            transformBox: 'fill-box',
+            transformOrigin: 'center',
+            transition: 'transform 1.1s cubic-bezier(0.22, 0.61, 0.36, 1)',
+            opacity: cracked ? 0.92 : 1,
+          }}
+        >
+          <path d={body} fill={`url(#wax-${uid})`} style={{ color: 'inherit' }} />
+          <path d={body} fill="currentColor" opacity="0.85" />
+          <path d={inner} fill="none" stroke="#000" strokeOpacity="0.28" strokeWidth="1.4" />
+          <path d={inner} fill="none" stroke="#fff" strokeOpacity="0.2" strokeWidth="0.7" transform="translate(0 1)" />
+          <text
+            x="60"
+            y="72"
+            textAnchor="middle"
+            fontSize="30"
+            fill="#000"
+            fillOpacity="0.42"
+            style={{ fontFamily: 'var(--inv-script)' }}
+          >
+            {monogram}
+          </text>
+          <text
+            x="60"
+            y="70.5"
+            textAnchor="middle"
+            fontSize="30"
+            fill="#fff"
+            fillOpacity="0.32"
+            style={{ fontFamily: 'var(--inv-script)' }}
+          >
+            {monogram}
+          </text>
+        </g>
+      ))}
+      <ellipse cx="44" cy="38" rx="20" ry="11" fill="#fff" opacity={cracked ? 0 : 0.16} transform="rotate(-18 44 38)" style={{ transition: 'opacity 0.5s' }} />
+      <path
+        d={fault}
+        fill="none"
+        stroke="#000"
+        strokeOpacity="0.55"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+        opacity={cracked ? 1 : 0}
+        style={{ transition: 'opacity 0.25s' }}
+      />
+      <path
+        d={fault}
+        fill="none"
+        stroke="#fff"
+        strokeOpacity="0.3"
+        strokeWidth="0.8"
+        strokeLinejoin="round"
+        transform="translate(1.2 0)"
+        opacity={cracked ? 1 : 0}
+        style={{ transition: 'opacity 0.25s' }}
+      />
+    </svg>
+  );
+}
+
+/** A gold silk bow, tied around the invitation — loosens when opened. */
+export function GoldBow({ className }: ArtProps) {
+  const uid = useId().replace(/:/g, '');
+  const silk = `silk-${uid}`;
+  return (
+    <svg viewBox="0 0 120 92" className={className} aria-hidden="true">
+      <defs>
+        <linearGradient id={silk} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#f4e2ab" />
+          <stop offset="0.5" stopColor="#d5ae62" />
+          <stop offset="1" stopColor="#9a7434" />
+        </linearGradient>
+      </defs>
+      <path d="M58 44 C46 60 38 70 26 82 L44 84 C52 68 58 56 63 46 Z" fill={`url(#${silk})`} />
+      <path d="M62 44 C74 60 82 70 94 82 L76 84 C68 68 62 56 57 46 Z" fill={`url(#${silk})`} />
+      <path d="M60 38 C30 6 4 16 13 38 C19 55 44 52 60 41 Z" fill={`url(#${silk})`} />
+      <path d="M60 38 C90 6 116 16 107 38 C101 55 76 52 60 41 Z" fill={`url(#${silk})`} />
+      <path d="M60 38 C30 6 4 16 13 38" fill="none" stroke="#8a6a3c" strokeOpacity="0.4" />
+      <path d="M60 38 C90 6 116 16 107 38" fill="none" stroke="#8a6a3c" strokeOpacity="0.4" />
+      <path d="M60 38 C44 22 28 18 16 24 M60 38 C76 22 92 18 104 24" fill="none" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.4" />
+      <rect x="51" y="33" width="18" height="15" rx="5" fill={`url(#${silk})`} />
+      <rect x="51" y="33" width="18" height="15" rx="5" fill="none" stroke="#8a6a3c" strokeOpacity="0.4" />
+      <rect x="54" y="35.5" width="4" height="10" rx="2" fill="#fff" opacity="0.35" />
+    </svg>
+  );
 }

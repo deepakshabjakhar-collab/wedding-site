@@ -53,7 +53,16 @@ Standing rules for every agent/session working in this repo. Do not regress on t
 ## Design direction (brief)
 
 - Everything **ornate and fancy**: scripts, Didones, engraved/decorative capitals. No
-  default UI sans as a hero face, no stock photography, **no square/rectangular shapes** —
-  arches, locket ovals, scallops, wax seals.
-- Opening animation is the hero moment: seal break + bloom, with a bespoke sound effect
-  (`src/lib/openingSound.ts`).
+  default UI sans as a hero face, no stock photography. Stationery is **rectilinear**:
+  keyline frames, hairline rules, square corners — **no domes, arches or arched image
+  masks** (owner direction, 2026-10-18). Circles survive only as wax seals/monograms.
+- Small caps everywhere use the engraved `--inv-caps` face (Cinzel), never a plain sans.
+- Opening animation is the hero moment: an ~11s ceremony matched to the envelope —
+  wax-seal crack, ribbon untying, or curtains parting — scored by
+  `playCinematicOpening()` in `src/lib/openingSound.ts`. The gatefold **letter
+  animation lives only in Céleste** (also the only template with per-letter hero
+  names); every other template opens its own way.
+- Reference feel: sponsalia.app Villa Aurora — embroidered envelope, gold bow, numbered
+  sections, “Forever begins in” countdown. Fonts are served locally from
+  `public/fonts/` (see `scripts/fetch-fonts-npm.mjs`; Google Fonts is unreachable here,
+  Fontsource via npm is the source of truth).

@@ -133,20 +133,20 @@ export function InvitationExperience({
 
   const guestEventIds = guest?.invitedEventIds ?? [];
 
-  const renderSection = (section: string) => {
+  const renderSection = (section: string, position: number) => {
     switch (section) {
       case 'welcome':
-        return <Welcome key={section} data={data} theme={theme} />;
+        return <Welcome key={section} data={data} theme={theme} index={position} />;
       case 'story':
-        return <Story key={section} data={data} theme={theme} />;
+        return <Story key={section} data={data} theme={theme} index={position} />;
       case 'countdown':
-        return <CountdownSection key={section} data={data} theme={theme} />;
+        return <CountdownSection key={section} data={data} theme={theme} index={position} />;
       case 'schedule':
-        return <Schedule key={section} data={data} guestEventIds={guestEventIds} />;
+        return <Schedule key={section} data={data} guestEventIds={guestEventIds} index={position} />;
       case 'gallery':
-        return <GallerySection key={section} data={data} templateId={invitation.templateId} />;
+        return <GallerySection key={section} data={data} templateId={invitation.templateId} index={position} />;
       case 'details':
-        return <Details key={section} data={data} />;
+        return <Details key={section} data={data} theme={theme} index={position} />;
       case 'rsvp':
         return (
           <RsvpSection
@@ -158,6 +158,7 @@ export function InvitationExperience({
             token={guestToken}
             mode={mode}
             onSubmitted={setRsvp}
+            index={position}
           />
         );
       case 'messages':
@@ -170,11 +171,12 @@ export function InvitationExperience({
             token={guestToken}
             messages={messages}
             mode={mode}
+            index={position}
           />
         );
       case 'album':
         return (
-          <AlbumSection key={section} data={data} slug={invitation.slug} photos={photos} token={guestToken} mode={mode} />
+          <AlbumSection key={section} data={data} slug={invitation.slug} photos={photos} token={guestToken} mode={mode} index={position} />
         );
       case 'closing':
         return <Closing key={section} data={data} theme={theme} />;
@@ -206,7 +208,7 @@ export function InvitationExperience({
         data-layout={theme.layout}
       >
         <Hero data={data} theme={theme} guest={guest} mode={mode} />
-        {sections.map((section) => renderSection(section))}
+        {sections.map((section, i) => renderSection(section, i + 1))}
       </div>
 
       <div className="invite-overlay">
