@@ -2,17 +2,17 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-ivory: #f7f3ea;
-  --color-paper: #fffdf9;
-  --color-ink: #17130e;
-  --color-ink-soft: #3d3529;
-  --color-muted: #776a58;
-  --color-gold: #9d7b36;
-  --color-gold-light: #d8bd88;
-  --color-sage: #6f815c;
-  --color-rose: #bd8d84;
-  --color-burgundy: #4d1a26;
-  --color-line: #e0d4bf;
+  --color-ivory: #f8f7f4;
+  --color-paper: #fffefa;
+  --color-ink: #17171a;
+  --color-ink-soft: #3e3a3c;
+  --color-muted: #777174;
+  --color-gold: #8f6b52;
+  --color-gold-light: #d8c5b8;
+  --color-sage: #748276;
+  --color-rose: #b8898b;
+  --color-burgundy: #612c3a;
+  --color-line: #e6e1dd;
   /* Reference stack, lifted from sponsalia.app's own stylesheet:
      Cormorant Garamond + Playfair Display + Hanken Grotesk (+ Pinyon Script). */
   --font-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
@@ -420,9 +420,9 @@ input[type='range']::-webkit-slider-thumb {
 .texture-paper {
   background-color: var(--color-ivory);
   background-image:
-    radial-gradient(ellipse at 12% 6%, rgb(255 255 255 / 0.85), transparent 55%),
-    radial-gradient(ellipse at 92% 0%, rgb(213 194 164 / 0.22), transparent 45%),
-    radial-gradient(ellipse at 50% 100%, rgb(195 174 145 / 0.18), transparent 55%);
+    radial-gradient(ellipse at 15% 0%, rgb(255 255 255 / 0.96), transparent 52%),
+    radial-gradient(ellipse at 88% 12%, rgb(232 214 214 / 0.3), transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgb(224 215 213 / 0.18), transparent 58%);
 }
 
 .grain {

@@ -66,9 +66,9 @@ function Hero() {
         <div className="grid items-center gap-14 lg:grid-cols-[1.04fr_0.96fr] lg:gap-10">
           <div className="relative z-10">
             <Reveal>
-              <p className="eyebrow flex items-center gap-3">
-                <span className="h-px w-8 bg-gold/60" />
-                Digital wedding invitations
+                <p className="eyebrow flex items-center gap-3 text-burgundy">
+                <span className="h-px w-8 bg-burgundy/50" />
+                Emotion from the very first moment
               </p>
             </Reveal>
             <h1 className="hero-title mt-6 max-w-[11ch] text-ink">
@@ -79,7 +79,7 @@ function Hero() {
                   animate={{ y: '0%' }}
                   transition={{ duration: 1.15, ease: [0.22, 0.61, 0.36, 1], delay: 0.1 }}
                 >
-                  The invitation
+                  Your most beautiful
                 </motion.span>
               </span>
               <span className="block overflow-hidden pb-[0.06em]">
@@ -89,14 +89,14 @@ function Hero() {
                   animate={{ y: '0%' }}
                   transition={{ duration: 1.15, ease: [0.22, 0.61, 0.36, 1], delay: 0.26 }}
                 >
-                  they&rsquo;ll <em className="text-gold">keep.</em>
+                  invitation, <em className="text-burgundy">made personal.</em>
                 </motion.span>
               </span>
             </h1>
             <Reveal delay={0.18}>
               <p className="mt-7 max-w-[32rem] text-[0.98rem] leading-relaxed text-ink-soft sm:text-[1.05rem]">
-                A sealed envelope. A cinematic reveal. Your music, your story, every guest — in one
-                link that feels like it arrived by hand.
+                A digital invitation with the feeling of a keepsake. Your photos, your music, your
+                story, and every RSVP — beautifully together in one personal link.
               </p>
             </Reveal>
             <Reveal delay={0.26}>
