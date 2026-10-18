@@ -1081,9 +1081,68 @@ input[type='range']::-webkit-slider-thumb {
     box-shadow 0.4s var(--ease-silk);
 }
 
-.inv-seal:hover {
+  .inv-seal:hover {
   transform: scale(1.05) rotate(-2deg);
-}
+  }
+
+  /* The gate is a miniature theatre: a pool of light, a velvet floor and a
+     distinct envelope world for each invitation family. */
+  .inv-gate::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 31%;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent, rgb(0 0 0 / 0.28)),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--inv-accent) 12%, transparent) 0 1px, transparent 1px 52px);
+  transform: perspective(520px) rotateX(58deg) scale(1.45) translateY(20%);
+  transform-origin: bottom center;
+  opacity: 0.72;
+  }
+
+  .inv-gate::after {
+  content: '';
+  position: absolute;
+  width: min(72vw, 38rem);
+  height: min(72vw, 38rem);
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--inv-accent) 16%, transparent), transparent 67%);
+  filter: blur(10px);
+  opacity: 0.85;
+  }
+
+  .inv-gate-ribbon::before {
+  height: 38%;
+  background:
+    linear-gradient(180deg, transparent, rgb(38 10 19 / 0.46)),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--inv-accent) 18%, transparent) 0 2px, transparent 2px 46px),
+    linear-gradient(90deg, color-mix(in srgb, var(--inv-deep) 92%, #5b172a), var(--inv-deep), color-mix(in srgb, var(--inv-deep) 92%, #5b172a));
+  }
+
+  .inv-gate-curtain::before {
+  height: 40%;
+  background:
+    linear-gradient(180deg, transparent, rgb(0 0 0 / 0.55)),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 2px, transparent 2px 30px),
+    linear-gradient(90deg, var(--inv-deep), color-mix(in srgb, var(--inv-deep) 76%, var(--inv-accent)), var(--inv-deep));
+  }
+
+  .inv-gate-maison::after,
+  .inv-gate-miel::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--inv-accent) 24%, transparent), transparent 68%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+  .inv-gate::before,
+  .inv-gate::after {
+    transition: none;
+  }
+  }
 
 .inv-envelope {
   position: relative;

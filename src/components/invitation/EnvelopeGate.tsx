@@ -80,7 +80,7 @@ export function EnvelopeGate({
   const blooming = phase >= 4;
 
   return (
-    <div className={`inv-gate ${embedded ? 'inv-gate-embedded' : ''}`}>
+    <div className={`inv-gate inv-gate-${templateId} ${embedded ? 'inv-gate-embedded' : ''}`}>
       {/* the room: deep colour, artwork, and a bloom of light */}
       <motion.div
         className="pointer-events-none absolute inset-0"
@@ -164,7 +164,8 @@ export function EnvelopeGate({
 
         <span className="mt-3 block overflow-hidden">
           <motion.span
-            className="block font-[var(--inv-script)] text-[clamp(2.4rem,9vw,3.4rem)] leading-[1.05] text-[var(--inv-accent)]"
+            className="block text-[clamp(2.8rem,9vw,4rem)] leading-[1.05] text-[var(--inv-accent)]"
+            style={{ fontFamily: 'var(--inv-script)' }}
             initial={reduce ? false : { y: '108%' }}
             animate={{ y: '0%' }}
             transition={{ duration: 1.15, delay: 0.24, ease: EASE_SILK }}
@@ -195,13 +196,15 @@ export function EnvelopeGate({
               >
                 <div className="absolute inset-0 bg-[var(--inv-deep)]">
                   <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-                    <span className="font-[var(--inv-script)] text-[2.4rem] text-[var(--inv-accent)]">
+                    <span className="text-[2.4rem] text-[var(--inv-accent)]"
+                    style={{ fontFamily: 'var(--inv-script)' }}>
                       {data.monogram}
                     </span>
                     <span className="inv-label !text-[var(--inv-deep-ink)]/60">
                       {formatDateShort(data.weddingDate)}
                     </span>
-                    <span className="font-[var(--inv-display)] text-lg text-[var(--inv-deep-ink)]">
+                    <span className="text-lg text-[var(--inv-deep-ink)]"
+                      style={{ fontFamily: 'var(--inv-display)' }}>
                       {data.location}
                     </span>
                   </div>
@@ -264,11 +267,13 @@ export function EnvelopeGate({
                     ease: blooming ? EASE_SILK : EASE_SEAL,
                   }}
                 >
-                  <span className="font-[var(--inv-script)] text-[2.5rem] leading-none text-[var(--inv-accent)]">
+                  <span className="text-[2.5rem] leading-none text-[var(--inv-accent)]"
+                    style={{ fontFamily: 'var(--inv-script)' }}>
                     {data.monogram}
                   </span>
                   <span className="inv-label !text-[0.5rem]">The wedding of</span>
-                  <span className="font-[var(--inv-display)] text-[1.3rem] leading-tight text-[var(--inv-ink)]">
+                  <span className="text-[1.3rem] leading-tight text-[var(--inv-ink)]"
+                    style={{ fontFamily: 'var(--inv-display)' }}>
                     {data.coupleA} &amp; {data.coupleB}
                   </span>
                   <span className="h-px w-12 bg-[var(--inv-accent)]/50" />
@@ -350,7 +355,8 @@ export function EnvelopeGate({
                 }
                 transition={{ duration: 0.85, ease: EASE_SEAL }}
               >
-                <span className="font-[var(--inv-script)] text-[1.7rem] leading-none">
+                <span className="text-[1.7rem] leading-none"
+                style={{ fontFamily: 'var(--inv-script)' }}>
                   {data.monogram}
                 </span>
               </motion.span>
@@ -416,7 +422,8 @@ export function EnvelopeGate({
           </p>
         </motion.div>
 
-        <p className="mt-10 max-w-xs font-[var(--inv-body)] text-[0.72rem] leading-relaxed text-[var(--inv-deep-ink)]/40">
+        <p className="mt-10 max-w-xs text-[0.72rem] leading-relaxed text-[var(--inv-deep-ink)]/40"
+          style={{ fontFamily: 'var(--inv-body)' }}>
           {data.tagline}
         </p>
       </div>
