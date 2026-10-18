@@ -55,7 +55,7 @@ export const FONT_STACKS = {
   cinzel: "'Cinzel', 'Marcellus', Georgia, serif",
   cinzelDecorative: "'Cinzel Decorative', 'Cinzel', Georgia, serif",
   fraunces: "'Fraunces', 'Playfair Display', Georgia, serif",
-  josefin: "'Josefin Sans', 'Jost', sans-serif",
+  josefin: "'Hanken Grotesk', 'Josefin Sans', 'Jost', sans-serif",
   jost: "'Jost', 'Josefin Sans', sans-serif",
   pinyon: "'Pinyon Script', 'Snell Roundhand', cursive",
   allura: "'Allura', 'Italianno', cursive",

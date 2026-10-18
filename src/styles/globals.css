@@ -1140,9 +1140,94 @@ input[type='range']::-webkit-slider-thumb {
   @media (prefers-reduced-motion: reduce) {
   .inv-gate::before,
   .inv-gate::after {
-    transition: none;
+  transition: none;
   }
   }
+
+/* Sponsalia-inspired stationery treatment: the invitation should feel printed,
+   not assembled from app panels. */
+.invite-root {
+  background-image:
+    radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--inv-accent-soft) 34%, transparent), transparent 44%),
+    linear-gradient(180deg, color-mix(in srgb, var(--inv-bg) 92%, #fff), var(--inv-bg));
+}
+
+.inv-hero {
+  isolation: isolate;
+  min-height: min(100svh, 56rem);
+}
+
+.inv-hero::after {
+  content: '';
+  position: absolute;
+  inset: 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 30%, transparent);
+  border-radius: 999px 999px 1.5rem 1.5rem;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.inv-hero-inner {
+  padding-bottom: clamp(3.5rem, 9cqw, 7rem);
+}
+
+.inv-names {
+  font-weight: 400;
+  text-shadow: 0 2px 26px rgb(0 0 0 / 0.12);
+}
+
+.inv-section {
+  background-color: color-mix(in srgb, var(--inv-bg) 96%, #fff);
+  background-image: linear-gradient(135deg, color-mix(in srgb, var(--inv-accent-soft) 18%, transparent), transparent 32%);
+}
+
+.inv-section + .inv-section {
+  border-top: 1px solid color-mix(in srgb, var(--inv-line) 72%, transparent);
+}
+
+.inv-section-divider {
+  margin-block: 0.5rem;
+}
+
+.inv-detail-card,
+.inv-event-row {
+  background: color-mix(in srgb, var(--inv-surface) 76%, transparent);
+  border-color: color-mix(in srgb, var(--inv-line) 70%, transparent);
+  box-shadow: 0 20px 50px -40px rgb(42 27 17 / 0.5);
+}
+
+.inv-gate {
+  background:
+    radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--inv-accent) 13%, transparent), transparent 42%),
+    var(--inv-deep);
+}
+
+.inv-gate > .relative {
+  max-width: 42rem;
+}
+
+.inv-gate .inv-label {
+  font-family: var(--inv-body);
+  letter-spacing: 0.34em;
+}
+
+.inv-gate .inv-btn {
+  min-height: 3.25rem;
+  padding-inline: 2rem;
+  letter-spacing: 0.22em;
+  box-shadow: 0 18px 45px -22px color-mix(in srgb, var(--inv-accent) 80%, #000);
+}
+
+.inv-gate-maison .inv-gate-card,
+.inv-gate-miel .inv-gate-card {
+  filter: drop-shadow(0 32px 60px rgb(0 0 0 / 0.32));
+}
+
+@media (max-width: 640px) {
+  .inv-hero::after { inset: 0.75rem; }
+  .inv-hero { min-height: 100svh; }
+}
+
 
 .inv-envelope {
   position: relative;
