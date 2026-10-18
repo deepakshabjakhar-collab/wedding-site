@@ -51,7 +51,7 @@ export function EnvelopeGate({ data, templateId, guestName, onOpen, onIntent, em
     };
     const envelope = data.settings.envelopeAnimation;
     const isCurtain = envelope === 'curtain';
-    const isRibbon = envelope === 'ribbon';
+    const isRibbon = envelope === 'ribbon' || templateId === 'maison';
     const opening2 = phase >= 2;
     const rising = phase >= 3;
     const blooming = phase >= 4;

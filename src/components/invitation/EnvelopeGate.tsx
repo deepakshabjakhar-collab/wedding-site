@@ -73,7 +73,7 @@ export function EnvelopeGate({
 
   const envelope = data.settings.envelopeAnimation;
   const isCurtain = envelope === 'curtain';
-  const isRibbon = envelope === 'ribbon';
+  const isRibbon = envelope === 'ribbon' || templateId === 'maison';
 
   const opening2 = phase >= 2;
   const rising = phase >= 3;
@@ -236,26 +236,37 @@ export function EnvelopeGate({
               </div>
             </div>
           ) : (
-            <div className="mx-auto w-[78%] max-w-[22rem]" style={{ perspective: '1200px' }}>
-              <div className="relative aspect-[3/4.2] overflow-visible">
+            <div className={`mx-auto ${isRibbon ? 'w-[92%] max-w-[30rem]' : 'w-[78%] max-w-[22rem]'}`} style={{ perspective: '1200px' }}>
+              <div className={`relative ${isRibbon ? 'aspect-[1.42/1]' : 'aspect-[3/4.2]'} overflow-visible`}>
                 <motion.div
-                  className={`sponsalia-envelope-art absolute inset-0 z-[2] overflow-hidden rounded-[1.1rem] shadow-[0_44px_90px_-36px_rgba(0,0,0,0.75)] ${isRibbon ? 'rounded-none' : ''}`}
+                  className={`sponsalia-envelope-art absolute inset-0 z-[2] overflow-hidden shadow-[0_44px_90px_-36px_rgba(0,0,0,0.75)] ${isRibbon ? 'rounded-[0.12rem]' : 'rounded-[1.1rem]'}`}
                   animate={opening2 ? { scale: 1.02, filter: 'brightness(1.04)' } : { scale: 1, filter: 'brightness(1)' }}
                   transition={{ duration: 1.05, ease: EASE_SILK }}
                 >
-                  <img
-                    src="/images/villa-aurora-envelope.png"
-                    alt="An ornate floral wedding invitation tied with a gold ribbon"
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-x-[8%] top-[17%] flex min-h-[4.4rem] items-center justify-center bg-[#f8f1df]/95 px-3 text-center shadow-[0_8px_18px_-12px_rgba(41,27,15,0.8)]">
-                    <span className="text-[clamp(1.5rem,5vw,2.15rem)] text-[#46372a]" style={{ fontFamily: 'var(--inv-script)' }}>
-                      {data.coupleA} &amp; {data.coupleB}
-                    </span>
-                  </div>
-                  <div className="absolute inset-x-0 bottom-[8%] text-center text-[0.57rem] font-semibold uppercase tracking-[0.42em] text-[#4d4034]/80">
-                    Tap to open
-                  </div>
+                  {isRibbon ? (
+                    <div className="absolute inset-0 bg-[#f7efdf]">
+                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#fffaf0,transparent_62%),linear-gradient(135deg,#efe2ca,#fffaf0_48%,#ead9bc)]" />
+                      <div className="absolute inset-[4%] border border-[#b58b55]/35" />
+                      <div className="absolute inset-x-0 top-0 h-[18%] bg-[#eadbc2] [clip-path:polygon(0_0,100%_0,50%_100%)]" />
+                      <div className="absolute inset-x-0 bottom-0 h-[22%] bg-[#eadbc2] [clip-path:polygon(0_100%,0_0,50%_58%,100%_0,100%_100%)]" />
+                      <div className="absolute inset-y-0 left-1/2 z-[2] w-[7%] -translate-x-1/2 bg-[linear-gradient(90deg,#8e6235,#d4a866_45%,#a87540)] shadow-[0_0_18px_rgba(95,55,20,0.28)]" />
+                      <div className="absolute inset-x-0 top-1/2 z-[2] h-[9%] -translate-y-1/2 bg-[linear-gradient(180deg,#9b6b39,#d7ad6c_48%,#936237)] shadow-[0_0_18px_rgba(95,55,20,0.28)]" />
+                      <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center px-8 text-center">
+                        <span className="text-[2.1rem] text-[#9a713e]" style={{ fontFamily: 'var(--inv-script)' }}>{data.monogram}</span>
+                        <span className="mt-2 text-[0.52rem] font-semibold uppercase tracking-[0.34em] text-[#7b5c37]">The wedding of</span>
+                        <span className="mt-1 text-[clamp(1.65rem,6vw,2.5rem)] text-[#3e3024]" style={{ fontFamily: 'var(--inv-display)' }}>{data.coupleA} &amp; {data.coupleB}</span>
+                        <span className="mt-3 h-px w-16 bg-[#b58b55]/60" />
+                        <span className="mt-2 text-[0.5rem] font-semibold uppercase tracking-[0.28em] text-[#7b5c37]">Draw the ribbon to open</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <img src="/images/villa-aurora-envelope.png" alt="An ornate floral wedding invitation tied with a gold ribbon" className="h-full w-full object-cover" />
+                      <div className="absolute inset-x-[8%] top-[17%] flex min-h-[4.4rem] items-center justify-center bg-[#f8f1df]/95 px-3 text-center shadow-[0_8px_18px_-12px_rgba(41,27,15,0.8)]">
+                        <span className="text-[clamp(1.5rem,5vw,2.15rem)] text-[#46372a]" style={{ fontFamily: 'var(--inv-script)' }}>{data.coupleA} &amp; {data.coupleB}</span>
+                      </div>
+                    </>
+                  )}
                 </motion.div>
                 <motion.div
                   className="absolute inset-0 z-[1] rounded-[1.1rem] bg-[var(--inv-surface)]"
