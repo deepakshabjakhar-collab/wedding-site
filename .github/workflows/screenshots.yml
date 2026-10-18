@@ -2,6 +2,11 @@ name: screenshots
 
 on:
   workflow_dispatch:
+  push:
+    branches: [arena/c81c8ef1-wedding-site]
+    paths:
+      - scripts/shoot.mjs
+      - .github/workflows/screenshots.yml
 
 jobs:
   shoot:
