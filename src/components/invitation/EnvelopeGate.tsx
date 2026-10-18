@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Music2, Volume2 } from 'lucide-react';
-import { TemplateArt } from '@/templates/art';
-import type { TemplateId } from '@/templates/types';
+import { Music2 } from 'lucide-react';
 import type { InvitationData } from '@shared/types';
-import { formatDateShort } from '@/lib/format';
+import { getTemplate } from '@/templates/registry';
 import { playOpeningSound, type OpeningSoundHandle } from '@/lib/openingSound';
 
 const EASE_SILK = [0.22, 0.61, 0.36, 1] as const;
-const EASE_SEAL = [0.16, 0.84, 0.24, 1] as const;
+const EASE_DOOR = [0.65, 0, 0.2, 1] as const;
+const EASE_EXPAND = [0.76, 0, 0.24, 1] as const;
 
-/** An arch — nothing in this sequence is allowed to be a plain rectangle. */
-const ARCH_TOP = '0.75rem 0.75rem 0.75rem 0.75rem';
+/** Cover artwork is 768 x 1376. */
+const CARD_RATIO = 768 / 1376;
 
 export function EnvelopeGate({
   data,
@@ -29,17 +28,23 @@ export function EnvelopeGate({
   embedded?: boolean;
 }) {
   const reduce = useReducedMotion();
-  const [opening, setOpening] = useState(false);
+  const template = getTemplate(templateId);
+  const { gate, hero, gateBg, gateInk } = template.art;
+  const upper = template.cover.namesCase === 'upper';
+
   const [phase, setPhase] = useState(0);
+  const [coverScale, setCoverScale] = useState(1);
+  const gateRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const timers = useRef<number[]>([]);
   const sound = useRef<OpeningSoundHandle | null>(null);
   const started = useRef(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => buttonRef.current?.focus({ preventScroll: true }), 250);
+    const focusTimer = window.setTimeout(() => buttonRef.current?.focus({ preventScroll: true }), 250);
     return () => {
-      window.clearTimeout(timer);
+      window.clearTimeout(focusTimer);
       timers.current.forEach((id) => window.clearTimeout(id));
       sound.current?.release(400);
     };
@@ -58,420 +63,263 @@ export function EnvelopeGate({
       return;
     }
 
-    setOpening(true);
+    const gateBox = gateRef.current?.getBoundingClientRect();
+    const cardBox = cardRef.current?.getBoundingClientRect();
+    if (gateBox && cardBox) {
+      setCoverScale(Math.max(gateBox.width / cardBox.width, gateBox.height / cardBox.height) * 1.03);
+    }
+
     const schedule: [number, number][] = [
-      [700, 1], // let the invitation settle before the seal cracks
-      [1500, 2], // the flap lifts slowly
-      [2700, 3], // the card rises clear of the envelope
-      [4100, 4], // the letter opens into the invitation
+      [60, 1], // the card lifts and catches the light
+      [1600, 2], // the gatefold swings open
+      [5000, 3], // the scene steps forward and fills the screen
     ];
     schedule.forEach(([delay, next]) => {
       timers.current.push(window.setTimeout(() => setPhase(next), delay));
     });
-    timers.current.push(window.setTimeout(onOpen, 5900));
+    timers.current.push(window.setTimeout(onOpen, 7000));
   };
 
-  const envelope = data.settings.envelopeAnimation;
-  const isCurtain = envelope === 'curtain';
-  const isCeleste = templateId === 'celeste';
-  const isRibbon = envelope === 'ribbon' || templateId === 'maison';
+  const lifted = phase >= 1;
+  const doorsOpen = phase >= 2;
+  const expanding = phase >= 3;
 
-  const opening2 = phase >= 2;
-  const rising = phase >= 3;
-  const blooming = phase >= 4;
+  const names = `${data.coupleA} & ${data.coupleB}`;
 
   return (
-    <div className={`inv-gate inv-gate-${templateId} ${embedded ? 'inv-gate-embedded' : ''}`}>
-      {/* the room: deep colour, artwork, and a bloom of light */}
-      <motion.div
+    <div
+      ref={gateRef}
+      className={`inv-gate inv-gate-${templateId} ${embedded ? 'inv-gate-embedded' : ''}`}
+      style={{ background: gateBg, color: gateInk }}
+    >
+      <div
         className="pointer-events-none absolute inset-0"
-        initial={false}
-        animate={
-          reduce
-            ? { opacity: 1 }
-            : { scale: blooming ? 1.08 : 1, opacity: blooming ? 0.15 : 1, filter: blooming ? 'blur(6px)' : 'blur(0px)' }
-        }
-        transition={{ duration: 1.1, ease: EASE_SILK }}
-      >
-        <div className="absolute inset-0" style={{ background: 'var(--inv-deep)' }} />
-        <div className="absolute inset-0 opacity-30">
-          <TemplateArt
-            templateId={templateId as TemplateId}
-            className="h-full w-full text-[var(--inv-accent)]"
-          />
-        </div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_34%,rgba(255,236,201,0.14),transparent_64%)]" />
-        <div className="absolute inset-0 grain opacity-60" />
-      </motion.div>
-
-      {/* light sweeping outward as the card opens */}
-      <motion.div
-        className="pointer-events-none absolute inset-0"
-        aria-hidden="true"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: blooming && !reduce ? 1 : 0 }}
-        transition={{ duration: 0.7, ease: EASE_SILK }}
         style={{
-          background:
-            'radial-gradient(52% 42% at 50% 46%, rgba(255,246,224,0.95), rgba(255,236,201,0.35) 42%, rgba(255,236,201,0) 74%)',
+          background: `radial-gradient(ellipse at 50% 38%, color-mix(in srgb, ${gateInk} 10%, transparent), transparent 62%)`,
         }}
       />
 
-      {/* gold dust, drifting up the whole time */}
       {!reduce && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          {Array.from({ length: 22 }).map((_, i) => {
-            const left = (i * 37) % 100;
-            const delay = (i % 7) * 0.42;
-            const size = 1.4 + (i % 4) * 0.9;
-            return (
-              <motion.span
-                key={i}
-                className="absolute rounded-full"
-                style={{
-                  left: `${left}%`,
-                  width: size,
-                  height: size,
-                  background: 'var(--inv-accent)',
-                }}
-                initial={{ y: '102vh', opacity: 0 }}
-                animate={{ y: '-8vh', opacity: [0, 0.75, 0] }}
-                transition={{ duration: 9 + (i % 5) * 1.6, delay, repeat: Infinity, ease: 'linear' }}
-              />
-            );
-          })}
+          {Array.from({ length: 14 }).map((_, i) => (
+            <motion.span
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                left: `${(i * 41 + 7) % 100}%`,
+                width: 2 + (i % 3),
+                height: 2 + (i % 3),
+                background: gateInk,
+              }}
+              initial={{ y: '104vh', opacity: 0 }}
+              animate={{ y: '-6vh', opacity: [0, 0.35, 0] }}
+              transition={{ duration: 12 + (i % 5) * 2, delay: (i % 6) * 0.9, repeat: Infinity, ease: 'linear' }}
+            />
+          ))}
         </div>
       )}
 
       {!embedded && (
-        <button
+        <motion.button
           type="button"
           onClick={open}
-          className="absolute right-4 top-4 z-30 rounded-full border border-[var(--inv-deep-ink)]/20 px-4 py-2 text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-[var(--inv-deep-ink)]/65 transition hover:border-[var(--inv-accent)] hover:text-[var(--inv-deep-ink)] sm:right-6 sm:top-6"
+          className="absolute right-4 top-4 z-30 rounded-full border px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.24em] transition hover:opacity-100 sm:right-6 sm:top-6"
+          style={{ borderColor: `color-mix(in srgb, ${gateInk} 35%, transparent)`, color: gateInk, opacity: 0.75, fontFamily: 'var(--inv-body)' }}
+          animate={{ opacity: started.current ? 0 : 0.75 }}
         >
-          Skip the theatre
-        </button>
+          Skip
+        </motion.button>
       )}
 
-      <div className="relative z-10 flex w-full max-w-[34rem] flex-col items-center px-6 py-16 text-center">
+      <div className="relative z-10 flex h-full w-full flex-col items-center justify-center px-4 py-6">
         <motion.p
-          className="inv-label !text-[var(--inv-deep-ink)]/55"
-          initial={reduce ? false : { opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.15, ease: EASE_SILK }}
+          className="mb-4 min-h-[1.25rem] text-center text-[0.74rem] font-semibold uppercase tracking-[0.34em]"
+          style={{ fontFamily: 'var(--inv-body)', color: gateInk }}
+          initial={reduce ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: lifted ? 0 : 0.8, y: 0 }}
+          transition={{ duration: 0.8, delay: lifted ? 0 : 0.3, ease: EASE_SILK }}
         >
-          You are warmly invited
+          {guestName && data.settings.showGuestName ? `For ${guestName}` : 'You are invited'}
         </motion.p>
 
-        <span className="mt-3 block overflow-hidden">
-          <motion.span
-            className={`block text-[clamp(2.8rem,9vw,4rem)] leading-[1.05] text-[var(--inv-accent)] ${isCeleste ? 'tracking-[-0.035em]' : ''}`}
-            style={{ fontFamily: isCeleste ? 'var(--inv-display)' : 'var(--inv-script)' }}
-            initial={reduce ? false : { y: '108%' }}
-            animate={{ y: '0%' }}
-            transition={{ duration: 1.15, delay: 0.24, ease: EASE_SILK }}
-          >
-            {guestName && data.settings.showGuestName ? guestName : `${data.coupleA} & ${data.coupleB}`}
-          </motion.span>
-        </span>
-
-        {/* the envelope, opening */}
         <motion.div
-          className="relative mt-9 w-full"
+          ref={cardRef}
+          className="relative"
+          style={{
+            width: embedded ? 'auto' : `min(90vw, calc(min(76svh, 52rem) * ${CARD_RATIO}))`,
+            height: embedded ? '76%' : undefined,
+            aspectRatio: '768 / 1376',
+            perspective: '1800px',
+            containerType: 'inline-size',
+          }}
+          initial={reduce ? false : { opacity: 0, y: 26, scale: 0.97 }}
           animate={
-            reduce
-              ? {}
-              : {
-                  y: blooming ? -26 : rising ? -12 : 0,
-                  scale: blooming ? 1.16 : 1,
-                  opacity: blooming ? 0 : 1,
-                }
+            expanding
+              ? { opacity: 1, y: 0, scale: coverScale }
+              : { opacity: 1, y: 0, scale: lifted ? 1.03 : 1 }
           }
-          transition={{ duration: 0.9, ease: EASE_SILK }}
+          transition={
+            expanding
+              ? { duration: 1.9, ease: EASE_EXPAND }
+              : { duration: lifted ? 1.4 : 1.2, ease: EASE_SILK }
+          }
         >
-          {isCurtain ? (
-            <div className="relative mx-auto w-[78%] max-w-[19rem]">
-              <div
-                className="relative aspect-[3/4.2] overflow-hidden border border-[var(--inv-line)]/30 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.65)]"
-                style={{ borderRadius: ARCH_TOP }}
+          <div
+            className="absolute inset-0 transition-shadow duration-[1400ms]"
+            style={{
+              boxShadow: lifted && !expanding ? '0 70px 120px -50px rgba(0,0,0,0.6)' : '0 40px 80px -50px rgba(0,0,0,0.4)',
+            }}
+            aria-hidden="true"
+          />
+
+          {/* the scene inside, waiting behind the doors */}
+          <motion.div
+            className="absolute inset-0 z-[1] overflow-hidden"
+            initial={false}
+            animate={{ filter: doorsOpen ? 'brightness(1)' : 'brightness(0.45)' }}
+            transition={{ duration: 2.6, ease: EASE_SILK }}
+          >
+            <img src={hero} alt="" className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/45" />
+            <motion.div
+              className="absolute inset-x-0 top-[33%] flex flex-col items-center px-[8%] text-center text-[#fdf7ea]"
+              initial={false}
+              animate={{ opacity: doorsOpen && !expanding ? 1 : 0, y: doorsOpen && !expanding ? 0 : 14 }}
+              transition={{ duration: expanding ? 0.5 : 1.4, delay: doorsOpen && !expanding ? 1.3 : 0, ease: EASE_SILK }}
+            >
+              <span
+                className={`block leading-[0.98] ${upper ? 'uppercase' : ''}`}
+                style={{
+                  fontFamily: 'var(--inv-display)',
+                  fontSize: '13cqw',
+                  letterSpacing: template.cover.tracking,
+                  textShadow: '0 2px 26px rgba(0,0,0,0.4)',
+                }}
               >
-                <div className="absolute inset-0 bg-[var(--inv-deep)]">
-                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-                    <span className="text-[2.4rem] text-[var(--inv-accent)]"
-                    style={{ fontFamily: 'var(--inv-script)' }}>
-                      {data.monogram}
-                    </span>
-                    <span className="inv-label !text-[var(--inv-deep-ink)]/60">
-                      {formatDateShort(data.weddingDate)}
-                    </span>
-                    <span className="text-lg text-[var(--inv-deep-ink)]"
-                      style={{ fontFamily: 'var(--inv-display)' }}>
-                      {data.location}
-                    </span>
-                  </div>
-                </div>
-                {[
-                  { side: 'left', from: 0, to: '-108%', radius: '52% 0 0 40% / 34% 0 0 30%' },
-                  { side: 'right', from: 1, to: '108%', radius: '0 52% 40% 0 / 0 34% 30% 0' },
-                ].map((panel) => (
-                  <motion.div
-                    key={panel.side}
-                    className="absolute inset-y-0 w-1/2"
-                    style={{
-                      [panel.side]: 0,
-                      borderRadius: panel.radius,
-                      background:
-                        'linear-gradient(180deg, color-mix(in srgb, var(--inv-surface) 96%, #fff), color-mix(in srgb, var(--inv-surface) 88%, var(--inv-line)))',
-                    }}
-                    animate={{ x: opening2 ? panel.to : '0%', rotate: opening2 ? (panel.from ? 6 : -6) : 0 }}
-                    transition={{ duration: 1.15, ease: EASE_SILK, delay: opening2 ? 0.05 : 0 }}
-                  >
-                    <div className="absolute inset-0 opacity-25">
-                      <TemplateArt
-                        templateId={templateId as TemplateId}
-                        className="h-full w-full text-[var(--inv-accent)]"
-                      />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className={`mx-auto ${isRibbon ? 'w-[92%] max-w-[30rem]' : 'w-[78%] max-w-[22rem]'}`} style={{ perspective: '1200px' }}>
-              <div className={`relative ${isRibbon ? 'aspect-[1.42/1]' : 'aspect-[3/4.2]'} overflow-visible`}>
-                <motion.div
-                  className={`sponsalia-envelope-art absolute inset-0 z-[2] overflow-hidden shadow-[0_44px_90px_-36px_rgba(0,0,0,0.75)] ${isRibbon ? 'rounded-[0.12rem]' : 'rounded-[1.1rem]'}`}
-                  animate={opening2 ? { scale: 1.02, filter: 'brightness(1.04)' } : { scale: 1, filter: 'brightness(1)' }}
-                  transition={{ duration: 1.05, ease: EASE_SILK }}
-                >
-                  {isRibbon ? (
-                    <div className="absolute inset-0 bg-[#f7efdf]">
-                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#fffaf0,transparent_62%),linear-gradient(135deg,#efe2ca,#fffaf0_48%,#ead9bc)]" />
-                      <div className="absolute inset-[4%] border border-[#b58b55]/35" />
-                      <div className="absolute inset-x-0 top-0 h-[18%] bg-[#eadbc2] [clip-path:polygon(0_0,100%_0,50%_100%)]" />
-                      <div className="absolute inset-x-0 bottom-0 h-[22%] bg-[#eadbc2] [clip-path:polygon(0_100%,0_0,50%_58%,100%_0,100%_100%)]" />
-                      <div className="absolute inset-y-0 left-1/2 z-[2] w-[7%] -translate-x-1/2 bg-[linear-gradient(90deg,#8e6235,#d4a866_45%,#a87540)] shadow-[0_0_18px_rgba(95,55,20,0.28)]" />
-                      <div className="absolute inset-x-0 top-1/2 z-[2] h-[9%] -translate-y-1/2 bg-[linear-gradient(180deg,#9b6b39,#d7ad6c_48%,#936237)] shadow-[0_0_18px_rgba(95,55,20,0.28)]" />
-                      <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center px-8 text-center">
-                        <span className="text-[2.1rem] text-[#9a713e]" style={{ fontFamily: 'var(--inv-script)' }}>{data.monogram}</span>
-                        <span className="mt-2 text-[0.52rem] font-semibold uppercase tracking-[0.34em] text-[#7b5c37]">The wedding of</span>
-                        <span className="mt-1 text-[clamp(1.65rem,6vw,2.5rem)] text-[#3e3024]" style={{ fontFamily: 'var(--inv-display)' }}>{data.coupleA} &amp; {data.coupleB}</span>
-                        <span className="mt-3 h-px w-16 bg-[#b58b55]/60" />
-                        <span className="mt-2 text-[0.5rem] font-semibold uppercase tracking-[0.28em] text-[#7b5c37]">Draw the ribbon to open</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <img src="/images/villa-aurora-envelope.png" alt="An ornate floral wedding invitation tied with a gold ribbon" className="h-full w-full object-cover" />
-                      <div className="absolute inset-x-[8%] top-[17%] flex min-h-[4.4rem] items-center justify-center bg-[#f8f1df]/95 px-3 text-center shadow-[0_8px_18px_-12px_rgba(41,27,15,0.8)]">
-                        <span className="text-[clamp(1.5rem,5vw,2.15rem)] text-[#46372a]" style={{ fontFamily: 'var(--inv-script)' }}>{data.coupleA} &amp; {data.coupleB}</span>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-                <motion.div
-                  className="absolute inset-0 z-[1] rounded-[1.1rem] bg-[var(--inv-surface)]"
-                  animate={opening2 ? { rotateX: -172, opacity: 0 } : { rotateX: 0, opacity: 0 }}
-                  transition={{ duration: 1.05, ease: EASE_SILK }}
-                />
-                <div
-                  className="absolute inset-0 shadow-[0_44px_90px_-36px_rgba(0,0,0,0.75)]"
-                  style={{
-                    borderRadius: '26% 26% 16px 16px / 20% 20% 16px 16px',
-                    background: 'var(--inv-surface)',
-                  }}
-                />
+                {data.coupleA}
+              </span>
+              <span
+                className="block leading-none"
+                style={{ fontFamily: 'var(--inv-display)', fontStyle: 'italic', fontSize: '9cqw', margin: '1.2cqw 0' }}
+              >
+                &amp;
+              </span>
+              <span
+                className={`block leading-[0.98] ${upper ? 'uppercase' : ''}`}
+                style={{
+                  fontFamily: 'var(--inv-display)',
+                  fontSize: '13cqw',
+                  letterSpacing: template.cover.tracking,
+                  textShadow: '0 2px 26px rgba(0,0,0,0.4)',
+                }}
+              >
+                {data.coupleB}
+              </span>
+            </motion.div>
+          </motion.div>
 
-                {/* the card inside, rising */}
-                <motion.div
-                  className={`absolute left-[6%] right-[6%] z-[3] flex flex-col items-center justify-center gap-2 border border-[var(--inv-line)]/60 bg-[var(--inv-bg)] px-4 text-center ${isRibbon ? 'opacity-0' : ''}`}
-                  style={{
-                    bottom: '8%',
-                    height: '84%',
-                    borderRadius: isCeleste ? '0.5rem' : '46% 46% 12px 12px / 40% 40% 12px 12px',
-                    boxShadow: '0 26px 60px -30px rgba(0,0,0,0.6)',
-                  }}
-                  animate={
-                    blooming
-                      ? { y: -190, scale: 1.06, opacity: 0 }
-                      : rising
-                        ? { y: -104, scale: 1, opacity: 1, rotate: -1.2 }
-                        : { y: 0, scale: 0.98, opacity: 1 }
-                  }
-                  transition={{
-                    duration: blooming ? 0.9 : 1.05,
-                    ease: blooming ? EASE_SILK : EASE_SEAL,
-                  }}
-                >
-                  <span className="text-[2.5rem] leading-none text-[var(--inv-accent)]"
-                    style={{ fontFamily: 'var(--inv-script)' }}>
-                    {data.monogram}
-                  </span>
-                  <span className="inv-label !text-[0.5rem]">The wedding of</span>
-                  <span className="text-[1.3rem] leading-tight text-[var(--inv-ink)]"
-                    style={{ fontFamily: 'var(--inv-display)' }}>
-                    {data.coupleA} &amp; {data.coupleB}
-                  </span>
-                  <span className="h-px w-12 bg-[var(--inv-accent)]/50" />
-                  <span className="inv-label !text-[0.46rem]">
-                    {formatDateShort(data.weddingDate)} · {data.location.split(',')[0]}
-                  </span>
-                </motion.div>
+          {/* the two leaves of the gatefold */}
+          {(['left', 'right'] as const).map((side) => (
+            <motion.div
+              key={side}
+              className="absolute inset-y-0 z-[3] w-1/2"
+              style={{
+                [side]: 0,
+                transformOrigin: side === 'left' ? 'left center' : 'right center',
+                backgroundImage: `url(${gate})`,
+                backgroundSize: '200% 100%',
+                backgroundPosition: side === 'left' ? '0% 0%' : '100% 0%',
+                backfaceVisibility: 'hidden',
+                willChange: 'transform',
+              }}
+              initial={false}
+              animate={{
+                rotateY: doorsOpen ? (side === 'left' ? -118 : 118) : 0,
+                opacity: expanding ? 0 : 1,
+              }}
+              transition={{
+                rotateY: { duration: 3.2, ease: EASE_DOOR },
+                opacity: { duration: 0.6 },
+              }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-black"
+                initial={false}
+                animate={{ opacity: doorsOpen ? 0.55 : 0 }}
+                transition={{ duration: 2.4, ease: EASE_SILK }}
+              />
+            </motion.div>
+          ))}
 
-                {isRibbon && (
-                  <motion.button
-                    type="button"
-                    onClick={open}
-                    aria-label="Draw the ribbon and open the invitation"
-                    className="absolute inset-y-[-6%] left-1/2 z-[7] w-16 -translate-x-1/2 cursor-pointer"
-                    animate={
-                      opening2
-                        ? { opacity: 0, scaleY: 0.6, y: -40, rotate: 8 }
-                        : { opacity: 1, scaleY: 1, y: 0, rotate: 0 }
-                    }
-                    transition={{ duration: 0.85, ease: EASE_SILK }}
-                  >
-                    <span
-                      className="absolute inset-y-0 left-1/2 w-4 -translate-x-1/2 shadow-[0_10px_18px_-12px_rgba(42,24,8,0.9)]"
-                      style={{
-                        background:
-                          'linear-gradient(90deg, color-mix(in srgb, var(--inv-accent) 68%, #000), var(--inv-accent), color-mix(in srgb, var(--inv-accent) 72%, #000))',
-                      }}
-                    />
-                    <span className="absolute left-1/2 top-1/2 grid size-20 -translate-x-1/2 -translate-y-1/2 place-items-center">
-                      <span className="absolute left-0 size-11 -translate-x-1/2 rotate-[28deg] rounded-[75%_25%_75%_25%] border border-[var(--inv-accent)]/70 bg-[var(--inv-accent)]/90 shadow-lg" />
-                      <span className="absolute right-0 size-11 translate-x-1/2 rotate-[-28deg] rounded-[25%_75%_25%_75%] border border-[var(--inv-accent)]/70 bg-[var(--inv-accent)]/90 shadow-lg" />
-                      <span className="relative size-7 rounded-full border border-[var(--inv-accent)]/80 bg-[var(--inv-accent)] shadow-md" />
-                    </span>
-                  </motion.button>
-                )}
-
-                {/* the pocket */}
-                <div
-                  className={`absolute inset-0 z-[4] border border-[var(--inv-line)]/45 ${isRibbon ? 'opacity-0' : ''}`}
-                  style={{
-                    clipPath: 'polygon(0 100%, 0 22%, 50% 66%, 100% 22%, 100% 100%)',
-                    background:
-                      'linear-gradient(150deg, color-mix(in srgb, var(--inv-surface) 94%, #fff), color-mix(in srgb, var(--inv-surface) 86%, var(--inv-line)))',
-                  }}
-                />
-                {/* the flap */}
-                <motion.div
-                  className={`absolute inset-0 z-[6] border border-[var(--inv-line)]/35 ${isRibbon ? 'opacity-0' : ''}`}
-                  style={{
-                    clipPath: 'polygon(0 0, 100% 0, 50% 66%)',
-                    background:
-                      'linear-gradient(180deg, color-mix(in srgb, var(--inv-surface) 92%, #fff), color-mix(in srgb, var(--inv-surface) 82%, var(--inv-line)))',
-                    transformOrigin: 'top center',
-                    backfaceVisibility: 'hidden',
-                  }}
-                  animate={{ rotateX: opening2 ? -172 : 0 }}
-                  transition={{ duration: 1.05, ease: EASE_SILK }}
-                />
-              </div>
+          {/* light travelling across the paper before it opens */}
+          {!reduce && (
+            <div className="pointer-events-none absolute inset-0 z-[4] overflow-hidden" aria-hidden="true">
+              <motion.div
+                className="absolute inset-y-0 w-[55%]"
+                style={{
+                  background:
+                    'linear-gradient(105deg, transparent 0%, rgba(255,244,214,0.0) 20%, rgba(255,244,214,0.55) 50%, rgba(255,244,214,0) 80%, transparent 100%)',
+                  mixBlendMode: 'soft-light',
+                }}
+                initial={{ x: '-120%' }}
+                animate={{ x: lifted ? '260%' : '-120%', opacity: doorsOpen ? 0 : 1 }}
+                transition={{ x: { duration: 1.6, ease: EASE_SILK }, opacity: { duration: 0.3 } }}
+              />
             </div>
           )}
 
-          {/* the wax seal, splitting */}
-          <motion.button
+          {/* the name card tucked under the ribbon */}
+          <motion.div
+            className="pointer-events-none absolute left-1/2 top-[8.5%] z-[5] -translate-x-1/2 whitespace-nowrap text-center shadow-[0_10px_24px_-14px_rgba(40,26,12,0.7)]"
+            style={{
+              width: '60%',
+              padding: '2.4cqw 3cqw',
+              background: 'color-mix(in srgb, var(--inv-surface) 96%, #fff)',
+              color: 'var(--inv-ink)',
+              border: '1px solid color-mix(in srgb, var(--inv-accent) 35%, transparent)',
+            }}
+            initial={false}
+            animate={{ opacity: lifted ? 0 : 1, y: lifted ? -10 : 0 }}
+            transition={{ duration: 0.9, ease: EASE_SILK }}
+          >
+            <span
+              className="block leading-none"
+              style={{ fontFamily: 'var(--inv-script)', fontSize: names.length > 18 ? '6.2cqw' : '7.6cqw' }}
+            >
+              {names}
+            </span>
+          </motion.div>
+
+          <button
             ref={buttonRef}
             type="button"
             onClick={open}
-            aria-label={isRibbon ? 'Draw the ribbon and open the invitation' : 'Break the seal and open the invitation'}
-            className={`absolute left-1/2 top-[52%] z-[8] grid h-[86px] w-[86px] -translate-x-1/2 -translate-y-1/2 place-items-center ${isRibbon ? 'pointer-events-none opacity-0' : ''}`}
-            animate={opening ? { scale: 1.24, opacity: 0, filter: 'blur(6px)' } : { scale: 1, opacity: 1 }}
-            transition={{ duration: 0.7, ease: EASE_SEAL }}
-          >
-            {[
-              { dx: -26, dy: -18, rotate: -34, clip: 'polygon(0 0, 58% 0, 46% 100%, 0 100%)' },
-              { dx: 26, dy: -18, rotate: 34, clip: 'polygon(42% 0, 100% 0, 100% 100%, 54% 100%)' },
-            ].map((half, i) => (
-              <motion.span
-                key={i}
-                className="absolute inset-0 grid place-items-center rounded-full text-[#2b1c0e]"
-                style={{
-                  clipPath: half.clip,
-                  background: 'radial-gradient(circle at 36% 28%, #e0c294, #b5895a 55%, #8f6539 100%)',
-                  boxShadow: '0 20px 40px -14px rgba(0,0,0,0.7)',
-                }}
-                animate={
-                  opening
-                    ? { x: half.dx * 2.4, y: half.dy * 2.2, rotate: half.rotate * 1.6, opacity: 0 }
-                    : { x: 0, y: 0, rotate: 0, opacity: 1 }
-                }
-                transition={{ duration: 0.85, ease: EASE_SEAL }}
-              >
-                <span className="text-[1.7rem] leading-none"
-                style={{ fontFamily: 'var(--inv-script)' }}>
-                  {data.monogram}
-                </span>
-              </motion.span>
-            ))}
-            <span
-              className="absolute inset-[7px] rounded-full border border-[#3a2410]/35"
-              aria-hidden="true"
-            />
-          </motion.button>
-
-          {/* dust thrown off by the seal */}
-          {opening && !reduce && (
-            <div className="pointer-events-none absolute left-1/2 top-[52%] z-[9] -translate-x-1/2 -translate-y-1/2" aria-hidden="true">
-              {Array.from({ length: 14 }).map((_, i) => {
-                const angle = (i / 14) * Math.PI * 2;
-                return (
-                  <motion.span
-                    key={i}
-                    className="absolute h-1.5 w-1.5 rounded-full"
-                    style={{ background: 'var(--inv-accent)' }}
-                    initial={{ x: 0, y: 0, opacity: 0.9, scale: 1 }}
-                    animate={{
-                      x: Math.cos(angle) * (46 + (i % 4) * 12),
-                      y: Math.sin(angle) * (40 + (i % 3) * 10),
-                      opacity: 0,
-                      scale: 0.3,
-                    }}
-                    transition={{ duration: 1, ease: [0.3, 0.7, 0.4, 1] }}
-                  />
-                );
-              })}
-            </div>
-          )}
+            aria-label="Open the invitation"
+            className="absolute inset-0 z-[6] cursor-pointer rounded-sm"
+          />
         </motion.div>
 
         <motion.div
-          className="mt-9"
-          animate={{ opacity: opening ? 0 : 1, y: opening ? 10 : 0 }}
-          transition={{ duration: 0.4 }}
+          className="mt-5 flex min-h-[3rem] flex-col items-center gap-2 text-center"
+          initial={false}
+          animate={{ opacity: lifted ? 0 : 1 }}
+          transition={{ duration: 0.6 }}
         >
-          <button
-            type="button"
-            onClick={open}
-            className="inv-btn min-w-[16rem] !rounded-full"
-            style={{
-              background: 'var(--inv-accent)',
-              color: 'var(--inv-deep)',
-              borderColor: 'var(--inv-accent)',
-            }}
+          <span
+            className="text-[0.8rem] font-semibold uppercase tracking-[0.44em]"
+            style={{ fontFamily: 'var(--inv-body)', color: gateInk }}
           >
-            {isCurtain ? 'Part the curtains' : isRibbon ? 'Draw the ribbon' : 'Break the seal'}
-          </button>
-          <p className="mt-3 flex items-center justify-center gap-2 text-[0.6rem] uppercase tracking-[0.18em] text-[var(--inv-deep-ink)]/45">
-            {data.music.enabled ? (
-              <>
-                <Music2 size={12} /> The soundtrack begins as it opens
-              </>
-            ) : (
-              <>
-                <Volume2 size={12} /> Take your time
-              </>
-            )}
-          </p>
+            Tap to open
+          </span>
+          {data.music.enabled && (
+            <span
+              className="flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.2em]"
+              style={{ fontFamily: 'var(--inv-body)', color: gateInk, opacity: 0.6 }}
+            >
+              <Music2 size={12} aria-hidden /> Music begins as it opens
+            </span>
+          )}
         </motion.div>
-
-        <p className="mt-10 max-w-xs text-[0.72rem] leading-relaxed text-[var(--inv-deep-ink)]/40"
-          style={{ fontFamily: 'var(--inv-body)' }}>
-          {data.tagline}
-        </p>
       </div>
     </div>
   );
