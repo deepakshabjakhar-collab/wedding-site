@@ -1,0 +1,43 @@
+name: screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  shoot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm install --no-save @playwright/test
+      - run: npx playwright install --with-deps chromium
+
+      - name: Start dev server
+        run: |
+          npm run dev:web -- --port 4173 --strictPort >/tmp/vite.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:4173/ >/dev/null && break
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:4173/ >/dev/null
+
+      - name: Take screenshots
+        run: node scripts/shoot.mjs
+        env:
+          SHOOT_BASE: http://127.0.0.1:4173
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
+          if-no-files-found: error
