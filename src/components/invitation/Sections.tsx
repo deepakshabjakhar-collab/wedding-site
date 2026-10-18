@@ -49,7 +49,7 @@ function Header({
         {title}
       </h2>
       {description && (
-        <p className={`inv-body-copy mt-4 ${centered ? 'mx-auto max-w-xl' : 'max-w-xl'}`}>{description}</p>
+        <p className={`inv-body-copy inv-lede mt-4 ${centered ? 'mx-auto max-w-xl' : 'max-w-xl'}`}>{description}</p>
       )}
       <span className={`mt-6 block h-px w-16 bg-[var(--inv-accent)]/45 ${centered ? 'mx-auto' : ''}`} aria-hidden />
     </div>
@@ -358,7 +358,7 @@ export function Welcome({ data, theme, index }: { data: InvitationData; theme: R
         <h2 className="inv-display mt-5 text-[clamp(1.9rem,7cqw,3rem)] leading-[1.08]">
           {data.welcomeHeading}
         </h2>
-        {data.welcomeNote && <p className="inv-body-copy mt-5 whitespace-pre-line">{data.welcomeNote}</p>}
+        {data.welcomeNote && <p className="inv-body-copy inv-dropcap mt-5 whitespace-pre-line">{data.welcomeNote}</p>}
         <p className="inv-script inv-foil mt-8 text-[clamp(1.8rem,6cqw,2.5rem)]">
           {data.coupleA} &amp; {data.coupleB}
         </p>
@@ -417,7 +417,7 @@ export function Story({ data, theme, index }: { data: InvitationData; theme: Res
                   <h3 className="inv-display mt-3 text-[clamp(1.5rem,5cqw,2.1rem)] leading-tight">
                     {chapter.title}
                   </h3>
-                  <p className="inv-body-copy mt-3 whitespace-pre-line">{chapter.body}</p>
+                  <p className={`inv-body-copy mt-3 whitespace-pre-line ${chapterIndex === 0 ? 'inv-dropcap' : ''}`}>{chapter.body}</p>
                 </div>
               </motion.article>
             );

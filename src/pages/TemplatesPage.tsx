@@ -57,7 +57,7 @@ export function TemplatesPage() {
   };
 
   return (
-    <div className="texture-paper min-h-svh">
+    <div className="mkt-scope texture-paper min-h-svh">
       <MarketingNav />
       <main className="pt-[112px]">
         <section className="shell pb-10">

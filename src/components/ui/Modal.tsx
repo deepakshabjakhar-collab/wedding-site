@@ -108,7 +108,7 @@ export function Modal({
                   {title && (
                     <h2 className="display text-2xl font-medium text-ink sm:text-[1.7rem]">{title}</h2>
                   )}
-                  {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+                  {description && <p className="mt-1 font-body-serif text-[0.95rem] text-muted">{description}</p>}
                 </div>
                 {!hideClose && (
                   <button type="button" onClick={onClose} className="icon-btn -mr-1 -mt-1 flex-none" aria-label="Close">

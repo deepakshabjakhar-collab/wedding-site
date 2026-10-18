@@ -939,7 +939,7 @@ function Values() {
 
 export function Landing() {
   return (
-    <div className="texture-paper">
+    <div className="mkt-scope texture-paper">
       <MarketingNav />
       <main>
         <Hero />
