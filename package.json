@@ -1,0 +1,53 @@
+{
+  "name": "vellum",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c magenta,cyan \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "tsx watch server/index.ts",
+    "dev:web": "vite",
+    "build": "tsc -b && vite build",
+    "start": "cross-env NODE_ENV=production tsx server/index.ts",
+    "typecheck": "tsc -b --noEmit false --emitDeclarationOnly false && tsc -p server/tsconfig.json",
+    "seed": "tsx server/seed.ts",
+    "generate:media": "node scripts/generate-media.mjs",
+    "fonts": "node scripts/fetch-fonts.mjs"
+  },
+  "dependencies": {
+    "@types/canvas-confetti": "^1.9.0",
+    "archiver": "^7.0.1",
+    "canvas-confetti": "^1.9.4",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0",
+    "motion": "^14.3.0",
+    "multer": "^2.0.2",
+    "qrcode.react": "^4.2.0",
+    "radix-ui": "^1.8.1",
+    "sharp": "^0.34.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/archiver": "^6.0.3",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "clsx": "^2.1.1",
+    "concurrently": "^9.2.0",
+    "cross-env": "^7.0.3",
+    "framer-motion": "^12.23.0",
+    "lucide-react": "^0.525.0",
+    "rea-agents": "^6.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.3",
+    "tailwindcss": "^4.1.11",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
+  }
+}
