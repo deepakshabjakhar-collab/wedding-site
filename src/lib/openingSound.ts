@@ -249,34 +249,33 @@ export function playCinematicOpening(
   out.gain.setValueAtTime(0.0001, now);
   out.gain.exponentialRampToValueAtTime(0.9, now + 0.06);
 
-  // Act I — the invitation lifts and catches the light.
-  paper(audio, out, now + 0.05, 0.9);
-
-  // Act II — the fastening gives way.
+  // Act I — the fastening gives way, and nothing else moves yet.
   if (kind === 'ribbon') {
-    silk(audio, out, now + 0.5, 1.1);
-    paper(audio, out, now + 0.8, 0.6);
+    silk(audio, out, now + 0.1, 1.5);
+    paper(audio, out, now + 0.7, 0.6);
   } else if (kind === 'curtain') {
-    drape(audio, out, now + 0.5, 2.1);
+    paper(audio, out, now + 0.08, 0.4);
+    drape(audio, out, now + 0.9, 2.1);
   } else if (kind === 'celeste') {
-    crack(audio, out, now + 0.42);
-    starfall(audio, out, now + 0.7);
+    crack(audio, out, now + 0.1);
+    silk(audio, out, now + 0.5, 1.2);
+    starfall(audio, out, now + 0.8);
   } else {
-    crack(audio, out, now + 0.2);
-    paper(audio, out, now + 0.42, 0.8);
+    crack(audio, out, now + 0.1);
+    paper(audio, out, now + 0.35, 0.7);
   }
 
-  // Act III — the letter is drawn from the envelope.
-  paper(audio, out, now + 1.2, 1.7);
+  // Act II — the cover parts / the letter is drawn into the light.
+  paper(audio, out, now + 1.75, 1.5);
 
-  // Act IV — the reveal: a rising D-major answer, wider and quicker.
+  // Act III — the reveal: a rising D-major answer, wider and quicker.
   const ascent = [587.33, 739.99, 880, 1108.73, 1318.51, 1466.83];
-  ascent.forEach((note, index) => pluck(audio, out, note, now + 2.5 + index * 0.12, 0.13));
+  ascent.forEach((note, index) => pluck(audio, out, note, now + 3.1 + index * 0.12, 0.13));
 
-  // Act V — resolution as the invitation lifts into view.
+  // Act IV — resolution as the invitation lands.
   const resolve = [293.66, 587.33, 880, 1174.66];
-  resolve.forEach((note, index) => pluck(audio, out, note, now + 3.35 + index * 0.07, 0.09));
-  pluck(audio, out, 1760, now + 3.95, 0.05);
+  resolve.forEach((note, index) => pluck(audio, out, note, now + 4.0 + index * 0.07, 0.09));
+  pluck(audio, out, 1760, now + 4.6, 0.05);
 
   return {
     release(ms = 700) {
