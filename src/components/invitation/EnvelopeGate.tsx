@@ -12,6 +12,7 @@ import {
   WaxSeal,
 } from '@/templates/art';
 import { DiamondRule, LaurelCrest, RoyalCorner } from '@/templates/ornaments';
+import { COVER_TONES } from '@/templates/cover';
 import type { TemplateId } from '@/templates/types';
 import { playCinematicOpening, type OpeningSoundHandle } from '@/lib/openingSound';
 import { formatDateShort } from '@/lib/format';
@@ -131,6 +132,17 @@ export function EnvelopeGate({
           : t(language, 'open');
 
   const gold = `color-mix(in srgb, var(--inv-accent) 78%, #e7cd94)`;
+  /**
+   * Light templates get a velvet drop below the envelope rather than a wash of
+   * their own paper: the cream card then sits on a deep stage and the names are
+   * set in ivory, the way a letter is read under a lamp.
+   */
+  const velvetFloor = COVER_TONES[template.id] !== 'dark';
+  const floorInk = velvetFloor ? '#f7f1e3' : gateInk;
+  const gateLift = `color-mix(in srgb, ${gateInk} 18%, transparent)`;
+  const gateFloor = velvetFloor
+    ? `color-mix(in srgb, ${gateBg} 26%, #140f0b)`
+    : `color-mix(in srgb, #000 62%, ${gateBg})`;
   const plateWidth =
     kind === 'curtain' || kind === 'gatefold'
       ? 'min(88cqw, 26rem, calc(58cqh * 0.72))'
@@ -162,9 +174,11 @@ export function EnvelopeGate({
           className="pointer-events-none absolute inset-0"
           style={{
             background: `
-              radial-gradient(120% 74% at 50% 6%, color-mix(in srgb, ${gateInk} 14%, transparent), transparent 58%),
-              radial-gradient(90% 56% at 50% 108%, rgba(0,0,0,0.55), transparent 70%),
-              linear-gradient(178deg, color-mix(in srgb, ${gateBg} 92%, #fff) 0%, ${gateBg} 36%, color-mix(in srgb, ${gateBg} 62%, #0a0806) 100%)`,
+              radial-gradient(120% 70% at 50% 4%, ${gateLift}, transparent 58%),
+              radial-gradient(120% 70% at 50% 106%, ${gateFloor}, transparent 78%),
+              linear-gradient(178deg, color-mix(in srgb, ${gateBg} 88%, #fff) 0%, ${gateBg} 26%, ${
+                velvetFloor ? `color-mix(in srgb, ${gateBg} 30%, #140f0b)` : `color-mix(in srgb, ${gateBg} 52%, #0b0906)`
+              } 100%)`,
           }}
         />
         <div
@@ -179,11 +193,11 @@ export function EnvelopeGate({
         {/* the printed frame around the whole cover */}
         <div
           className="pointer-events-none absolute inset-[max(0.7rem,2.4cqw)] z-[5] border"
-          style={{ borderColor: `color-mix(in srgb, ${gateInk} 26%, transparent)` }}
+          style={{ borderColor: `color-mix(in srgb, ${gateInk} 34%, transparent)` }}
         />
         <div
           className="pointer-events-none absolute inset-[max(1rem,3.2cqw)] z-[5] border"
-          style={{ borderColor: `color-mix(in srgb, ${gateInk} 12%, transparent)` }}
+          style={{ borderColor: `color-mix(in srgb, ${gateInk} 16%, transparent)` }}
         />
         <div
           className="pointer-events-none absolute inset-[max(0.7rem,2.4cqw)] z-[5]"
@@ -277,7 +291,7 @@ export function EnvelopeGate({
             )}
           </div>
 
-          <div className="inv-gate-bottom">
+          <div className="inv-gate-bottom" style={{ color: floorInk }}>
             <motion.div
               className="inv-gate-ident"
               animate={begun ? { opacity: 0, y: -10 } : { opacity: 1, y: 0 }}
@@ -288,7 +302,7 @@ export function EnvelopeGate({
                 style={{ letterSpacing: template.cover.namesCase === 'upper' ? '0.06em' : template.cover.tracking }}
               >
                 {data.coupleA}
-                <span className="inv-gate-amp" style={{ color: `color-mix(in srgb, ${gateInk} 55%, #b98c4d)` }}>
+                <span className="inv-gate-amp" style={{ color: `color-mix(in srgb, ${floorInk} 52%, #c9a86a)` }}>
                   &amp;
                 </span>
                 {data.coupleB}
@@ -306,7 +320,7 @@ export function EnvelopeGate({
                 animate={{ opacity: begun ? 0 : 1 }}
                 transition={{ duration: 0.35 }}
               >
-                <span className="inv-gate-tapline" style={{ color: `color-mix(in srgb, ${gateInk} 65%, #b98c4d)` }}>
+                <span className="inv-gate-tapline" style={{ color: `color-mix(in srgb, ${floorInk} 68%, #c9a86a)` }}>
                   <span className="h-px w-8 bg-current opacity-60" aria-hidden />
                   <span className="inv-gate-tap">{tapLabel}</span>
                   <span className="h-px w-8 bg-current opacity-60" aria-hidden />
@@ -566,6 +580,38 @@ function EnvelopeStage({
         {/* the pocket: blind-embossed, stitched along its top edge */}
         <div className="gate-folio-pocket">
           <div className="gate-folio-pocket-inner" />
+          {/* the folded paper: two side flaps and a bottom flap, with real creases */}
+          <svg
+            className="gate-folio-fold"
+            viewBox="0 0 200 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id="fold-left" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#000" stopOpacity="0.07" />
+                <stop offset="100%" stopColor="#000" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="fold-right" x1="1" y1="0" x2="0" y2="0">
+                <stop offset="0%" stopColor="#000" stopOpacity="0.07" />
+                <stop offset="100%" stopColor="#000" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="fold-bottom" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#fff" stopOpacity="0.55" />
+                <stop offset="55%" stopColor="#fff" stopOpacity="0.06" />
+                <stop offset="100%" stopColor="#000" stopOpacity="0.05" />
+              </linearGradient>
+              <linearGradient id="fold-shade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#000" stopOpacity="0.16" />
+                <stop offset="100%" stopColor="#000" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d="M0 0 L100 44 L0 100 Z" fill="url(#fold-left)" />
+            <path d="M200 0 L100 44 L200 100 Z" fill="url(#fold-right)" />
+            <path d="M2 100 L100 44 L198 100 Z" fill="url(#fold-bottom)" />
+            <path d="M2 100 L100 44 L198 100" fill="none" stroke="url(#fold-shade)" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+            <path d="M0 0 L100 44 L200 0" fill="none" stroke="#000" strokeOpacity="0.08" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          </svg>
           <div className="gate-folio-stitch" aria-hidden />
           <div className="gate-folio-pocket-emboss" aria-hidden>
             <span className="gate-folio-pocket-rule" />

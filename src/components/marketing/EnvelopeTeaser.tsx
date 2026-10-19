@@ -274,63 +274,85 @@ export function EnvelopeTeaser() {
                 <TemplateArt templateId="aurelia" className="h-full w-full opacity-[0.2]" />
               </div>
               <div className="cover-damask pointer-events-none absolute inset-0" style={{ color: GOLD, opacity: 0.1 }} />
-              <div className="pointer-events-none absolute inset-[4%] border" style={{ borderColor: `${GOLD}66` }} />
-              <div className="pointer-events-none absolute inset-[5.3%] border" style={{ borderColor: `${GOLD}2b` }} />
-              <div className="pointer-events-none absolute inset-[4%]" style={{ color: GOLD }}>
-                <RoyalCorner className="absolute left-[-1px] top-[-1px] h-[9cqw] w-[9cqw] opacity-85" />
-                <RoyalCorner className="absolute right-[-1px] top-[-1px] h-[9cqw] w-[9cqw] -scale-x-100 opacity-85" />
-                <RoyalCorner className="absolute bottom-[-1px] left-[-1px] h-[9cqw] w-[9cqw] -scale-y-100 opacity-85" />
-                <RoyalCorner className="absolute bottom-[-1px] right-[-1px] h-[9cqw] w-[9cqw] -scale-100 opacity-85" />
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.5)' }}
+              />
+              {/* the light falls away at the foot of the card, so the seal's echo and the
+                  gold step read cleanly against the velvet */}
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%]"
+                style={{ background: `linear-gradient(180deg, ${GREEN}00 0%, ${GREEN}99 42%, ${GREEN_DEEP}e6 100%)` }}
+              />
+
+              {/* the inside of the card: one gilded frame, like the cover */}
+              <div className="pointer-events-none absolute inset-[4.4%] border" style={{ borderColor: `${GOLD}52` }} />
+              <div className="pointer-events-none absolute inset-[5.6%] border" style={{ borderColor: `${GOLD}26` }} />
+              <div className="pointer-events-none absolute inset-[4.4%]" style={{ color: GOLD }}>
+                <RoyalCorner className="absolute left-[-1px] top-[-1px] h-[8cqw] w-[8cqw] opacity-70" />
+                <RoyalCorner className="absolute right-[-1px] top-[-1px] h-[8cqw] w-[8cqw] -scale-x-100 opacity-70" />
+                <RoyalCorner className="absolute bottom-[-1px] left-[-1px] h-[8cqw] w-[8cqw] -scale-y-100 opacity-70" />
+                <RoyalCorner className="absolute bottom-[-1px] right-[-1px] h-[8cqw] w-[8cqw] -scale-100 opacity-70" />
               </div>
 
-              <div className="relative flex h-full flex-col items-center justify-between px-[11%] py-[9%] text-center text-[#f8f0df]">
-                <div className="flex flex-col items-center">
-                  <span className="relative grid h-[18cqw] w-[18cqw] place-items-center rounded-full border" style={{ borderColor: `${GOLD}99`, color: GOLD }}>
-                    <LaurelCrest className="absolute inset-[6%] h-[88%] w-[88%] opacity-70" />
-                    <span
-                      className="relative"
-                      style={{ fontFamily: 'var(--font-script)', fontSize: 'clamp(20px, 7cqw, 30px)', lineHeight: 1, paddingTop: '0.12em' }}
-                    >
-                      C&amp;J
-                    </span>
-                  </span>
-                  <p
-                    className="mt-[5%] uppercase"
-                    style={{ fontFamily: 'var(--font-caps)', fontSize: 'clamp(8px, 2.3cqw, 10px)', letterSpacing: '0.4em', color: `${GOLD}c9` }}
+              <div className="relative flex h-full flex-col items-center px-[11%] pb-[12%] pt-[10%] text-center text-[#f8f0df]">
+                <span
+                  className="relative grid h-[17cqw] w-[17cqw] place-items-center rounded-full border"
+                  style={{ borderColor: `${GOLD}99`, color: GOLD }}
+                >
+                  <LaurelCrest className="absolute inset-[6%] h-[88%] w-[88%] opacity-70" />
+                  <span
+                    className="relative"
+                    style={{ fontFamily: 'var(--font-script)', fontSize: 'clamp(17px, 6.4cqw, 28px)', lineHeight: 1, paddingTop: '0.12em' }}
                   >
-                    You are invited
-                  </p>
-                </div>
+                    C&amp;J
+                  </span>
+                </span>
+                <p
+                  className="mt-[4%] uppercase"
+                  style={{ fontFamily: 'var(--font-caps)', fontSize: 'clamp(7.5px, 2.2cqw, 9.5px)', letterSpacing: '0.4em', color: `${GOLD}c9` }}
+                >
+                  You are invited
+                </p>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-1 flex-col items-center justify-center">
                   <p
                     className="leading-[0.98]"
-                    style={{ fontFamily: 'var(--font-editorial)', fontSize: 'clamp(32px, 10.4cqw, 48px)', letterSpacing: '-0.03em' }}
+                    style={{ fontFamily: 'var(--font-editorial)', fontSize: 'clamp(30px, 9.4cqw, 46px)', letterSpacing: '-0.03em' }}
                   >
                     Clara
                     <span
-                      className="mx-[2%] inline-block align-middle text-[#e3c68c]"
-                      style={{ fontFamily: 'var(--font-script)', fontSize: '0.8em', letterSpacing: 0 }}
+                      className="mx-[0.18em] inline-block align-middle text-[#e3c68c]"
+                      style={{ fontFamily: 'var(--font-script)', fontSize: '0.74em', letterSpacing: 0 }}
                     >
                       &amp;
                     </span>
                     Julien
                   </p>
-                  <div className="mt-[6%] flex flex-col items-center gap-[3%]">
-                    <DiamondRule className="h-[2.6cqw] w-[36%]" />
-                    <p
-                      className="text-[clamp(8px,2.35cqw,10.5px)] uppercase"
-                      style={{ fontFamily: 'var(--font-caps)', fontSize: 'clamp(8px, 2.35cqw, 10.5px)', letterSpacing: '0.3em', color: 'rgba(248,240,223,0.72)' }}
-                    >
-                      22 January 2027 · Villa Serena, Lake Como
-                    </p>
-                  </div>
+                  <DiamondRule className="mt-[5.5%] h-[2.2cqw] w-[30%]" />
+                  <p
+                    className="mt-[4%] uppercase"
+                    style={{ fontFamily: 'var(--font-caps)', fontSize: 'clamp(7.5px, 2.2cqw, 9.5px)', letterSpacing: '0.28em', color: 'rgba(248,240,223,0.78)' }}
+                  >
+                    22 January 2027
+                    <span className="mx-[0.5em] opacity-50">·</span>
+                    Lake Como
+                  </p>
+
+                  <p
+                    className="mt-[8%] leading-[1.25]"
+                    style={{ fontFamily: 'var(--font-script)', fontSize: 'clamp(16px, 4.6cqw, 23px)', color: '#e3cfa4' }}
+                  >
+                    We would be honoured
+                    <br />
+                    by your presence
+                  </p>
                 </div>
 
-                <div className="flex w-full flex-col items-center gap-[4%]">
+                <div className="flex w-full flex-col items-center gap-3.5">
                   <Link
                     to="/i/clara-julien"
-                    className="inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-[clamp(8px,2.35cqw,10.5px)] font-semibold uppercase tracking-[0.26em] transition hover:brightness-110"
+                    className="inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-[clamp(8px,2.2cqw,10px)] font-semibold uppercase tracking-[0.26em] transition hover:brightness-110"
                     style={{ background: `linear-gradient(180deg, #eed9a9, ${GOLD} 55%, #b98f4d)`, color: '#20180f' }}
                   >
                     Step inside
@@ -339,7 +361,7 @@ export function EnvelopeTeaser() {
                   <button
                     type="button"
                     onClick={reset}
-                    className="inline-flex items-center gap-1.5 text-[clamp(7.5px,2.15cqw,9.5px)] uppercase tracking-[0.24em] text-[#e8d7b8]/60 transition hover:text-[#f3e6cd]"
+                    className="inline-flex items-center gap-1.5 text-[clamp(7px,1.95cqw,9px)] uppercase tracking-[0.24em] text-[#e8d7b8]/60 transition hover:text-[#f3e6cd]"
                     style={{ fontFamily: 'var(--font-caps)' }}
                   >
                     <RotateCcw size={11} /> Seal it again

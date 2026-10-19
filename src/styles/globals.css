@@ -1198,6 +1198,7 @@ input[type='range']::-webkit-slider-thumb {
   position: fixed;
   inset: 0;
   z-index: 60;
+  --gate-veil: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1949,6 +1950,7 @@ input[type='range']::-webkit-slider-thumb {
   position: fixed;
   inset: 0;
   z-index: 60;
+  --gate-veil: 0;
   height: 100svh;
   display: block;
   overflow: hidden;
@@ -2276,6 +2278,14 @@ input[type='range']::-webkit-slider-thumb {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 34%);
 }
 
+.gate-folio-fold {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .gate-folio-stitch {
   position: absolute;
   left: 5%;
@@ -2311,8 +2321,8 @@ input[type='range']::-webkit-slider-thumb {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  padding-bottom: 7.5%;
-  gap: 0.8cqw;
+  padding-bottom: 5.5%;
+  gap: 0.7cqw;
   color: color-mix(in srgb, var(--inv-ink) 26%, transparent);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
   opacity: 0.42;
@@ -2964,4 +2974,51 @@ input[type='range']::-webkit-slider-thumb {
   letter-spacing: 0.06em;
   margin-top: 1rem;
   font-family: var(--inv-display);
+}
+
+/* The letter reads as a separate sheet sitting in the pocket. */
+.gate-folio-letter::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(58, 40, 18, 0.09));
+}
+
+/* The kicker is one line on every phone. */
+.landing-eyebrow {
+  letter-spacing: 0.2em;
+  font-size: 0.64rem;
+}
+
+@media (min-width: 640px) {
+  .landing-eyebrow {
+    letter-spacing: 0.26em;
+    font-size: 0.6875rem;
+  }
+}
+
+/* The cover panel keeps its proportions on very wide screens. */
+@media (min-width: 1280px) {
+  .landing-hero-cover {
+    max-width: 480px;
+  }
+}
+
+/* The hem of the velvet curtain: a soft shadow pooled on the stage floor rather
+   than a cut edge. */
+.gate-curtain::after {
+  content: '';
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  bottom: -7%;
+  height: 12%;
+  pointer-events: none;
+  background: radial-gradient(58% 100% at 50% 0%, rgba(0, 0, 0, 0.62), transparent 72%);
+  filter: blur(7px);
+  z-index: 5;
 }

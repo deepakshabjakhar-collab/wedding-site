@@ -67,7 +67,7 @@ function Hero() {
         <div className="landing-hero">
           <div className="landing-hero-copy relative z-10">
             <Reveal>
-                <p className="eyebrow flex items-center gap-3 text-burgundy">
+                <p className="eyebrow landing-eyebrow flex items-center gap-3 text-burgundy">
                 <span className="h-px w-8 bg-burgundy/50" />
                 Emotion from the very first moment
               </p>
