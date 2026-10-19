@@ -64,10 +64,10 @@ function Hero() {
       )}
 
       <motion.div style={reduce ? undefined : { opacity: fade }} className="shell relative">
-        <div className="grid items-center gap-14 lg:grid-cols-[1.04fr_0.96fr] lg:gap-10">
-          <div className="relative z-10">
+        <div className="landing-hero">
+          <div className="landing-hero-copy relative z-10">
             <Reveal>
-                <p className="eyebrow flex items-center gap-3 text-burgundy">
+                <p className="eyebrow landing-eyebrow flex items-center gap-3 text-burgundy">
                 <span className="h-px w-8 bg-burgundy/50" />
                 Emotion from the very first moment
               </p>
@@ -94,14 +94,32 @@ function Hero() {
                 </motion.span>
               </span>
             </h1>
+          </div>
+
+          <motion.div
+            style={reduce ? undefined : { y }}
+            className="landing-hero-cover relative mx-auto w-full max-w-[420px] lg:mx-0 lg:ml-auto lg:max-w-[470px]"
+          >
+            <EnvelopeTeaser />
+            <div className="mx-auto mt-7 hidden max-w-[350px] border-l border-gold/40 pl-4 sm:block">
+              <p className="font-display text-[1.02rem] italic leading-snug text-muted">
+                “It felt less like a link and more like a letter.”
+              </p>
+              <p className="mt-1.5 text-[0.6rem] uppercase tracking-[0.2em] text-muted/70">
+                The guest experience
+              </p>
+            </div>
+          </motion.div>
+
+          <div className="landing-hero-actions relative z-10">
             <Reveal delay={0.18}>
-              <p className="mt-7 max-w-[32rem] text-[0.98rem] leading-relaxed text-ink-soft sm:text-[1.05rem]">
+              <p className="max-w-[32rem] text-[0.98rem] leading-relaxed text-ink-soft sm:text-[1.05rem] lg:mt-7">
                 A digital invitation with the feeling of a keepsake. Your photos, your music, your
                 story, and every RSVP — beautifully together in one personal link.
               </p>
             </Reveal>
             <Reveal delay={0.26}>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center lg:mt-9">
                 <Link to={createTo} className={buttonClass('primary', 'lg')}>
                   Create your invitation
                   <ArrowRight size={15} />
@@ -123,21 +141,6 @@ function Hero() {
               </div>
             </Reveal>
           </div>
-
-          <motion.div
-            style={reduce ? undefined : { y }}
-            className="relative mx-auto w-full max-w-[470px] lg:mx-0 lg:ml-auto"
-          >
-            <EnvelopeTeaser />
-            <div className="absolute -bottom-2 left-0 hidden max-w-[190px] -rotate-2 border-l border-gold/40 pl-4 sm:block">
-              <p className="font-display text-[1rem] italic leading-snug text-muted">
-                “It felt less like a link and more like a letter.”
-              </p>
-              <p className="mt-1.5 text-[0.6rem] uppercase tracking-[0.2em] text-muted/70">
-                The guest experience
-              </p>
-            </div>
-          </motion.div>
         </div>
       </motion.div>
 

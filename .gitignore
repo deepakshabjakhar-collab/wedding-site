@@ -6,3 +6,6 @@ vite.config.js
 .freebuff/
 *.log
 .env
+
+# Local screenshot harness (headless chromium lives outside the repo)
+.arena/
