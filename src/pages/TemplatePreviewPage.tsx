@@ -61,35 +61,38 @@ export function TemplatePreviewPage() {
         photos={[]}
         personalization={null}
         mode="sample"
+        bottomInset={72}
       />
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4">
-        <div className="pointer-events-auto flex w-full max-w-[38rem] flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-[var(--color-paper)]/97 px-4 py-3 shadow-[0_24px_60px_-30px_rgba(40,28,16,0.6)] backdrop-blur">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="grid h-9 w-9 flex-none place-items-center rounded-full border border-line text-gold">
-              <Sparkles size={15} />
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[70] flex justify-center px-3 pb-[max(0.7rem,env(safe-area-inset-bottom))] pt-2">
+        <div className="pointer-events-auto flex w-full max-w-[36rem] items-center justify-between gap-2 border border-line bg-[var(--color-paper)]/97 px-2.5 py-2 shadow-[0_20px_50px_-26px_rgba(40,28,16,0.55)] backdrop-blur sm:gap-3 sm:px-4 sm:py-2.5">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="grid h-8 w-8 flex-none place-items-center rounded-full border border-line text-gold">
+              <Sparkles size={14} />
             </span>
             <span className="min-w-0">
-              <span className="block text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-muted">
+              <span className="block truncate text-[0.5rem] font-semibold uppercase tracking-[0.18em] text-muted">
                 Live design preview
               </span>
-              <span className="block truncate font-display text-[1.15rem] leading-tight text-ink">
-                {template.name} — {template.descriptor}
+              <span className="block truncate font-display text-[1rem] leading-tight text-ink">
+                {template.name}
+                <span className="hidden sm:inline"> — {template.descriptor}</span>
               </span>
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Link to="/templates" className={buttonClass('ghost', 'sm')}>
-              <ArrowLeft size={12} /> All designs
+          <div className="flex flex-none items-center gap-1.5">
+            <Link to="/templates" className={buttonClass('ghost', 'sm', '!px-2.5')} aria-label="All designs">
+              <ArrowLeft size={12} /> <span className="hidden sm:inline">All designs</span>
             </Link>
             <button
               type="button"
               onClick={() => void useTemplate()}
-              className={buttonClass('primary', 'sm')}
+              className={buttonClass('primary', 'sm', '!px-3')}
               disabled={creating}
             >
               {creating ? <Loader2 size={13} className="animate-spin" /> : null}
-              Use this design
+              <span className="hidden sm:inline">Use this design</span>
+              <span className="sm:hidden">Use it</span>
             </button>
           </div>
         </div>

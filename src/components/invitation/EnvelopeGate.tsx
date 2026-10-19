@@ -11,27 +11,26 @@ import {
   TemplateMark,
   WaxSeal,
 } from '@/templates/art';
+import { DiamondRule, LaurelCrest, RoyalCorner } from '@/templates/ornaments';
 import type { TemplateId } from '@/templates/types';
 import { playCinematicOpening, type OpeningSoundHandle } from '@/lib/openingSound';
 import { formatDateShort } from '@/lib/format';
 import { t } from './i18n';
 
 const EASE_SILK = [0.22, 0.61, 0.36, 1] as const;
-const EASE_DOOR = [0.65, 0, 0.2, 1] as const;
-const EASE_EXPAND = [0.76, 0, 0.24, 1] as const;
+const EASE_PAGE = [0.65, 0, 0.2, 1] as const;
+const EASE_DOOR = [0.7, 0, 0.22, 1] as const;
 
-/** The full ceremony runs just under eleven seconds. */
-const OPEN_AT = 10_800;
-const SCHEDULE: [number, number][] = [
-  [120, 1], // the invitation lifts and catches the light
-  [2100, 2], // the fastening gives way
-  [4600, 3], // the letter is drawn out
-  [7100, 4], // the letter unfolds toward you
-  [9200, 5], // the paper blooms into the invitation
-];
+/** The ceremony is a short, confident four seconds — never a wait. */
+const CEREMONY_MS = 4200;
 
-type GateKind = 'seal' | 'ribbon' | 'curtain' | 'celeste';
+type GateKind = 'seal' | 'ribbon' | 'curtain' | 'gatefold';
 
+/**
+ * The opening service: a full-screen printed cover, then the stationery opens
+ * — wax seal, silk ribbon, theatre curtains or a gatefold — and the letter is
+ * drawn out. The hand-over to the invitation is a page lift, never a zoom.
+ */
 export function EnvelopeGate({
   data,
   templateId,
@@ -39,6 +38,7 @@ export function EnvelopeGate({
   onOpen,
   onIntent,
   embedded,
+  bottomInset = 0,
 }: {
   data: InvitationData;
   templateId: string;
@@ -46,6 +46,7 @@ export function EnvelopeGate({
   onOpen: () => void;
   onIntent?: () => void;
   embedded?: boolean;
+  bottomInset?: number;
 }) {
   const reduce = useReducedMotion();
   const template = getTemplate(templateId);
@@ -55,10 +56,12 @@ export function EnvelopeGate({
   const setting = data.settings.envelopeAnimation;
   const kind: GateKind =
     templateId === 'celeste'
-      ? 'celeste'
+      ? 'gatefold'
       : setting === 'ribbon' || setting === 'curtain' || setting === 'seal'
         ? setting
-        : template.envelope;
+        : template.envelope === 'curtain'
+          ? 'curtain'
+          : template.envelope;
 
   const [phase, setPhase] = useState(0);
   const [begun, setBegun] = useState(false);
@@ -69,12 +72,15 @@ export function EnvelopeGate({
 
   useEffect(() => {
     const focusTimer = window.setTimeout(() => buttonRef.current?.focus({ preventScroll: true }), 250);
+    const previousOverflow = document.body.style.overflow;
+    if (!embedded) document.body.style.overflow = 'hidden';
     return () => {
       window.clearTimeout(focusTimer);
       timers.current.forEach((id) => window.clearTimeout(id));
       sound.current?.release(400);
+      if (!embedded) document.body.style.overflow = previousOverflow;
     };
-  }, []);
+  }, [embedded]);
 
   const open = () => {
     if (started.current) return;
@@ -82,7 +88,7 @@ export function EnvelopeGate({
 
     // Both of these must happen inside the original gesture.
     onIntent?.();
-    if (!reduce) sound.current = playCinematicOpening(kind);
+    if (!reduce) sound.current = playCinematicOpening(kind === 'gatefold' ? 'celeste' : kind);
 
     if (reduce) {
       onOpen();
@@ -90,794 +96,726 @@ export function EnvelopeGate({
     }
 
     setBegun(true);
-    SCHEDULE.forEach(([delay, next]) => {
+    setPhase(1);
+    const beats: [number, number][] =
+      kind === 'curtain' || kind === 'gatefold'
+        ? [
+            [260, 2],
+            [1900, 3],
+            [3000, 4],
+          ]
+        : [
+            [560, 2],
+            [1250, 3],
+            [2900, 4],
+          ];
+    beats.forEach(([delay, next]) => {
       timers.current.push(window.setTimeout(() => setPhase(next), delay));
     });
-    timers.current.push(window.setTimeout(onOpen, OPEN_AT));
+    timers.current.push(window.setTimeout(onOpen, CEREMONY_MS));
   };
 
-  const lifted = phase >= 1;
-  const broken = phase >= 2;
+  const opening = phase >= 1;
   const drawn = phase >= 3;
-  const expanding = phase >= 4;
-  const blooming = phase >= 5;
+  const lifting = phase >= 4;
 
-  const caption =
-    phase >= 4
-      ? t(data.settings.language, 'reveal')
-      : phase >= 2
-        ? t(data.settings.language, 'open')
-        : t(data.settings.language, 'tapSeal');
-
+  const language = data.settings.language;
+  const caption = lifting || drawn ? t(language, 'reveal') : begun ? t(language, 'open') : '';
   const tapLabel =
     kind === 'seal'
-      ? t(data.settings.language, 'tapSeal')
+      ? t(language, 'tapSeal')
       : kind === 'curtain'
-        ? t(data.settings.language, 'reveal')
-        : t(data.settings.language, 'open');
+        ? t(language, 'reveal')
+        : kind === 'gatefold'
+          ? t(language, 'reveal')
+          : t(language, 'open');
+
+  const gold = `color-mix(in srgb, var(--inv-accent) 78%, #e7cd94)`;
+  const plateWidth =
+    kind === 'curtain' || kind === 'gatefold'
+      ? 'min(88cqw, 26rem, calc(58cqh * 0.72))'
+      : 'min(94cqw, 28rem, calc(56cqh * 1.463))';
 
   return (
     <motion.div
-      className={`inv-gate inv-gate-${templateId} ${embedded ? 'inv-gate-embedded' : ''}`}
-      style={{ background: gateBg, color: gateInk }}
-      exit={{ opacity: 0, transition: { duration: 0.7, ease: 'easeOut' } }}
+      className={`inv-gate inv-gate-${kind} ${embedded ? 'inv-gate-embedded' : ''}`}
+      style={
+        {
+          background: gateBg,
+          color: gateInk,
+          '--gate-gold': gold,
+          '--gate-bottom': embedded ? '0px' : bottomInset ? `${bottomInset}px` : '0px',
+        } as React.CSSProperties
+      }
+      initial={reduce ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.55, ease: EASE_SILK }}
+      data-kind={kind}
     >
-      {/* pool of light on the table */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: `radial-gradient(ellipse at 50% 42%, color-mix(in srgb, ${gateInk} 12%, transparent), transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06), transparent 30%, rgba(0,0,0,0.22))`,
-        }}
-      />
-
-      {/* drifting dust */}
-      {!reduce && (
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          {kind === 'celeste' && (
-            <StarField className="absolute inset-0 h-full w-full text-[#cfc6ef] opacity-70" count={70} />
-          )}
-          {Array.from({ length: 16 }).map((_, i) => (
-            <motion.span
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                left: `${(i * 37 + 11) % 100}%`,
-                width: 2 + (i % 3),
-                height: 2 + (i % 3),
-                background: gateInk,
-              }}
-              initial={{ y: '104vh', opacity: 0 }}
-              animate={{ y: '-6vh', opacity: [0, 0.35, 0] }}
-              transition={{ duration: 13 + (i % 5) * 2, delay: (i % 7) * 0.9, repeat: Infinity, ease: 'linear' }}
-            />
-          ))}
-        </div>
-      )}
-
-      {!embedded && (
-        <button
-          type="button"
-          onClick={onOpen}
-          className="absolute right-4 top-4 z-40 rounded-full border px-4 py-2 text-[0.66rem] font-semibold uppercase tracking-[0.24em] transition hover:opacity-100 sm:right-6 sm:top-6"
+      <motion.div
+        className="inv-gate-panel"
+        animate={{ y: lifting ? '-100%' : '0%' }}
+        transition={{ duration: 1.05, ease: EASE_PAGE }}
+      >
+        {/* the table, the light, the grain */}
+        <div
+          className="pointer-events-none absolute inset-0"
           style={{
-            borderColor: `color-mix(in srgb, ${gateInk} 35%, transparent)`,
-            color: gateInk,
-            opacity: begun ? 0 : 0.75,
-            pointerEvents: begun ? 'none' : 'auto',
-            fontFamily: 'var(--inv-caps)',
+            background: `
+              radial-gradient(120% 74% at 50% 6%, color-mix(in srgb, ${gateInk} 14%, transparent), transparent 58%),
+              radial-gradient(90% 56% at 50% 108%, rgba(0,0,0,0.55), transparent 70%),
+              linear-gradient(178deg, color-mix(in srgb, ${gateBg} 92%, #fff) 0%, ${gateBg} 36%, color-mix(in srgb, ${gateBg} 62%, #0a0806) 100%)`,
           }}
-        >
-          Skip
-        </button>
-      )}
+        />
+        <div
+          className="cover-damask pointer-events-none absolute inset-0"
+          style={{ color: gateInk, opacity: 0.055 }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ boxShadow: 'inset 0 0 160px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.14)' }}
+        />
 
-      <div className="relative z-10 flex h-full w-full flex-col items-center justify-center px-4 py-6">
-        <motion.p
-          className="mb-4 min-h-[1.25rem] text-center text-[0.72rem] font-semibold uppercase tracking-[0.34em]"
-          style={{ fontFamily: 'var(--inv-caps)', color: gateInk }}
-          initial={reduce ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: lifted ? 0 : 0.85, y: 0 }}
-          transition={{ duration: 0.8, delay: lifted ? 0 : 0.3, ease: EASE_SILK }}
+        {/* the printed frame around the whole cover */}
+        <div
+          className="pointer-events-none absolute inset-[max(0.7rem,2.4cqw)] z-[5] border"
+          style={{ borderColor: `color-mix(in srgb, ${gateInk} 26%, transparent)` }}
+        />
+        <div
+          className="pointer-events-none absolute inset-[max(1rem,3.2cqw)] z-[5] border"
+          style={{ borderColor: `color-mix(in srgb, ${gateInk} 12%, transparent)` }}
+        />
+        <div
+          className="pointer-events-none absolute inset-[max(0.7rem,2.4cqw)] z-[5]"
+          style={{ color: `color-mix(in srgb, ${gateInk} 46%, transparent)` }}
         >
-          {guestName && data.settings.showGuestName ? `${t(data.settings.language, 'forGuest')} ${guestName}` : 'You are invited'}
-        </motion.p>
+          <RoyalCorner className="absolute left-[-1px] top-[-1px] h-[8.5cqw] w-[8.5cqw]" />
+          <RoyalCorner className="absolute right-[-1px] top-[-1px] h-[8.5cqw] w-[8.5cqw] -scale-x-100" />
+          <RoyalCorner className="absolute bottom-[-1px] left-[-1px] h-[8.5cqw] w-[8.5cqw] -scale-y-100" />
+          <RoyalCorner className="absolute bottom-[-1px] right-[-1px] h-[8.5cqw] w-[8.5cqw] -scale-100" />
+        </div>
 
-        {kind === 'celeste' ? (
-          <CelesteGatefold
-            data={data}
-            lifted={lifted}
-            broken={broken}
-            drawn={drawn}
-            expanding={expanding}
-            upper={upper}
-            embedded={embedded}
-          />
-        ) : kind === 'curtain' ? (
-          <CurtainStage
-            data={data}
-            templateId={templateId as TemplateId}
-            lifted={lifted}
-            broken={broken}
-            drawn={drawn}
-            expanding={expanding}
-            upper={upper}
-          />
-        ) : (
-          <EnvelopeStage
-            data={data}
-            templateId={templateId as TemplateId}
-            kind={kind}
-            lifted={lifted}
-            broken={broken}
-            drawn={drawn}
-            expanding={expanding}
-            upper={upper}
-          />
+        {!embedded && (
+          <button
+            type="button"
+            onClick={onOpen}
+            className="inv-gate-skip"
+            style={{
+              borderColor: `color-mix(in srgb, ${gateInk} 30%, transparent)`,
+              color: gateInk,
+              opacity: begun ? 0 : 0.72,
+              pointerEvents: begun ? 'none' : 'auto',
+            }}
+          >
+            Skip
+          </button>
         )}
 
-        {/* tap cue */}
-        <motion.div
-          className="mt-5 flex min-h-[3.4rem] flex-col items-center gap-2 text-center"
-          initial={false}
-          animate={{ opacity: lifted ? 0 : 1 }}
-          transition={{ duration: 0.6 }}
-        >
-          <motion.span
-            className="text-[0.78rem] font-semibold uppercase tracking-[0.44em]"
-            style={{ fontFamily: 'var(--inv-caps)', color: gateInk }}
-            animate={reduce || begun ? undefined : { opacity: [0.65, 1, 0.65] }}
-            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            {tapLabel}
-          </motion.span>
-          {data.music.enabled && (
-            <span
-              className="flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.2em]"
-              style={{ fontFamily: 'var(--inv-caps)', color: gateInk, opacity: 0.6 }}
-            >
-              <Music2 size={12} aria-hidden /> Music begins as it opens
-            </span>
-          )}
-        </motion.div>
-
-        {/* ceremony progress */}
-        <div
-          className="mt-1 flex w-44 flex-col items-center gap-2 transition-opacity duration-700"
-          style={{ opacity: begun ? 1 : 0 }}
-          aria-hidden="true"
-        >
-          <div
-            className="h-px w-full overflow-hidden"
-            style={{ background: `color-mix(in srgb, ${gateInk} 22%, transparent)` }}
-          >
-            <motion.div
-              className="h-full w-full origin-left"
-              style={{ background: 'linear-gradient(90deg, #8a6a3c, #e6c886, #8a6a3c)' }}
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: begun ? 1 : 0 }}
-              transition={{ duration: OPEN_AT / 1000, ease: 'linear' }}
-            />
+        {/* drifting flecks of light */}
+        {!reduce && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+            {kind === 'gatefold' && (
+              <StarField className="absolute inset-0 h-full w-full text-[#e4dcff] opacity-45" count={48} />
+            )}
+            {Array.from({ length: 14 }).map((_, i) => (
+              <motion.span
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  left: `${(i * 41 + 9) % 100}%`,
+                  width: 1.5 + (i % 3),
+                  height: 1.5 + (i % 3),
+                  background: `color-mix(in srgb, ${gateInk} 70%, #e8d3a4)`,
+                }}
+                initial={{ y: '104%', opacity: 0 }}
+                animate={{ y: '-6%', opacity: [0, 0.3, 0] }}
+                transition={{ duration: 16 + (i % 5) * 3, delay: (i % 7) * 1.1, repeat: Infinity, ease: 'linear' }}
+              />
+            ))}
           </div>
-          <span
-            className="text-[0.6rem] uppercase tracking-[0.3em]"
-            style={{ fontFamily: 'var(--inv-caps)', color: gateInk, opacity: 0.7 }}
-          >
-            {caption}
-          </span>
+        )}
+
+        <div className="inv-gate-stage">
+          <div className="inv-gate-top">
+            <span className="inv-gate-kicker" style={{ color: `color-mix(in srgb, ${gateInk} 78%, transparent)` }}>
+              {guestName && data.settings.showGuestName
+                ? `${t(language, 'forGuest')} ${guestName}`
+                : 'You are invited'}
+            </span>
+            <span className="inv-gate-toporn" aria-hidden style={{ color: `color-mix(in srgb, ${gateInk} 46%, #b98c4d)` }}>
+              <span className="h-px w-7 bg-current opacity-50" />
+              <span className="size-1 rotate-45 border border-current" />
+              <span className="h-px w-7 bg-current opacity-50" />
+            </span>
+          </div>
+
+          <div className="inv-gate-object" style={{ width: plateWidth }}>
+            {kind === 'curtain' ? (
+              <CurtainStage
+                data={data}
+                templateId={template.id as TemplateId}
+                upper={upper}
+                opening={opening}
+              />
+            ) : kind === 'gatefold' ? (
+              <GatefoldStage
+                data={data}
+                templateId={template.id as TemplateId}
+                upper={upper}
+                opening={opening}
+              />
+            ) : (
+              <EnvelopeStage
+                data={data}
+                templateId={template.id as TemplateId}
+                upper={upper}
+                kind={kind}
+                opening={opening}
+                cracked={phase >= 1}
+                drawn={drawn}
+              />
+            )}
+          </div>
+
+          <div className="inv-gate-bottom">
+            <motion.div
+              className="inv-gate-ident"
+              animate={begun ? { opacity: 0, y: -10 } : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: EASE_SILK }}
+            >
+              <h1
+                className={`inv-gate-names ${upper ? 'uppercase' : ''}`}
+                style={{ letterSpacing: template.cover.namesCase === 'upper' ? '0.06em' : template.cover.tracking }}
+              >
+                {data.coupleA}
+                <span className="inv-gate-amp" style={{ color: `color-mix(in srgb, ${gateInk} 55%, #b98c4d)` }}>
+                  &amp;
+                </span>
+                {data.coupleB}
+              </h1>
+              <p className="inv-gate-date">
+                {formatDateShort(data.weddingDate)}
+                <span aria-hidden> · </span>
+                {data.location.split(',')[0]}
+              </p>
+            </motion.div>
+
+            <div className="inv-gate-cue-wrap">
+              <motion.div
+                className="inv-gate-cue"
+                animate={{ opacity: begun ? 0 : 1 }}
+                transition={{ duration: 0.35 }}
+              >
+                <span className="inv-gate-tapline" style={{ color: `color-mix(in srgb, ${gateInk} 65%, #b98c4d)` }}>
+                  <span className="h-px w-8 bg-current opacity-60" aria-hidden />
+                  <span className="inv-gate-tap">{tapLabel}</span>
+                  <span className="h-px w-8 bg-current opacity-60" aria-hidden />
+                </span>
+                {data.music.enabled && (
+                  <span className="inv-gate-music">
+                    <Music2 size={11} aria-hidden /> Music begins as it opens
+                  </span>
+                )}
+              </motion.div>
+
+              <motion.div
+                className="inv-gate-progress"
+                animate={{ opacity: begun ? 1 : 0 }}
+                transition={{ duration: 0.4 }}
+                aria-hidden="true"
+              >
+                <span className="inv-gate-caption">{caption}</span>
+                <span className="inv-gate-track">
+                  <motion.span
+                    className="inv-gate-track-fill"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: begun ? 1 : 0 }}
+                    transition={{ duration: CEREMONY_MS / 1000, ease: 'linear' }}
+                  />
+                </span>
+              </motion.div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* the paper blooms to fill the screen, then hands over to the invitation */}
-      <motion.div
-        className="pointer-events-none absolute inset-0 z-20"
-        style={{ background: 'var(--inv-bg)' }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: blooming ? 1 : 0 }}
-        transition={{ duration: 1.5, ease: EASE_SILK }}
-      />
-
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={open}
-        aria-label={tapLabel}
-        className="absolute inset-0 z-30 cursor-pointer"
-        style={{ opacity: begun ? 0 : 1, pointerEvents: begun ? 'none' : 'auto' }}
-      />
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={open}
+          aria-label={tapLabel}
+          className="inv-gate-hit"
+          style={{ opacity: begun ? 0 : 1, pointerEvents: begun ? 'none' : 'auto' }}
+        />
+      </motion.div>
     </motion.div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* The letter shared by every ceremony                                 */
+/* The letter — used as the inside of every cover                      */
 /* ------------------------------------------------------------------ */
 
-function LetterCard({
+function InvitationPlate({
   data,
   templateId,
+  tone = 'paper',
   upper,
   compact,
 }: {
   data: InvitationData;
   templateId: TemplateId;
-  upper: boolean;
+  tone?: 'paper' | 'night';
+  upper?: boolean;
   compact?: boolean;
 }) {
+  const night = tone === 'night';
+  const ink = night ? '#f7f2e6' : 'var(--inv-ink)';
+  const accent = night ? 'color-mix(in srgb, var(--inv-accent) 72%, #ecd9ab)' : 'var(--inv-accent)';
+  const muted = night ? 'color-mix(in srgb, #f7f2e6 64%, transparent)' : 'var(--inv-muted)';
+  const line = night
+    ? 'color-mix(in srgb, var(--inv-accent) 40%, transparent)'
+    : 'color-mix(in srgb, var(--inv-accent) 42%, transparent)';
+
   return (
     <div
-      className="relative flex h-full w-full flex-col items-center justify-center text-center"
+      className="inv-plate"
       style={{
-        background: 'linear-gradient(165deg, #fffef9 0%, var(--inv-surface) 46%, color-mix(in srgb, var(--inv-surface) 82%, var(--inv-accent-soft)) 100%)',
-        color: 'var(--inv-ink)',
-        containerType: 'inline-size',
-        padding: compact ? '6cqw 7cqw' : '5cqw 6cqw',
+        background: night
+          ? 'linear-gradient(168deg, #10162c 0%, #1a2140 46%, #0a0e1e 100%)'
+          : 'linear-gradient(166deg, #fffdf7 0%, var(--inv-surface) 46%, color-mix(in srgb, var(--inv-surface) 84%, var(--inv-accent-soft)) 100%)',
+        color: ink,
+        padding: compact ? '8cqh 7.5cqw 0' : '7% 8.5%',
       }}
     >
-      <div
-        className="pointer-events-none absolute"
-        style={{ inset: '3.5%', border: '1px solid color-mix(in srgb, var(--inv-accent) 45%, transparent)' }}
-      />
-      <div
-        className="pointer-events-none absolute"
-        style={{ inset: '5%', border: '1px solid color-mix(in srgb, var(--inv-accent) 22%, transparent)' }}
-      />
-      <TemplateMark templateId={templateId} className="h-[4.5cqw] w-[16cqw] text-[var(--inv-accent)]" />
-      <p
-        className="mt-[3cqw] text-[2.6cqw] font-semibold uppercase"
-        style={{ fontFamily: 'var(--inv-caps)', letterSpacing: '0.34em', color: 'var(--inv-muted)' }}
-      >
-        Together with our families
-      </p>
-      <p
-        className={`mt-[2.5cqw] leading-[1.04] ${upper ? 'uppercase' : ''}`}
-        style={{ fontFamily: 'var(--inv-display)', fontSize: '10.5cqw', letterSpacing: '-0.015em' }}
-      >
-        {data.coupleA}
-      </p>
-      <p className="leading-none" style={{ fontFamily: 'var(--inv-script)', fontSize: '8cqw', color: 'var(--inv-accent)', margin: '0.5cqw 0' }}>
-        &
-      </p>
-      <p
-        className={`leading-[1.04] ${upper ? 'uppercase' : ''}`}
-        style={{ fontFamily: 'var(--inv-display)', fontSize: '10.5cqw', letterSpacing: '-0.015em' }}
-      >
-        {data.coupleB}
-      </p>
-      <span className="mt-[3.5cqw] flex items-center gap-[2cqw]" style={{ color: 'var(--inv-accent)' }} aria-hidden>
-        <span className="h-px w-[10cqw] bg-current opacity-70" />
-        <span className="size-[1.4cqw] rotate-45 bg-current" />
-        <span className="h-px w-[10cqw] bg-current opacity-70" />
-      </span>
-      <p
-        className="mt-[2.5cqw] text-[3cqw] font-medium uppercase"
-        style={{ fontFamily: 'var(--inv-caps)', letterSpacing: '0.28em', color: 'var(--inv-ink)' }}
-      >
-        {formatDateShort(data.weddingDate)} · {data.location.split(',')[0]}
-      </p>
+      {night && <StarField className="absolute inset-0 h-full w-full text-[#efeaff] opacity-45" count={64} />}
+      {!night && (
+        <div className="pointer-events-none absolute inset-0" style={{ color: 'var(--inv-accent)' }}>
+          <TemplateArt templateId={templateId} className="h-full w-full opacity-[0.06]" />
+        </div>
+      )}
+      <div className="pointer-events-none absolute inset-0" style={{ background: night
+        ? 'radial-gradient(80% 44% at 50% 0%, rgba(203,185,230,0.18), transparent 62%)'
+        : 'radial-gradient(74% 40% at 50% 2%, rgba(255,255,255,0.75), transparent 60%)' }} />
+      <div className="pointer-events-none absolute inset-[4.2%] border" style={{ borderColor: line }} />
+      <div className="pointer-events-none absolute inset-[5.8%] border" style={{ borderColor: 'color-mix(in srgb, var(--inv-accent) 20%, transparent)' }} />
+      <div className="pointer-events-none absolute inset-[4.2%]" style={{ color: accent }}>
+        <RoyalCorner className="absolute left-[-1px] top-[-1px] h-[7.5cqw] w-[7.5cqw] opacity-80" />
+        <RoyalCorner className="absolute right-[-1px] top-[-1px] h-[7.5cqw] w-[7.5cqw] -scale-x-100 opacity-80" />
+        <RoyalCorner className="absolute bottom-[-1px] left-[-1px] h-[7.5cqw] w-[7.5cqw] -scale-y-100 opacity-80" />
+        <RoyalCorner className="absolute bottom-[-1px] right-[-1px] h-[7.5cqw] w-[7.5cqw] -scale-100 opacity-80" />
+      </div>
+
+      <div className={`relative flex h-full flex-col items-center text-center ${compact ? 'justify-start' : 'justify-between'}`}>
+        {/* crest */}
+        <div className="flex flex-col items-center">
+          <span
+            className={`relative grid flex-none place-items-center rounded-full border ${compact ? 'h-[15.4cqh] w-[15.4cqh]' : 'h-[18cqw] w-[18cqw]'}`}
+            style={{ borderColor: line, color: accent }}
+          >
+            <LaurelCrest className="absolute inset-[5%] h-[90%] w-[90%] opacity-55" />
+            <span
+              className="relative"
+              style={{
+                fontFamily: 'var(--inv-script)',
+                fontSize: compact ? 'clamp(13px, 6.6cqh, 22px)' : 'clamp(15px, 7.2cqw, 25px)',
+                lineHeight: 1,
+                paddingTop: '0.14em',
+                color: accent,
+              }}
+            >
+              {data.monogram}
+            </span>
+          </span>
+          <p
+            className={`uppercase ${compact ? 'mt-[2.6cqh] text-[2.2cqw]' : 'mt-[5.2%] text-[2.85cqw]'}`}
+            style={{ fontFamily: 'var(--inv-caps)', letterSpacing: compact ? '0.24em' : '0.32em', color: muted }}
+          >
+            Together with our families
+          </p>
+        </div>
+
+        {/* names */}
+        <div className="flex flex-col items-center">
+          {compact ? (
+            <div className={`mt-[2.2cqh] flex flex-col items-center ${upper ? 'uppercase' : ''}`}>
+              <span
+                className="leading-[1.02]"
+                style={{
+                  fontFamily: 'var(--inv-display)',
+                  fontSize: upper ? 'clamp(15px, 8.4cqh, 24px)' : 'clamp(20px, 10.4cqh, 31px)',
+                  letterSpacing: upper ? '0.05em' : '-0.015em',
+                  color: ink,
+                }}
+              >
+                {data.coupleA}
+              </span>
+              <span
+                className="leading-none"
+                style={{ fontFamily: 'var(--inv-script)', fontSize: 'clamp(13px, 6.4cqh, 21px)', color: accent, margin: '0.16em 0' }}
+              >
+                &amp;
+              </span>
+              <span
+                className="leading-[1.02]"
+                style={{
+                  fontFamily: 'var(--inv-display)',
+                  fontSize: upper ? 'clamp(15px, 8.4cqh, 24px)' : 'clamp(20px, 10.4cqh, 31px)',
+                  letterSpacing: upper ? '0.05em' : '-0.015em',
+                  color: ink,
+                }}
+              >
+                {data.coupleB}
+              </span>
+            </div>
+          ) : (
+            <p
+              className={`max-w-[96%] leading-[1.02] ${upper ? 'uppercase' : ''}`}
+              style={{
+                fontFamily: 'var(--inv-display)',
+                fontSize: upper ? 'clamp(19px, 7.8cqw, 29px)' : 'clamp(26px, 9.9cqw, 38px)',
+                letterSpacing: upper ? '0.05em' : '-0.02em',
+                color: ink,
+                textWrap: 'balance',
+              }}
+            >
+              {data.coupleA}
+              <span
+                className="mx-[2cqw] inline-block align-middle"
+                style={{ fontFamily: 'var(--inv-script)', fontSize: '0.82em', color: accent, letterSpacing: 0 }}
+              >
+                &amp;
+              </span>
+              {data.coupleB}
+            </p>
+          )}
+
+          <DiamondRule className={compact ? 'mt-[2.4cqh] h-[1.8cqh] w-[44%]' : 'mt-[4.4%] h-[2.6cqw] w-[46%]'} />
+          <p
+            className={`uppercase ${compact ? 'mt-[2.2cqh] text-[2.5cqw]' : 'mt-[4%] text-[3cqw]'}`}
+            style={{ fontFamily: 'var(--inv-caps)', letterSpacing: '0.24em', color: ink }}
+          >
+            {formatDateShort(data.weddingDate)}
+          </p>
+          <p
+            className={`max-w-[92%] uppercase ${compact ? 'mt-[0.7cqh] text-[2.1cqw]' : 'mt-[1.8%] text-[2.7cqw]'}`}
+            style={{ fontFamily: 'var(--inv-caps)', letterSpacing: '0.22em', color: muted }}
+          >
+            {compact ? data.location.split(',')[0] : data.location}
+          </p>
+        </div>
+
+        {/* maker's mark */}
+        <span
+          className={`flex flex-col items-center ${compact ? 'mt-auto pb-[3.4cqh]' : 'gap-[2.4cqw]'}`}
+          style={{ color: accent }}
+        >
+          <TemplateMark templateId={templateId} className={`${compact ? 'h-[3.4cqh] w-[18cqw]' : 'h-[4.2cqw] w-[20cqw]'} opacity-60`} />
+        </span>
+      </div>
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Seal & ribbon — the embroidered envelope                            */
+/* Wax seal & silk ribbon — a folio with the letter waiting inside     */
 /* ------------------------------------------------------------------ */
 
 function EnvelopeStage({
   data,
   templateId,
-  kind,
-  lifted,
-  broken,
-  drawn,
-  expanding,
   upper,
+  kind,
+  opening,
+  cracked,
+  drawn,
 }: {
   data: InvitationData;
   templateId: TemplateId;
-  kind: 'seal' | 'ribbon';
-  lifted: boolean;
-  broken: boolean;
-  drawn: boolean;
-  expanding: boolean;
   upper: boolean;
+  kind: 'seal' | 'ribbon';
+  opening: boolean;
+  cracked: boolean;
+  drawn: boolean;
 }) {
   const reduce = useReducedMotion();
   return (
-    <motion.div
-      className="relative w-[min(88vw,30rem)]"
-      style={{ aspectRatio: '3 / 2.1', perspective: '1400px' }}
-      initial={reduce ? false : { opacity: 0, y: 30, scale: 0.97 }}
-      animate={{ opacity: 1, y: lifted && !drawn ? -10 : 0, scale: 1 }}
-      transition={{ duration: lifted ? 1.8 : 1.2, ease: EASE_SILK }}
-    >
-      {/* shadow pooled beneath */}
+    <div className="gate-folio">
       <motion.div
-        className="absolute -bottom-7 left-1/2 h-8 w-[86%] -translate-x-1/2 rounded-[50%] bg-black/45 blur-xl"
+        className="gate-folio-shadow"
         initial={false}
-        animate={{ opacity: lifted && !expanding ? 0.55 : 0.35, scaleX: lifted && !expanding ? 0.92 : 1 }}
-        transition={{ duration: 1.6, ease: EASE_SILK }}
+        animate={{ opacity: opening ? 0.5 : 0.34 }}
+        transition={{ duration: 1.2 }}
         aria-hidden="true"
       />
 
-      {/* envelope back */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(150deg, color-mix(in srgb, var(--inv-surface) 94%, #fff), color-mix(in srgb, var(--inv-surface) 84%, var(--inv-accent-soft)))',
-          border: '1px solid color-mix(in srgb, var(--inv-line) 80%, transparent)',
-          borderRadius: 3,
-          boxShadow: lifted && !expanding ? '0 60px 100px -40px rgba(0,0,0,0.55)' : '0 34px 70px -40px rgba(0,0,0,0.45)',
-        }}
-      />
+      <div className="gate-folio-body">
+        {/* the folio's back board */}
+        <div className="gate-folio-back" />
+        <div className="gate-folio-grain" aria-hidden />
 
-      {/* the letter, waiting inside */}
-      <motion.div
-        className="absolute overflow-hidden"
-        style={{ left: '5%', right: '5%', bottom: '7%', height: '86%', zIndex: 2, borderRadius: 2 }}
-        initial={false}
-        animate={{
-          y: drawn ? '-54%' : lifted ? '-4%' : '0%',
-          scale: 1,
-        }}
-        transition={
-          drawn
-            ? { y: { duration: 2.4, ease: EASE_SILK } }
-            : { duration: 1.4, ease: EASE_SILK }
-        }
-      >
-        <LetterCard data={data} templateId={templateId} upper={upper} compact />
-      </motion.div>
-
-      {/* envelope front pocket */}
-      <div
-        className="absolute inset-0"
-        style={{
-          zIndex: 4,
-          clipPath: 'polygon(0 100%, 0 26%, 50% 60%, 100% 26%, 100% 100%)',
-          background: 'linear-gradient(165deg, color-mix(in srgb, var(--inv-surface) 97%, #fff), color-mix(in srgb, var(--inv-surface) 86%, var(--inv-line)))',
-          borderRadius: 3,
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          zIndex: 4,
-          clipPath: 'polygon(0 100%, 0 26%, 50% 60%, 100% 26%, 100% 100%)',
-          boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--inv-line) 60%, transparent)',
-          borderRadius: 3,
-        }}
-      />
-      {/* embroidered edge along the pocket */}
-      <svg viewBox="0 0 300 210" className="absolute inset-0 z-[4] h-full w-full" aria-hidden="true" preserveAspectRatio="none">
-        <path
-          d="M4 206 L4 60 L150 128 L296 60 L296 206"
-          fill="none"
-          stroke="var(--inv-accent)"
-          strokeOpacity="0.55"
-          strokeWidth="1.6"
-          strokeDasharray="5 5"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
-
-      {/* the flap */}
-      <motion.div
-        className="absolute inset-0"
-        style={{
-          zIndex: drawn ? 1 : 3,
-          transformOrigin: 'top center',
-          clipPath: 'polygon(0 0, 100% 0, 50% 60%)',
-          background: 'linear-gradient(180deg, color-mix(in srgb, var(--inv-surface) 90%, var(--inv-accent-soft)), color-mix(in srgb, var(--inv-surface) 96%, #fff))',
-          borderRadius: 3,
-          backfaceVisibility: 'hidden',
-        }}
-        initial={false}
-        animate={{ rotateX: drawn ? -168 : 0 }}
-        transition={{ duration: 1.7, ease: EASE_DOOR }}
-      />
-      <motion.div
-        className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-[62%]"
-        style={{
-          background: 'linear-gradient(180deg, rgba(0,0,0,0.16), transparent)',
-          clipPath: 'polygon(0 0, 100% 0, 50% 96%)',
-          transformOrigin: 'top center',
-        }}
-        initial={false}
-        animate={{ opacity: drawn ? 0 : 1, rotateX: drawn ? -168 : 0 }}
-        transition={{ duration: 1.7, ease: EASE_DOOR }}
-      />
-
-      {/* corner embroidery */}
-      {(['left-2 top-2', 'right-2 top-2 -scale-x-100', 'bottom-2 left-2 -scale-y-100', 'bottom-2 right-2 -scale-100'] as const).map((pos) => (
-        <CornerFlourish key={pos} className={`absolute z-[5] h-6 w-6 text-[var(--inv-accent)] opacity-70 ${pos}`} />
-      ))}
-
-      {/* the fastening */}
-      {kind === 'seal' ? (
+        {/* the letter, tucked under the pocket */}
         <motion.div
-          className="absolute left-1/2 top-[46%] z-[6] -translate-x-1/2 -translate-y-1/2"
-          style={{ color: 'color-mix(in srgb, var(--inv-accent) 78%, #4a1f1f)' }}
+          className="gate-folio-letter"
           initial={false}
-          animate={{ opacity: drawn ? 0 : 1, y: drawn ? 46 : 0, scale: broken && !drawn ? 1.12 : 1 }}
-          transition={{ duration: drawn ? 0.9 : 0.5, ease: EASE_SILK }}
+          animate={drawn ? { y: '-48%' } : { y: '0%' }}
+          transition={{ duration: 1.5, ease: EASE_SILK }}
         >
-          <motion.div
-            animate={reduce || broken ? undefined : { scale: [1, 1.045, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <WaxSeal monogram={data.monogram} cracked={broken} className="h-20 w-20 drop-shadow-[0_14px_20px_rgba(0,0,0,0.4)] sm:h-24 sm:w-24" />
-          </motion.div>
+          <InvitationPlate data={data} templateId={templateId} tone="paper" upper={upper} compact />
         </motion.div>
-      ) : (
-        <>
-          {/* silk bands */}
-          <motion.div
-            className="absolute inset-y-0 left-1/2 z-[5] w-[9%] -translate-x-1/2"
-            style={{ background: 'linear-gradient(90deg, #7d5628, #dcb876 48%, #7d5628)', boxShadow: '0 0 18px rgba(0,0,0,0.25)' }}
-            initial={false}
-            animate={{ x: broken ? '-420%' : '-50%', opacity: broken ? 0 : 1, rotate: broken ? -6 : 0 }}
-            transition={{ duration: 1.5, ease: EASE_DOOR }}
-          />
-          <motion.div
-            className="absolute inset-x-0 top-1/2 z-[5] h-[13%] -translate-y-1/2"
-            style={{ background: 'linear-gradient(180deg, #7d5628, #dcb876 48%, #7d5628)', boxShadow: '0 0 18px rgba(0,0,0,0.25)' }}
-            initial={false}
-            animate={{ x: broken ? '60%' : '0%', opacity: broken ? 0 : 1, rotate: broken ? 6 : 0 }}
-            transition={{ duration: 1.5, ease: EASE_DOOR }}
-          />
-          <motion.div
-            className="absolute left-1/2 top-1/2 z-[6] -translate-x-1/2 -translate-y-1/2"
-            initial={false}
-            animate={{ opacity: drawn ? 0 : 1, y: drawn ? 40 : broken ? 8 : 0, scale: broken ? 0.86 : 1, rotate: broken ? -10 : 0 }}
-            transition={{ duration: drawn ? 0.9 : 1.1, ease: EASE_SILK }}
-          >
-            <motion.div
-              animate={reduce || broken ? undefined : { scale: [1, 1.04, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <GoldBow className="h-[74px] w-[96px] drop-shadow-[0_14px_18px_rgba(60,40,16,0.45)] sm:h-[86px] sm:w-[112px]" />
-            </motion.div>
-          </motion.div>
-        </>
-      )}
 
-      {/* light travelling across the paper */}
-      {!reduce && (
-        <div className="pointer-events-none absolute inset-0 z-[7] overflow-hidden" aria-hidden="true" style={{ borderRadius: 3 }}>
-          <motion.div
-            className="absolute inset-y-0 w-[55%]"
-            style={{
-              background: 'linear-gradient(105deg, transparent 0%, rgba(255,244,214,0) 20%, rgba(255,244,214,0.5) 50%, rgba(255,244,214,0) 80%, transparent 100%)',
-              mixBlendMode: 'soft-light',
-            }}
-            initial={{ x: '-120%' }}
-            animate={{ x: lifted ? '260%' : '-120%' }}
-            transition={{ duration: 2, ease: EASE_SILK }}
-          />
+        {/* the pocket: blind-embossed, stitched along its top edge */}
+        <div className="gate-folio-pocket">
+          <div className="gate-folio-pocket-inner" />
+          <div className="gate-folio-stitch" aria-hidden />
+          <div className="gate-folio-pocket-emboss" aria-hidden>
+            <span className="gate-folio-pocket-rule" />
+            <span className="gate-folio-pocket-caption">An invitation</span>
+          </div>
+          <div className="gate-folio-pocket-mark" aria-hidden>
+            <TemplateMark templateId={templateId} className="h-[4cqw] w-[18cqw] opacity-35" />
+          </div>
         </div>
-      )}
 
-      {/* the letter's final bloom toward the camera */}
-      <ExpandingVeil active={expanding}>
-        <LetterCard data={data} templateId={templateId} upper={upper} compact />
-      </ExpandingVeil>
-    </motion.div>
-  );
-}
+        {/* silk, for the ribbon covers */}
+        {kind === 'ribbon' && (
+          <>
+            <motion.div
+              className="gate-folio-ribbon gate-folio-ribbon-v"
+              initial={false}
+              animate={opening ? { y: '120%', opacity: 0 } : { y: '0%', opacity: 1 }}
+              transition={{ duration: 1.25, ease: EASE_PAGE }}
+            />
+            <motion.div
+              className="gate-folio-ribbon gate-folio-ribbon-h"
+              initial={false}
+              animate={opening ? { x: '120%', opacity: 0 } : { x: '0%', opacity: 1 }}
+              transition={{ duration: 1.25, ease: EASE_PAGE, delay: 0.1 }}
+            />
+          </>
+        )}
 
-/** A duplicate of the letter that blooms to fill the screen for the handover. */
-function ExpandingVeil({ active, children }: { active: boolean; children: React.ReactNode }) {
-  const reduce = useReducedMotion();
-  if (!active || reduce) return null;
-  return (
-    <motion.div
-      className="absolute overflow-hidden"
-      style={{ left: '5%', right: '5%', bottom: '7%', height: '86%', zIndex: 8, borderRadius: 2 }}
-      initial={{ y: '-54%', scale: 1 }}
-      animate={{ y: '-54%', scale: 9 }}
-      transition={{ duration: 2.1, ease: EASE_EXPAND }}
-    >
-      {children}
-    </motion.div>
+        {/* the fastening, at the foot of the pocket */}
+        <motion.div
+          className={`gate-folio-seal gate-folio-seal-${kind}`}
+          style={{ color: 'color-mix(in srgb, #7b2938 86%, var(--inv-accent))' }}
+          initial={false}
+          animate={opening ? { y: 26, opacity: 0, rotate: -7 } : { y: 0, opacity: 1, rotate: 0 }}
+          transition={{ duration: 1, ease: EASE_SILK, delay: opening ? 0.5 : 0 }}
+        >
+          {kind === 'seal' ? (
+            <motion.div
+              animate={reduce || cracked ? undefined : { y: [0, -2.5, 0] }}
+              transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <WaxSeal monogram={data.monogram} cracked={cracked} className="h-auto w-full" />
+            </motion.div>
+          ) : (
+            <motion.div
+              animate={opening ? { rotate: -10, y: 8 } : reduce ? undefined : { y: [0, -2, 0] }}
+              transition={opening ? { duration: 0.9, ease: EASE_SILK } : { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <GoldBow className="h-auto w-[98%] -translate-x-[1%]" />
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* corner embroidery */}
+        <div className="pointer-events-none absolute inset-0" style={{ color: 'var(--inv-accent)' }}>
+          <CornerFlourish className="absolute left-[3.4%] top-[3.4%] h-[7cqw] w-[7cqw] opacity-45" />
+          <CornerFlourish className="absolute right-[3.4%] top-[3.4%] h-[7cqw] w-[7cqw] -scale-x-100 opacity-45" />
+          <CornerFlourish className="absolute bottom-[3.4%] left-[3.4%] h-[7cqw] w-[7cqw] -scale-y-100 opacity-45" />
+          <CornerFlourish className="absolute bottom-[3.4%] right-[3.4%] h-[7cqw] w-[7cqw] -scale-100 opacity-45" />
+        </div>
+
+        {/* light travelling across the board */}
+        {!reduce && (
+          <div className="gate-folio-sheen" aria-hidden>
+            <motion.div
+              className="gate-folio-sheen-bar"
+              initial={{ x: '-130%' }}
+              animate={{ x: opening ? '260%' : '-130%' }}
+              transition={{ duration: 2, ease: EASE_SILK }}
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Curtain — the theatre drapes part                                     */
+/* Curtain — a theatre valance, parted by hand                         */
 /* ------------------------------------------------------------------ */
 
 function CurtainStage({
   data,
   templateId,
-  lifted,
-  broken,
-  drawn,
-  expanding,
   upper,
+  opening,
 }: {
   data: InvitationData;
   templateId: TemplateId;
-  lifted: boolean;
-  broken: boolean;
-  drawn: boolean;
-  expanding: boolean;
   upper: boolean;
+  opening: boolean;
 }) {
-  const reduce = useReducedMotion();
-  const fabric =
-    'repeating-linear-gradient(90deg, rgba(0,0,0,0.4) 0 5px, rgba(255,255,255,0.05) 5px 9px, transparent 9px 22px), linear-gradient(90deg, #0c0a09, var(--inv-deep) 30%, color-mix(in srgb, var(--inv-deep) 70%, var(--inv-accent)) 50%, var(--inv-deep) 70%, #0c0a09)';
   return (
-    <motion.div
-      className="relative w-[min(84vw,23rem)]"
-      style={{ aspectRatio: '3 / 4.1', perspective: '1400px' }}
-      initial={reduce ? false : { opacity: 0, y: 26 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1.2, ease: EASE_SILK }}
-    >
-      {/* the invitation waiting behind the drapes */}
-      <motion.div
-        className="absolute inset-0 overflow-hidden"
-        style={{
-          borderRadius: 3,
-          boxShadow: '0 50px 100px -40px rgba(0,0,0,0.6)',
-          filter: broken ? 'brightness(1)' : 'brightness(0.5)',
-        }}
-        initial={false}
-        animate={{
-          scale: expanding ? 9 : drawn ? 1.05 : lifted ? 1.02 : 1,
-          filter: broken ? 'brightness(1)' : 'brightness(0.5)',
-        }}
-        transition={
-          expanding
-            ? { duration: 2.1, ease: EASE_EXPAND }
-            : { duration: 1.8, ease: EASE_SILK }
-        }
-      >
-        <LetterCard data={data} templateId={templateId} upper={upper} />
-      </motion.div>
+    <div className="gate-curtain" style={{ aspectRatio: '3 / 4.15' }}>
+      {/* the invitation waiting in the light */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute inset-0"
+          initial={false}
+          animate={{ opacity: opening ? 1 : 0.82 }}
+          transition={{ duration: 1.6, ease: EASE_SILK }}
+        >
+          <InvitationPlate data={data} templateId={templateId} tone="paper" upper={upper} />
+        </motion.div>
+        <motion.div
+          className="absolute inset-0 bg-black"
+          initial={false}
+          animate={{ opacity: opening ? 0 : 0.42 }}
+          transition={{ duration: 2.2, ease: EASE_SILK }}
+          aria-hidden
+        />
+      </div>
 
       {/* the drapes */}
       {(['left', 'right'] as const).map((side) => (
         <motion.div
           key={side}
-          className="absolute inset-y-[-4%] w-[54%]"
+          className="gate-curtain-panel"
           style={{
-            [side]: '-2%',
-            background: fabric,
-            boxShadow: side === 'left' ? '12px 0 30px -12px rgba(0,0,0,0.7)' : '-12px 0 30px -12px rgba(0,0,0,0.7)',
-            borderLeft: side === 'right' ? '2px solid color-mix(in srgb, var(--inv-accent) 70%, #fff)' : undefined,
-            borderRight: side === 'left' ? '2px solid color-mix(in srgb, var(--inv-accent) 70%, #fff)' : undefined,
+            [side]: '-1.5%',
+            boxShadow: side === 'left' ? '14px 0 30px -14px rgba(0,0,0,0.78)' : '-14px 0 30px -14px rgba(0,0,0,0.78)',
           }}
           initial={false}
-          animate={{ x: broken ? (side === 'left' ? '-108%' : '108%') : '0%' }}
-          transition={{ duration: 2.9, ease: EASE_DOOR }}
+          animate={{ x: opening ? (side === 'left' ? '-103%' : '103%') : '0%' }}
+          transition={{ duration: 2.3, ease: EASE_DOOR }}
         >
           <div
-            className="absolute inset-y-0 w-10"
+            className="absolute inset-y-0 w-px"
             style={{
               [side === 'left' ? 'right' : 'left']: 0,
-              background: 'linear-gradient(90deg, transparent, rgba(0,0,0,0.45))',
-              transform: side === 'left' ? undefined : 'scaleX(-1)',
+              background: 'color-mix(in srgb, var(--inv-accent) 78%, #f4e2ba)',
+              opacity: 0.7,
+            }}
+          />
+          <div
+            className="absolute inset-y-0 w-6"
+            style={{
+              [side === 'left' ? 'right' : 'left']: 0,
+              background: side === 'left' ? 'linear-gradient(90deg, transparent, rgba(0,0,0,0.5))' : 'linear-gradient(270deg, transparent, rgba(0,0,0,0.5))',
             }}
           />
         </motion.div>
       ))}
 
-      {/* valance */}
-      <div
-        className="absolute inset-x-[-4%] top-[-4%] z-[5] h-14"
-        style={{
-          background: `${fabric}, var(--inv-deep)`,
-          borderBottom: '1px solid color-mix(in srgb, var(--inv-accent) 60%, transparent)',
-          boxShadow: '0 14px 30px -14px rgba(0,0,0,0.7)',
-        }}
-      >
-        <div className="flex h-full items-center justify-center">
-          <TemplateMark templateId={templateId} className="h-6 w-24 text-[var(--inv-accent)]" />
+      {/* the valance with its fringe */}
+      <div className="gate-curtain-valance">
+        <div className="gate-curtain-valance-cloth" />
+        <div className="gate-curtain-medallion">
+          <span>{data.monogram}</span>
         </div>
+        <div className="gate-curtain-fringe" aria-hidden />
       </div>
 
-      {/* the medallion that parts them */}
+      {/* silk cord and two tassels, hung from the crest */}
       <motion.div
-        className="absolute left-1/2 top-1/2 z-[6] -translate-x-1/2 -translate-y-1/2"
-        style={{ color: 'color-mix(in srgb, var(--inv-accent) 80%, #3a2a12)' }}
+        className="gate-curtain-tassels"
         initial={false}
-        animate={{ opacity: broken ? 0 : 1, scale: broken ? 1.4 : 1 }}
-        transition={{ duration: 0.8, ease: EASE_SILK }}
+        animate={opening ? { opacity: 0, y: 16 } : { opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: EASE_SILK }}
+        aria-hidden
       >
-        <motion.div
-          animate={reduce || broken ? undefined : { scale: [1, 1.05, 1] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <WaxSeal monogram={data.monogram} cracked={false} className="h-20 w-20 drop-shadow-[0_14px_24px_rgba(0,0,0,0.55)] sm:h-24 sm:w-24" />
-        </motion.div>
+        <span className="gate-curtain-cord" />
+        <span className="gate-curtain-tassel gate-curtain-tassel-l" />
+        <span className="gate-curtain-tassel gate-curtain-tassel-r" />
+        <span className="gate-curtain-tassel-head gate-curtain-tassel-head-l" />
+        <span className="gate-curtain-tassel-head gate-curtain-tassel-head-r" />
       </motion.div>
-    </motion.div>
+
+    </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Céleste — the celestial gatefold. The letter animation lives here,  */
-/* and only here.                                                      */
+/* Céleste — the gatefold doors                                        */
 /* ------------------------------------------------------------------ */
 
-const CARD_RATIO = 768 / 1376;
-
-function CelesteGatefold({
+function GatefoldStage({
   data,
-  lifted,
-  broken,
-  drawn,
-  expanding,
+  templateId,
   upper,
-  embedded,
+  opening,
 }: {
   data: InvitationData;
-  lifted: boolean;
-  broken: boolean;
-  drawn: boolean;
-  expanding: boolean;
+  templateId: TemplateId;
   upper: boolean;
-  embedded?: boolean;
+  opening: boolean;
 }) {
-  const reduce = useReducedMotion();
-  const names = `${data.coupleA} & ${data.coupleB}`;
-  const doorsOpen = broken;
   return (
-    <motion.div
-      className="relative"
-      style={{
-        width: embedded ? 'auto' : `min(84vw, calc(min(70svh, 48rem) * ${CARD_RATIO}))`,
-        height: embedded ? '72%' : undefined,
-        aspectRatio: '768 / 1376',
-        perspective: '1800px',
-        containerType: 'inline-size',
-      }}
-      initial={reduce ? false : { opacity: 0, y: 26, scale: 0.97 }}
-      animate={expanding ? { opacity: 1, y: 0, scale: 9 } : { opacity: 1, y: 0, scale: lifted ? 1.03 : 1 }}
-      transition={expanding ? { duration: 2.1, ease: EASE_EXPAND } : { duration: lifted ? 1.8 : 1.2, ease: EASE_SILK }}
-    >
-      <div
-        className="absolute inset-0 transition-shadow duration-[1400ms]"
-        style={{
-          boxShadow: lifted && !expanding ? '0 70px 120px -50px rgba(0,0,0,0.65)' : '0 40px 80px -50px rgba(0,0,0,0.45)',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* the night sky inside, waiting behind the doors */}
+    <div className="gate-gatefold" style={{ aspectRatio: '768 / 1376' }}>
       <motion.div
-        className="absolute inset-0 z-[1] overflow-hidden"
-        style={{ background: 'linear-gradient(180deg, #0a0e22 0%, #141b3a 45%, #080b16 100%)', borderRadius: 2 }}
+        className="absolute inset-0 overflow-hidden"
         initial={false}
-        animate={{ filter: doorsOpen ? 'brightness(1)' : 'brightness(0.5)' }}
-        transition={{ duration: 2.8, ease: EASE_SILK }}
+        animate={{ opacity: opening ? 1 : 0.7 }}
+        transition={{ duration: 1.8, ease: EASE_SILK }}
       >
-        <TemplateArt templateId="celeste" className="absolute inset-0 h-full w-full text-[#cfc6ef] opacity-80" />
-        <StarField className="absolute inset-0 h-full w-full text-[#efeaff] opacity-60" count={50} />
-        <div className="absolute left-1/2 top-[9%] h-[16cqw] w-[16cqw] -translate-x-1/2 rounded-full"
-          style={{ background: 'radial-gradient(circle at 38% 34%, #f4f0ff, #cfc6ef 55%, transparent 72%)', boxShadow: '0 0 60px 18px rgba(203,185,230,0.35)' }}
-        />
-        <motion.div
-          className="absolute inset-x-0 top-[34%] flex flex-col items-center px-[8%] text-center text-[#fdf7ea]"
-          initial={false}
-          animate={{ opacity: drawn && !expanding ? 1 : 0, y: drawn && !expanding ? 0 : 14 }}
-          transition={{ duration: expanding ? 0.5 : 1.6, delay: drawn && !expanding ? 0.9 : 0, ease: EASE_SILK }}
-        >
-          <span
-            className={`block leading-[0.98] ${upper ? 'uppercase' : ''}`}
-            style={{ fontFamily: 'var(--inv-display)', fontSize: '13cqw', letterSpacing: '0.1em', textShadow: '0 2px 26px rgba(0,0,0,0.5)' }}
-          >
-            {data.coupleA}
-          </span>
-          <span className="block leading-none" style={{ fontFamily: 'var(--inv-script)', fontSize: '10cqw', margin: '1.4cqw 0', color: '#cbb9e6' }}>
-            &
-          </span>
-          <span
-            className={`block leading-[0.98] ${upper ? 'uppercase' : ''}`}
-            style={{ fontFamily: 'var(--inv-display)', fontSize: '13cqw', letterSpacing: '0.1em', textShadow: '0 2px 26px rgba(0,0,0,0.5)' }}
-          >
-            {data.coupleB}
-          </span>
-          <span className="mt-[4cqw] flex items-center gap-[2.5cqw]" style={{ color: '#cbb9e6' }} aria-hidden>
-            <span className="h-px w-[12cqw] bg-current opacity-70" />
-            <span className="size-[1.6cqw] rotate-45 bg-current" />
-            <span className="h-px w-[12cqw] bg-current opacity-70" />
-          </span>
-          <span className="mt-[3cqw] block text-[3.4cqw] uppercase" style={{ fontFamily: 'var(--inv-caps)', letterSpacing: '0.3em' }}>
-            {formatDateShort(data.weddingDate)}
-          </span>
-        </motion.div>
+        <InvitationPlate data={data} templateId={templateId} tone="night" upper={upper} />
       </motion.div>
 
-      {/* the two leaves of the gatefold */}
       {(['left', 'right'] as const).map((side) => (
         <motion.div
           key={side}
-          className="absolute inset-y-0 z-[3] w-1/2 overflow-hidden"
+          className="gate-gatefold-door"
           style={{
             [side]: 0,
             transformOrigin: side === 'left' ? 'left center' : 'right center',
-            background: 'linear-gradient(160deg, #10142b 0%, #1a2144 50%, #0b0e20 100%)',
-            backfaceVisibility: 'hidden',
-            willChange: 'transform',
           }}
           initial={false}
-          animate={{
-            rotateY: doorsOpen ? (side === 'left' ? -118 : 118) : 0,
-            opacity: expanding ? 0 : 1,
-          }}
-          transition={{
-            rotateY: { duration: 3.4, ease: EASE_DOOR },
-            opacity: { duration: 0.6 },
-          }}
+          animate={{ rotateY: opening ? (side === 'left' ? -112 : 112) : 0 }}
+          transition={{ duration: 2.5, ease: EASE_DOOR }}
         >
-          <div className="absolute inset-0" style={{ width: '200%', [side === 'left' ? 'left' : 'right']: 0 }}>
-            <StarField className="absolute inset-0 h-full w-full text-[#b9aee0] opacity-50" count={46} />
+          <div className="gate-gatefold-door-face">
+            <TemplateArt templateId="celeste" className="absolute inset-0 h-full w-full text-[#cfc6ef] opacity-40" />
+            <StarField className="absolute inset-0 h-full w-full text-[#efeaff] opacity-55" count={36} />
+            <span className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,11,22,0.15)_30%,rgba(8,11,22,0.62)_72%,rgba(8,11,22,0.8)_100%)]" />
+            <div className="absolute inset-[6%] border border-[#cbb9e6]/35" />
+            <div className="absolute inset-[8.4%] border border-[#cbb9e6]/16" />
+            <RoyalCorner className="absolute left-[5.4%] top-[5.4%] aspect-square w-[22%] text-[#cbb9e6] opacity-60" />
+            <RoyalCorner className="absolute right-[5.4%] top-[5.4%] aspect-square w-[22%] -scale-x-100 text-[#cbb9e6] opacity-60" />
+            <div className="absolute inset-x-0 top-[58%] flex flex-col items-center gap-[3.2cqw] text-[#e9e2fa]">
+              <span
+                className="text-[5.2cqw] uppercase"
+                style={{ fontFamily: 'var(--inv-caps)', letterSpacing: '0.32em', opacity: 0.9 }}
+              >
+                {side === 'left' ? data.coupleA : data.coupleB}
+              </span>
+              <span className="h-px w-[26%] bg-[#cbb9e6] opacity-50" />
+              <span className="text-[2.4cqw] uppercase" style={{ fontFamily: 'var(--inv-caps)', letterSpacing: '0.4em', opacity: 0.6 }}>
+                {side === 'left' ? 'Together with' : 'our families'}
+              </span>
+            </div>
+            <span
+              className="absolute inset-x-0 bottom-[10%] text-center text-[2.6cqw] uppercase text-[#cbb9e6]"
+              style={{ fontFamily: 'var(--inv-caps)', letterSpacing: '0.4em', opacity: 0.7 }}
+            >
+              {side === 'left' ? 'MMXXVII' : 'An invitation'}
+            </span>
+            <span className="gate-gatefold-door-grain" aria-hidden />
           </div>
-          <div className="absolute inset-3 border border-[#cbb9e6]/30" />
-          <div className="absolute inset-4 border border-[#cbb9e6]/15" />
-          <TemplateMark templateId="celeste" className="absolute left-1/2 top-[7%] h-5 w-20 -translate-x-1/2 text-[#cbb9e6]/80" />
-          <p
-            className="absolute inset-x-0 bottom-[8%] text-center text-[0.6rem] uppercase tracking-[0.4em] text-[#cbb9e6]/70"
-            style={{ fontFamily: 'var(--inv-caps)' }}
-          >
-            {side === 'left' ? data.coupleA : data.coupleB}
-          </p>
-          <motion.div
-            className="absolute inset-0 bg-black"
-            initial={false}
-            animate={{ opacity: doorsOpen ? 0.55 : 0 }}
-            transition={{ duration: 2.6, ease: EASE_SILK }}
-          />
         </motion.div>
       ))}
 
-      {/* gold spine where the doors meet */}
+      {/* the gold spine */}
       <motion.div
-        className="absolute inset-y-0 left-1/2 z-[4] w-px -translate-x-1/2"
-        style={{ background: 'linear-gradient(180deg, transparent, #cbb9e6 20%, #cbb9e6 80%, transparent)', opacity: 0.7 }}
+        className="gate-gatefold-spine"
         initial={false}
-        animate={{ opacity: doorsOpen ? 0 : 0.7 }}
+        animate={{ opacity: opening ? 0 : 0.85 }}
         transition={{ duration: 0.8 }}
+        aria-hidden
       />
 
-      {/* light travelling across the paper before it opens */}
-      {!reduce && (
-        <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden" aria-hidden="true">
-          <motion.div
-            className="absolute inset-y-0 w-[55%]"
-            style={{
-              background: 'linear-gradient(105deg, transparent 0%, rgba(255,244,214,0) 20%, rgba(255,244,214,0.55) 50%, rgba(255,244,214,0) 80%, transparent 100%)',
-              mixBlendMode: 'soft-light',
-            }}
-            initial={{ x: '-120%' }}
-            animate={{ x: lifted ? '260%' : '-120%', opacity: doorsOpen ? 0 : 1 }}
-            transition={{ x: { duration: 2, ease: EASE_SILK }, opacity: { duration: 0.3 } }}
-          />
-        </div>
-      )}
-
-      {/* the name card tucked under the doors — only Céleste keeps this */}
-      <motion.div
-        className="pointer-events-none absolute left-1/2 top-[8.5%] z-[6] -translate-x-1/2 whitespace-nowrap text-center shadow-[0_10px_24px_-14px_rgba(40,26,12,0.7)]"
-        style={{
-          width: '60%',
-          padding: '2.4cqw 3cqw',
-          background: 'color-mix(in srgb, var(--inv-surface) 96%, #fff)',
-          color: 'var(--inv-ink)',
-          border: '1px solid color-mix(in srgb, var(--inv-accent) 35%, transparent)',
-        }}
-        initial={false}
-        animate={{ opacity: lifted ? 0 : 1, y: lifted ? -10 : 0 }}
-        transition={{ duration: 0.9, ease: EASE_SILK }}
-      >
-        <span className="block leading-none" style={{ fontFamily: 'var(--inv-script)', fontSize: names.length > 18 ? '6.2cqw' : '7.6cqw' }}>
-          {names}
-        </span>
-      </motion.div>
-    </motion.div>
+    </div>
   );
 }

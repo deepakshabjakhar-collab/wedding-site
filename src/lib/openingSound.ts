@@ -250,33 +250,33 @@ export function playCinematicOpening(
   out.gain.exponentialRampToValueAtTime(0.9, now + 0.06);
 
   // Act I — the invitation lifts and catches the light.
-  paper(audio, out, now + 0.15, 1.3);
+  paper(audio, out, now + 0.05, 0.9);
 
   // Act II — the fastening gives way.
   if (kind === 'ribbon') {
-    silk(audio, out, now + 2.1, 1.5);
-    paper(audio, out, now + 2.4, 0.7);
+    silk(audio, out, now + 0.5, 1.1);
+    paper(audio, out, now + 0.8, 0.6);
   } else if (kind === 'curtain') {
-    drape(audio, out, now + 2.1, 2.4);
+    drape(audio, out, now + 0.5, 2.1);
   } else if (kind === 'celeste') {
-    crack(audio, out, now + 2.35);
-    starfall(audio, out, now + 2.7);
+    crack(audio, out, now + 0.42);
+    starfall(audio, out, now + 0.7);
   } else {
-    crack(audio, out, now + 2.15);
-    paper(audio, out, now + 2.35, 0.9);
+    crack(audio, out, now + 0.2);
+    paper(audio, out, now + 0.42, 0.8);
   }
 
   // Act III — the letter is drawn from the envelope.
-  paper(audio, out, now + 4.6, 2.5);
+  paper(audio, out, now + 1.2, 1.7);
 
-  // Act IV — the reveal: a rising D-major answer, slower and wider.
+  // Act IV — the reveal: a rising D-major answer, wider and quicker.
   const ascent = [587.33, 739.99, 880, 1108.73, 1318.51, 1466.83];
-  ascent.forEach((note, index) => pluck(audio, out, note, now + 7.1 + index * 0.17, 0.14));
+  ascent.forEach((note, index) => pluck(audio, out, note, now + 2.5 + index * 0.12, 0.13));
 
-  // Act V — resolution as the invitation fills the screen.
+  // Act V — resolution as the invitation lifts into view.
   const resolve = [293.66, 587.33, 880, 1174.66];
-  resolve.forEach((note, index) => pluck(audio, out, note, now + 9.2 + index * 0.09, 0.1));
-  pluck(audio, out, 1760, now + 9.9, 0.06);
+  resolve.forEach((note, index) => pluck(audio, out, note, now + 3.35 + index * 0.07, 0.09));
+  pluck(audio, out, 1760, now + 3.95, 0.05);
 
   return {
     release(ms = 700) {
