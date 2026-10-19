@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Music2, RotateCcw } from 'lucide-react';
 import { TemplateArt } from '@/templates/art';
 import { DiamondRule, LaurelCrest, RoyalCorner } from '@/templates/ornaments';
+import { FasteningLayer } from '@/components/invitation/FasteningLayer';
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 const EASE_PAGE = [0.65, 0, 0.2, 1] as const;
@@ -18,7 +19,7 @@ const GOLD = '#d5b274';
  * face. Tapping lifts it like a page; the inside is the same cover in velvet.
  */
 export function EnvelopeTeaser() {
-  const [stage, setStage] = useState<'closed' | 'opening' | 'open'>('closed');
+  const [stage, setStage] = useState<'closed' | 'fastening' | 'opening' | 'open'>('closed');
   const reduce = useReducedMotion();
   const timers = useRef<number[]>([]);
 
@@ -33,8 +34,9 @@ export function EnvelopeTeaser() {
       setStage('open');
       return;
     }
-    setStage('opening');
-    timers.current.push(window.setTimeout(() => setStage('open'), 1200));
+    setStage('fastening');
+    timers.current.push(window.setTimeout(() => setStage('opening'), 2150));
+    timers.current.push(window.setTimeout(() => setStage('open'), 2150 + 1150));
   };
 
   const reset = () => {
@@ -96,11 +98,15 @@ export function EnvelopeTeaser() {
               >
                 <div className="relative h-full w-full">
                   <img
-                    src="/covers/aurelia.jpg"
+                    src="/covers-untied/aurelia.jpg"
                     alt="A cream invitation tied with gold silk and sealed in burgundy wax"
                     className="absolute inset-0 h-full w-full object-cover"
                     draggable={false}
                   />
+                  {/* the real fastening, extracted from the tied photograph */}
+                  <div className="absolute inset-0" style={{ zIndex: 5, pointerEvents: 'none' }}>
+                    <FasteningLayer templateId="aurelia" released={stage !== 'closed'} />
+                  </div>
                   {/* the names, printed on the card's blank face */}
                   <div
                     className="absolute left-[23%] right-[31%] top-[17%] text-center"
