@@ -66,21 +66,24 @@ body {
   border-radius: 4px;
 }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
-  color: inherit;
-}
+/* Kept in the base layer so Tailwind colour utilities on buttons and links win. */
+@layer base {
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-img {
-  max-width: 100%;
+  img {
+    max-width: 100%;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -703,6 +706,7 @@ input[type='range']::-webkit-slider-thumb {
 .inv-topbar {
   position: fixed;
   top: 0;
+  padding-top: env(safe-area-inset-top, 0px);
   left: 0;
   right: 0;
   background: color-mix(in srgb, var(--inv-deep) 82%, transparent);
@@ -725,8 +729,9 @@ input[type='range']::-webkit-slider-thumb {
 
 .inv-music-hint {
   position: fixed;
-  right: 1.1rem;
-  bottom: 5.4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(3.2rem + env(safe-area-inset-top, 0px));
   z-index: 41;
   display: inline-flex;
   align-items: center;
@@ -935,7 +940,7 @@ input[type='range']::-webkit-slider-thumb {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgb(12 9 6 / 0.28) 0%, rgb(12 9 6 / 0.08) 30%, rgb(12 9 6 / 0.34) 62%, rgb(12 9 6 / 0.5) 100%);
+    radial-gradient(96% 58% at 50% 18%, color-mix(in srgb, var(--inv-deep) 40%, transparent), transparent 72%);
 }
 
 .inv-hero-inner {
@@ -983,7 +988,7 @@ input[type='range']::-webkit-slider-thumb {
   font-style: normal;
   font-size: 0.72em;
   color: color-mix(in srgb, var(--inv-accent) 62%, #fff8e8);
-  padding-inline: 0.04em 0.08em;
+  padding-inline: 0.12em 0.18em;
   vertical-align: 0.04em;
 }
 
@@ -1193,6 +1198,7 @@ input[type='range']::-webkit-slider-thumb {
   position: fixed;
   inset: 0;
   z-index: 60;
+  --gate-veil: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1465,8 +1471,8 @@ input[type='range']::-webkit-slider-thumb {
 
 .inv-music {
   position: fixed;
-  right: 1.1rem;
-  bottom: 1.1rem;
+  right: max(0.9rem, env(safe-area-inset-right));
+  bottom: max(0.9rem, env(safe-area-inset-bottom));
   z-index: 40;
   display: flex;
   align-items: center;
@@ -1920,4 +1926,1338 @@ input[type='range']::-webkit-slider-thumb {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--color-ink) 30%, transparent);
+}
+
+/* ------------------------------------------------------------------ */
+/* The royal cover & opening ceremony                                  */
+/* ------------------------------------------------------------------ */
+
+/* An engraved damask, masked over whatever colour the parent sets. */
+.cover-damask {
+  background-color: currentColor;
+  opacity: 0.055;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'%3E%3Cg fill='none' stroke='%23000' stroke-width='0.7'%3E%3Cpath d='M42 5c6 8 9 14 9 20s-3 10-9 16c-6-6-9-10-9-16s3-12 9-20Z'/%3E%3Cpath d='M42 43c6 6 8 12 8 17 0 8-3 13-8 19-5-6-8-11-8-19 0-5 2-11 8-17Z'/%3E%3Cpath d='M4 42c9-5 14-7 21-6M4 42c9 5 14 7 21 6M80 42c-9-5-14-7-21-6M80 42c-9 5-14 7-21 6'/%3E%3Ccircle cx='42' cy='42' r='2.2'/%3E%3Cpath d='M19 19c7 1 11 5 12 12M65 65c-7-1-11-5-12-12M65 19c-1 7-5 11-12 12M19 65c1-7 5-11 12-12'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'%3E%3Cg fill='none' stroke='%23000' stroke-width='0.7'%3E%3Cpath d='M42 5c6 8 9 14 9 20s-3 10-9 16c-6-6-9-10-9-16s3-12 9-20Z'/%3E%3Cpath d='M42 43c6 6 8 12 8 17 0 8-3 13-8 19-5-6-8-11-8-19 0-5 2-11 8-17Z'/%3E%3Cpath d='M4 42c9-5 14-7 21-6M4 42c9 5 14 7 21 6M80 42c-9-5-14-7-21-6M80 42c-9 5-14 7-21 6'/%3E%3Ccircle cx='42' cy='42' r='2.2'/%3E%3Cpath d='M19 19c7 1 11 5 12 12M65 65c-7-1-11-5-12-12M65 19c-1 7-5 11-12 12M19 65c1-7 5-11 12-12'/%3E%3C/g%3E%3C/svg%3E");
+  mask-size: 84px 84px;
+  -webkit-mask-size: 84px 84px;
+  mask-repeat: repeat;
+  -webkit-mask-repeat: repeat;
+}
+
+/* --- the gate itself ------------------------------------------------ */
+
+.inv-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  --gate-veil: 0;
+  height: 100svh;
+  display: block;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
+  container-type: size;
+}
+
+@supports (height: 100dvh) {
+  .inv-gate {
+    height: 100dvh;
+  }
+}
+
+/* kill the old 3D floor grid — the cover is a printed page now */
+.inv-gate::before,
+.inv-gate::after {
+  content: none;
+  display: none;
+}
+
+.inv-gate-embedded {
+  position: absolute !important;
+  height: 100% !important;
+}
+
+.inv-gate-panel {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.inv-gate-stage {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.55rem, 1.7cqh, 1.15rem);
+  padding: max(1.35rem, 4.4cqh) clamp(1rem, 5cqw, 2rem)
+    calc(max(1.35rem, 3.8cqh) + env(safe-area-inset-bottom, 0px) + var(--gate-bottom, 0px));
+  text-align: center;
+}
+
+.inv-gate-top {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inv-gate-kicker {
+  font-family: var(--inv-caps);
+  font-size: clamp(0.6rem, 2.55cqw, 0.74rem);
+  font-weight: 500;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+}
+
+.inv-gate-hair {
+  width: clamp(2.6rem, 13cqw, 4.2rem);
+  height: 1px;
+}
+
+.inv-gate-toporn {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.inv-gate-object {
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  perspective: 1600px;
+}
+
+.inv-gate-bottom {
+  position: relative;
+  flex: none;
+  width: 100%;
+  min-height: clamp(8.2rem, 22cqh, 12rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(0.5rem, 1.8cqh, 1.1rem);
+}
+
+.inv-gate-ident {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.inv-gate-names {
+  font-family: var(--inv-display);
+  font-size: clamp(1.95rem, 8.4cqw, 3.15rem);
+  line-height: 0.98;
+  font-weight: 400;
+  text-wrap: balance;
+  max-width: 24ch;
+}
+
+.inv-gate-names.uppercase {
+  font-size: clamp(1.6rem, 6.6cqw, 2.45rem);
+}
+
+.inv-gate-amp {
+  display: inline-block;
+  margin: 0 0.18em;
+  font-family: var(--inv-script);
+  font-size: 0.74em;
+  font-weight: 400;
+  letter-spacing: 0;
+  vertical-align: 0.04em;
+}
+
+.inv-gate-date {
+  margin-top: clamp(0.45rem, 1.4cqh, 0.8rem);
+  font-family: var(--inv-caps);
+  font-size: clamp(0.58rem, 2.5cqw, 0.7rem);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.inv-gate-cue-wrap {
+  position: relative;
+  width: 100%;
+  height: 3.6rem;
+  display: grid;
+  place-items: center;
+}
+
+.inv-gate-cue,
+.inv-gate-progress {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+}
+
+.inv-gate-tapline {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.inv-gate-tap {
+  font-family: var(--inv-caps);
+  font-size: clamp(0.6rem, 2.6cqw, 0.76rem);
+  font-weight: 500;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+}
+
+.inv-gate-music {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--inv-caps);
+  font-size: clamp(0.5rem, 2.05cqw, 0.6rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.inv-gate-caption {
+  font-family: var(--inv-caps);
+  font-size: clamp(0.55rem, 2.35cqw, 0.68rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.inv-gate-track {
+  display: block;
+  width: clamp(6rem, 34cqw, 9.5rem);
+  height: 1px;
+  background: color-mix(in srgb, var(--inv-ink) 20%, transparent);
+}
+
+.inv-gate-track-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  background: linear-gradient(90deg, #8a6a3c, #e6c886, #8a6a3c);
+}
+
+.inv-gate-skip {
+  position: absolute;
+  right: max(1.5rem, 4.6cqw);
+  top: max(1.45rem, 4.2cqh);
+  z-index: 50;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 0.42rem 0.95rem;
+  font-family: var(--inv-caps);
+  font-size: clamp(0.55rem, 2.2cqw, 0.64rem);
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--inv-bg) 16%, transparent);
+  backdrop-filter: blur(4px);
+  transition: opacity 0.4s ease;
+}
+
+.inv-gate-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.inv-gate-hit:focus-visible {
+  outline: 2px solid var(--inv-accent);
+  outline-offset: -8px;
+}
+
+/* --- the letter plate ---------------------------------------------- */
+
+.inv-plate {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  container-type: size;
+  border-radius: 1px;
+}
+
+/* --- the folio: folded board, stitched edge, wax or silk ----------- */
+
+.gate-folio {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1.18;
+  filter: drop-shadow(0 34px 46px rgba(0, 0, 0, 0.32));
+}
+
+.gate-folio-shadow {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: 1.5%;
+  height: 9%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  filter: blur(18px);
+}
+
+.gate-folio-body {
+  position: absolute;
+  inset: 0;
+}
+
+.gate-folio-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--inv-line) 78%, transparent);
+  background: linear-gradient(
+    158deg,
+    #fffdf7 0%,
+    var(--inv-surface) 44%,
+    color-mix(in srgb, var(--inv-surface) 86%, var(--inv-accent-soft)) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -14px 26px -20px rgba(60, 40, 20, 0.4);
+}
+
+.gate-folio-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.gate-folio-letter {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 0;
+  height: 68%;
+  z-index: 2;
+  overflow: hidden;
+  box-shadow: 0 16px 34px -22px rgba(40, 26, 12, 0.6);
+}
+
+.gate-folio-pocket {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32%;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(
+    172deg,
+    color-mix(in srgb, var(--inv-surface) 97%, #fff) 0%,
+    color-mix(in srgb, var(--inv-surface) 90%, var(--inv-line)) 100%
+  );
+  box-shadow:
+    0 -10px 22px -16px rgba(40, 26, 12, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.gate-folio-pocket-inner {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 34%);
+}
+
+.gate-folio-fold {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.gate-folio-stitch {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 7.5%;
+  height: 0;
+  border-top: 1px dashed color-mix(in srgb, var(--inv-accent) 58%, transparent);
+}
+
+.gate-folio-stitch::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 3px;
+  border-top: 1px solid color-mix(in srgb, var(--inv-accent) 20%, transparent);
+}
+
+.gate-folio-pocket-mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4.4%;
+  display: flex;
+  justify-content: center;
+  color: var(--inv-accent);
+}
+
+.gate-folio-pocket-emboss {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 5.5%;
+  gap: 0.7cqw;
+  color: color-mix(in srgb, var(--inv-ink) 26%, transparent);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  opacity: 0.42;
+}
+
+.gate-folio-pocket-mono {
+  position: relative;
+  font-family: var(--inv-script);
+  font-size: clamp(13px, 5.4cqw, 19px);
+  line-height: 1;
+  padding-top: 0.1em;
+}
+
+.gate-folio-pocket-rule {
+  position: relative;
+  width: 22cqw;
+  height: 1px;
+  background: color-mix(in srgb, var(--inv-ink) 24%, transparent);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.gate-folio-pocket-caption {
+  position: relative;
+  font-family: var(--inv-caps);
+  font-size: clamp(5.5px, 2cqw, 7.5px);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.gate-folio-ribbon {
+  position: absolute;
+  z-index: 5;
+  background:
+    repeating-linear-gradient(96deg, rgba(255, 255, 255, 0.16) 0 2px, transparent 2px 6px),
+    linear-gradient(180deg, #9c7438 0%, #e3c68e 26%, #f1dfb2 50%, #d3ac6d 74%, #8f6a32 100%);
+  box-shadow:
+    0 8px 16px -10px rgba(60, 40, 16, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(80, 52, 18, 0.35);
+}
+
+.gate-folio-ribbon-v {
+  left: 47.3%;
+  width: 5.4%;
+  top: 62%;
+  bottom: 0;
+  z-index: 5;
+}
+
+.gate-folio-ribbon-h {
+  top: 72.5%;
+  height: 7.4%;
+  left: 0;
+  right: 0;
+  background:
+    repeating-linear-gradient(6deg, rgba(255, 255, 255, 0.16) 0 2px, transparent 2px 6px),
+    linear-gradient(90deg, #9c7438 0%, #e3c68e 26%, #f1dfb2 50%, #d3ac6d 74%, #8f6a32 100%);
+}
+
+.gate-folio-seal {
+  position: absolute;
+  left: 50%;
+  z-index: 6;
+}
+
+.gate-folio-seal-seal {
+  width: 20.5%;
+  margin-left: -10.25%;
+  bottom: 13.5%;
+}
+
+.gate-folio-seal-ribbon {
+  width: 15.5%;
+  margin-left: -7.75%;
+  bottom: 7.5%;
+}
+
+.gate-folio-seal > * {
+  filter: drop-shadow(0 10px 14px rgba(35, 16, 12, 0.35));
+}
+
+.gate-folio-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gate-folio-sheen-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 244, 214, 0.42) 45%,
+    rgba(255, 244, 214, 0.5) 52%,
+    transparent 100%
+  );
+  mix-blend-mode: soft-light;
+}
+
+/* --- the curtain ---------------------------------------------------- */
+
+.gate-curtain {
+  position: relative;
+  width: 100%;
+  border-radius: 2px;
+  perspective: 1300px;
+  filter: drop-shadow(0 36px 50px rgba(0, 0, 0, 0.45));
+}
+
+.gate-curtain-panel {
+  position: absolute;
+  top: -2%;
+  bottom: -2%;
+  width: 54.5%;
+  z-index: 4;
+  will-change: transform;
+}
+
+.gate-curtain-valance {
+  position: absolute;
+  left: -3.5%;
+  right: -3.5%;
+  top: -3.5%;
+  height: 10.5%;
+  z-index: 7;
+}
+
+.gate-curtain-valance-cloth {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 3px, rgba(255, 255, 255, 0.06) 3px 7px, transparent 7px 18px),
+    linear-gradient(180deg, color-mix(in srgb, var(--inv-deep) 84%, var(--inv-accent)) 0%, var(--inv-deep) 100%);
+  box-shadow:
+    0 14px 26px -14px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 color-mix(in srgb, var(--inv-accent) 55%, transparent);
+}
+
+.gate-curtain-fringe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -22%;
+  height: 24%;
+  background:
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--inv-accent) 74%, #f0d9a6) 0 1px, transparent 1px 5px);
+  opacity: 0.65;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent);
+  mask-image: linear-gradient(180deg, #000 30%, transparent);
+}
+
+.gate-curtain-medallion {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 13%;
+  aspect-ratio: 1;
+  margin-left: -6.5%;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--inv-accent) 76%, #f3e0b6);
+  background: radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.22), transparent 46%),
+    radial-gradient(circle at 60% 74%, rgba(0, 0, 0, 0.35), transparent 62%), var(--inv-deep);
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 70%, transparent);
+  box-shadow:
+    0 8px 16px -6px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px color-mix(in srgb, var(--inv-accent) 22%, transparent);
+}
+
+.gate-curtain-medallion span {
+  font-family: var(--inv-script);
+  font-size: 3.6cqw;
+  line-height: 1;
+  padding-top: 0.1em;
+}
+
+.gate-curtain-tie {
+  position: absolute;
+  left: 41.5%;
+  width: 17%;
+  top: 58%;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gate-curtain-tie-ring {
+  width: 74%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--inv-accent) 72%, #f0d9a6);
+  background: radial-gradient(circle at 36% 30%, rgba(255, 244, 214, 0.35), transparent 55%),
+    radial-gradient(circle at 60% 74%, rgba(0, 0, 0, 0.4), transparent 60%), var(--inv-deep);
+  box-shadow: 0 8px 14px -6px rgba(0, 0, 0, 0.75);
+}
+
+.gate-curtain-tie-cord {
+  width: 7%;
+  height: 2.6rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inv-accent) 80%, #f0d9a6), transparent);
+}
+
+/* --- the gatefold --------------------------------------------------- */
+
+.gate-gatefold {
+  position: relative;
+  width: 100%;
+  perspective: 1700px;
+  filter: drop-shadow(0 36px 50px rgba(0, 0, 0, 0.5));
+}
+
+.gate-gatefold-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 4;
+  overflow: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+  background: linear-gradient(160deg, #10142b 0%, #1a2144 50%, #0b0e20 100%);
+  box-shadow: 0 0 0 1px rgba(203, 185, 230, 0.16);
+}
+
+.gate-gatefold-door-face {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(80% 46% at 50% 0%, rgba(203, 185, 230, 0.16), transparent 62%);
+}
+
+.gate-gatefold-door-grain {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.gate-gatefold-spine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  z-index: 5;
+  background: linear-gradient(180deg, transparent, #cbb9e6 16%, #cbb9e6 84%, transparent);
+}
+
+/* Short phones: tighten the top and bottom bands, never crop the cover. */
+@media (max-height: 690px) {
+  .inv-gate-stage {
+    gap: 0.4rem;
+    padding-top: max(1.15rem, 3.4cqh);
+    padding-bottom: calc(max(1.05rem, 2.8cqh) + env(safe-area-inset-bottom, 0px) + var(--gate-bottom, 0px));
+  }
+
+  .inv-gate-bottom {
+    min-height: 7.2rem;
+  }
+
+  .inv-gate-kicker {
+    font-size: 0.58rem;
+  }
+
+  .inv-gate-names {
+    font-size: clamp(1.7rem, 7.6cqw, 2.4rem);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Mobile-first invitation sizing                                      */
+/* ------------------------------------------------------------------ */
+
+.inv-hero-top {
+  margin-top: clamp(2.1rem, 7.4svh, 5.4rem);
+}
+
+.inv-hero-card-link {
+  white-space: nowrap;
+}
+
+.inv-hero-card-link-short {
+  display: none;
+}
+
+@media (max-width: 400px) {
+  .inv-hero-card-link-long {
+    display: none;
+  }
+
+  .inv-hero-card-link-short {
+    display: inline;
+  }
+
+  .inv-hero-datecard {
+    padding-inline: 1.15rem;
+  }
+
+  .inv-hero-datecard .border-t {
+    letter-spacing: 0.22em !important;
+  }
+}
+
+.inv-hero-card {
+  padding-top: clamp(1.15rem, 3.8svh, 2.6rem);
+}
+
+@media (max-height: 780px) {
+  .inv-hero-top {
+    margin-top: clamp(2.1rem, 5.6svh, 3.6rem);
+  }
+
+  .inv-hero-card {
+    padding-top: 0.9rem;
+  }
+
+  .inv-hero .inv-names {
+    font-size: clamp(2.75rem, 13cqw, 6.2rem);
+  }
+
+  .inv-hero-inner {
+    padding-bottom: 1.35rem;
+  }
+}
+
+@media (max-height: 730px) {
+  .inv-hero-ornament {
+    display: none;
+  }
+
+  .inv-hero-inner {
+    padding-bottom: calc(3.9rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .inv-hero-mono {
+    width: 2.8rem;
+    height: 2.8rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.7rem;
+  }
+}
+
+@media (max-height: 660px) {
+  .inv-hero-top {
+    margin-top: 0.7rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .inv-hero-card {
+    max-width: 19.5rem;
+  }
+
+  .inv-hero .inv-names {
+    font-size: clamp(2rem, 9.6cqw, 4rem);
+  }
+
+  .inv-hero-top p {
+    margin-top: 0.5rem;
+  }
+
+  .inv-hero-card {
+    padding-top: 0.5rem;
+  }
+
+  .inv-hero-card > div {
+    padding-top: 1rem;
+    padding-bottom: 0.7rem;
+  }
+
+  .inv-hero-card .text-\\[1\\.22rem\\] {
+    font-size: 1.05rem;
+  }
+
+  .inv-hero-frame {
+    inset: 0.6rem;
+  }
+
+  .inv-hero .inv-names {
+    font-size: clamp(2.3rem, 11cqw, 5rem);
+  }
+
+  .inv-hero-top > span:first-child,
+  .inv-hero-top > div:first-child {
+    margin-bottom: 0.6rem;
+  }
+
+  .inv-hero-card .inv-label,
+  .inv-hero-card a {
+    letter-spacing: 0.22em;
+  }
+}
+
+/* The guest invitation is a phone-first page. On a large screen we present it
+   as a framed column rather than stretching a mobile layout across the desk. */
+@media (min-width: 900px) {
+  .invite-shell:not(.invite-embedded) {
+    min-height: 100svh;
+    background:
+      radial-gradient(70% 46% at 50% 0%, #2b221a 0%, #191410 52%, #100c09 100%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.5);
+  }
+
+  .invite-shell:not(.invite-embedded) .invite-root {
+    width: min(100%, 30rem);
+    flex: none;
+    box-shadow:
+      0 0 0 1px rgba(255, 240, 220, 0.1),
+      0 60px 140px -50px rgba(0, 0, 0, 0.75);
+  }
+
+  .invite-shell:not(.invite-embedded) .inv-topbar {
+    left: 50%;
+    right: auto;
+    width: min(100%, 30rem);
+    transform: translateX(-50%);
+  }
+
+  .invite-shell:not(.invite-embedded) .inv-music {
+    right: calc(50% - 15rem + 1.05rem);
+  }
+
+  .invite-shell:not(.invite-embedded) .inv-music {
+    bottom: 1.05rem;
+  }
+
+  .invite-shell:not(.invite-embedded) .inv-music-hint {
+    right: auto;
+  }
+}
+
+/* Gallery, forms and cards read well on narrow phones too. */
+@media (max-width: 380px) {
+  .inv-section {
+    padding-inline: 1.05rem;
+  }
+
+  .inv-hero-inner {
+    padding-inline: 1.05rem;
+  }
+
+  .inv-gallery {
+    column-gap: 0.45rem;
+  }
+
+  .inv-gallery > * {
+    margin-bottom: 0.45rem;
+  }
+}
+
+/* The stage reads as a printed page: kicker, plate, then the names. */
+.inv-gate-stage {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+}
+
+.inv-gate-object {
+  align-self: center;
+  padding-block: clamp(0.15rem, 0.8cqh, 0.7rem);
+}
+
+/* A softer velvet: wide folds with a satin fall of light. */
+.gate-curtain-panel {
+  background-image:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0%, transparent 16%, rgba(255, 255, 255, 0.05) 34%, transparent 52%, rgba(0, 0, 0, 0.32) 74%, transparent 92%, rgba(0, 0, 0, 0.42) 100%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 6px, rgba(255, 255, 255, 0.05) 6px 12px, transparent 12px 30px),
+    linear-gradient(90deg, #0a0806 0%, #14100c 22%, #241a12 48%, #14100c 74%, #0a0806 100%) !important;
+  background-blend-mode: normal, soft-light, normal;
+}
+
+.gate-curtain-valance-cloth {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 7px, rgba(255, 255, 255, 0.06) 7px 14px, transparent 14px 34px),
+    linear-gradient(180deg, #2a1f15 0%, #171009 62%, #0c0805 100%) !important;
+}
+
+.gate-curtain-tie {
+  left: 46.5%;
+  width: 7%;
+  top: 56%;
+  gap: 0;
+}
+
+.gate-curtain-tie-band {
+  position: absolute;
+  left: -18%;
+  right: -18%;
+  top: -18%;
+  height: 44%;
+  background: linear-gradient(180deg, #a17a39 0%, #e8ce94 30%, #f6e7bf 52%, #cfa767 76%, #8d682e 100%);
+  box-shadow: 0 8px 16px -10px rgba(0, 0, 0, 0.8);
+}
+
+.gate-curtain-tie-knot {
+  position: relative;
+  display: block;
+}
+
+.gate-curtain-tie-ring {
+  display: block;
+  width: 66%;
+  margin-inline: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid #e8ce94;
+  background: radial-gradient(circle at 36% 30%, rgba(255, 244, 214, 0.3), transparent 55%),
+    radial-gradient(circle at 60% 74%, rgba(0, 0, 0, 0.45), transparent 60%), #1b130c;
+  box-shadow: 0 8px 14px -6px rgba(0, 0, 0, 0.85), inset 0 0 0 2px rgba(232, 206, 148, 0.18);
+}
+
+.gate-curtain-tie-tails {
+  display: flex;
+  justify-content: center;
+  gap: 22%;
+  width: 100%;
+}
+
+.gate-curtain-tie-tails span {
+  display: block;
+  width: 16%;
+  height: clamp(1.6rem, 5cqh, 2.6rem);
+  background: linear-gradient(180deg, #cfa767, #8d682e);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+}
+
+/* Hanging silk tassels, read as a tieback without hiding the invitation. */
+.gate-curtain-tassels {
+  position: absolute;
+  left: 50%;
+  top: 8.6%;
+  width: 30%;
+  margin-left: -15%;
+  z-index: 8;
+  height: 46%;
+  pointer-events: none;
+}
+
+.gate-curtain-cord {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 34%;
+  margin-left: -0.5px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inv-accent) 80%, #f3e2ba), transparent);
+}
+
+.gate-curtain-tassel {
+  position: absolute;
+  top: 34%;
+  width: 3.4%;
+  height: 20%;
+  background: linear-gradient(180deg, #d8b579 0%, #b18b4c 38%, #8f6a32 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
+  box-shadow: 0 4px 8px -4px rgba(0, 0, 0, 0.6);
+}
+
+.gate-curtain-tassel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+}
+
+.gate-curtain-tassel-l { left: 38%; }
+.gate-curtain-tassel-r { left: 58.6%; }
+
+.gate-curtain-tassel-head {
+  position: absolute;
+  top: 29.5%;
+  width: 5%;
+  aspect-ratio: 1 / 1.3;
+  border-radius: 46% 46% 40% 40%;
+  background: linear-gradient(180deg, #f6e7bf 0%, #d8b579 46%, #a87f42 100%);
+  box-shadow: 0 3px 6px -3px rgba(0, 0, 0, 0.6);
+}
+
+.gate-curtain-tassel-head-l { left: 36.2%; }
+.gate-curtain-tassel-head-r { left: 58.8%; }
+
+/* Landing hero: phone-first, with the cover sitting between the headline and
+   the invitation to act. On a large screen it becomes the right-hand plate. */
+.landing-hero {
+  display: grid;
+  grid-template-areas:
+    'copy'
+    'cover'
+    'actions';
+  gap: clamp(1.75rem, 5vw, 2.75rem);
+  align-items: start;
+}
+
+.landing-hero-copy { grid-area: copy; }
+.landing-hero-cover { grid-area: cover; }
+.landing-hero-actions { grid-area: actions; }
+
+@media (min-width: 1024px) {
+  .landing-hero {
+    grid-template-columns: 1.04fr 0.96fr;
+    grid-template-areas:
+      'copy cover'
+      'actions cover';
+    grid-template-rows: auto auto;
+    column-gap: 2.5rem;
+    row-gap: 0;
+    align-items: center;
+  }
+
+  .landing-hero-cover {
+    align-self: center;
+    padding-block: 0.5rem;
+  }
+}
+
+@media (max-height: 660px) {
+  .inv-hero-datecard {
+    padding-top: 0.95rem;
+    padding-bottom: 0.7rem;
+    padding-inline: 1.1rem;
+  }
+
+  .inv-hero-datecard p:first-of-type {
+    font-size: 1.05rem;
+  }
+
+  .inv-hero-datecard .inv-date-big {
+    font-size: 1.7rem;
+    margin-top: 0.65rem;
+  }
+}
+
+.inv-date-big {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 2.15rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  margin-top: 1rem;
+  font-family: var(--inv-display);
+}
+
+/* The letter reads as a separate sheet sitting in the pocket. */
+.gate-folio-letter::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(58, 40, 18, 0.09));
+}
+
+/* The kicker is one line on every phone. */
+.landing-eyebrow {
+  letter-spacing: 0.2em;
+  font-size: 0.64rem;
+}
+
+@media (min-width: 640px) {
+  .landing-eyebrow {
+    letter-spacing: 0.26em;
+    font-size: 0.6875rem;
+  }
+}
+
+/* The cover panel keeps its proportions on very wide screens. */
+@media (min-width: 1280px) {
+  .landing-hero-cover {
+    max-width: 480px;
+  }
+}
+
+/* The hem of the velvet curtain: a soft shadow pooled on the stage floor rather
+   than a cut edge. */
+.gate-curtain::after {
+  content: '';
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  bottom: -7%;
+  height: 12%;
+  pointer-events: none;
+  background: radial-gradient(58% 100% at 50% 0%, rgba(0, 0, 0, 0.62), transparent 72%);
+  filter: blur(7px);
+  z-index: 5;
+}
+
+/* ------------------------------------------------------------------ */
+/* The opening: a cover that actually opens                            */
+/* ------------------------------------------------------------------ */
+
+.inv-gate-open {
+  overflow: hidden;
+  background: #100d0a;
+  isolation: isolate;
+}
+
+.inv-gate-inside {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  will-change: transform;
+}
+
+.inv-gate-inside-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.12) 34%, rgba(0, 0, 0, 0) 58%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent 24%, transparent 76%, rgba(0, 0, 0, 0.4));
+}
+
+.inv-gate-cover-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  transform-style: preserve-3d;
+}
+
+/* a silk-covered card turns from the spine */
+.inv-gate-sheet {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.85);
+}
+
+.inv-gate-sheet-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.inv-gate-sheet-back {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 26%);
+  pointer-events: none;
+}
+
+/* curtains and the gatefold part down the middle */
+.inv-gate-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.2%;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.inv-gate-door-left {
+  left: 0;
+}
+
+.inv-gate-door-right {
+  right: 0;
+}
+
+.inv-gate-door-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.inv-gate-door-img {
+  position: absolute;
+  top: 0;
+  width: 199.2%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.inv-gate-door-edge {
+  position: absolute;
+  inset-block: 0;
+  width: 10px;
+  pointer-events: none;
+}
+
+.inv-gate-door-left .inv-gate-door-edge {
+  right: 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.55));
+}
+
+.inv-gate-door-right .inv-gate-door-edge {
+  left: 0;
+  background: linear-gradient(270deg, transparent, rgba(0, 0, 0, 0.55));
+}
+
+/* light and air on the closed cover */
+.inv-gate-scrim {
+  position: absolute;
+  inset-inline: 0;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.inv-gate-scrim-top {
+  top: 0;
+  height: 24%;
+  background: linear-gradient(180deg, rgba(6, 5, 4, 0.6), rgba(6, 5, 4, 0));
+}
+
+.inv-gate-scrim-bottom {
+  bottom: 0;
+  height: 56%;
+  background: linear-gradient(180deg, rgba(6, 5, 4, 0) 0%, rgba(6, 5, 4, 0.42) 42%, rgba(6, 5, 4, 0.9) 100%);
+}
+
+.inv-gate-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  background: radial-gradient(124% 86% at 50% 38%, transparent 54%, rgba(0, 0, 0, 0.46) 100%);
+}
+
+.inv-gate-sheen {
+  position: absolute;
+  inset-block: -10%;
+  left: -40%;
+  width: 46%;
+  z-index: 14;
+  pointer-events: none;
+  transform: skewX(-12deg);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 250, 236, 0.24) 42%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  filter: blur(2px);
+}
+
+.inv-gate-cover-body {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(1.7rem, 5.4cqh) clamp(1.1rem, 5cqw, 2rem)
+    calc(max(1.9rem, 5.2cqh) + env(safe-area-inset-bottom, 0px) + var(--gate-bottom, 0px));
+  text-align: center;
+  pointer-events: none;
+}
+
+.inv-gate-cover-kicker {
+  font-family: var(--inv-caps);
+  font-size: clamp(0.6rem, 2.6cqw, 0.76rem);
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(248, 242, 228, 0.9);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+  padding-left: 0.4em;
+}
+
+.inv-gate-open .inv-gate-bottom {
+  min-height: 0;
+  gap: clamp(0.8rem, 2.2cqh, 1.4rem);
+  padding-bottom: 0;
+  color: #f8f2e4;
+}
+
+.inv-gate-open .inv-gate-names {
+  font-size: clamp(2.1rem, 9.2cqw, 3.4rem);
+  color: #fbf6ea;
+  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.5);
+}
+
+.inv-gate-open .inv-gate-amp {
+  color: #e6cf9e;
+}
+
+.inv-gate-open .inv-gate-date {
+  font-size: clamp(0.6rem, 2.6cqw, 0.72rem);
+  letter-spacing: 0.3em;
+  color: rgba(248, 242, 228, 0.84);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+  opacity: 1;
+}
+
+.inv-gate-open .inv-gate-tapline,
+.inv-gate-open .inv-gate-music {
+  color: rgba(247, 238, 219, 0.88);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+}
+
+.inv-gate-open .inv-gate-cue-wrap {
+  height: 2.4rem;
+}
+
+.inv-gate-open .inv-gate-caption {
+  color: rgba(247, 238, 219, 0.9);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+}
+
+@media (max-height: 700px) {
+  .inv-gate-open .inv-gate-names {
+    font-size: clamp(1.85rem, 7.8cqw, 2.6rem);
+  }
+
+  .inv-gate-cover-body {
+    padding-top: max(1.2rem, 4cqh);
+    padding-bottom: calc(max(1.3rem, 3.8cqh) + env(safe-area-inset-bottom, 0px) + var(--gate-bottom, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-gate-sheet,
+  .inv-gate-door {
+    transition: none !important;
+  }
 }

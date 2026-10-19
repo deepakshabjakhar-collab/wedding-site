@@ -135,9 +135,8 @@ export function Hero({
   const isCeleste = theme.template.id === 'celeste';
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const artY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '7%']);
-  const artScale = useTransform(scrollYProgress, [0, 1], [1, reduce ? 1 : 1.08]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '-9%']);
+  const artY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '6%']);
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '-7%']);
   const contentFade = useTransform(scrollYProgress, [0, 0.8], [1, reduce ? 1 : 0]);
   const date = splitDate(data.weddingDate);
 
@@ -150,8 +149,8 @@ export function Hero({
   return (
     <header ref={heroRef} className="inv-hero" id="top">
       <motion.div
-        className="absolute inset-x-0 -top-[7%] h-[114%]"
-        style={{ y: artY, scale: artScale }}
+        className="absolute inset-x-0 -top-[6%] h-[112%]"
+        style={{ y: artY }}
       >
         <div
           className="absolute inset-0"
@@ -160,9 +159,24 @@ export function Hero({
               'linear-gradient(180deg, color-mix(in srgb, var(--inv-deep) 86%, #000) 0%, var(--inv-deep) 46%, color-mix(in srgb, var(--inv-deep) 78%, var(--inv-accent)) 100%)',
           }}
         />
+        {/* the cover's own photograph, so the invitation opens in the same light */}
+        <img
+          src={`/covers/${theme.template.id}.jpg`}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ objectPosition: 'center 42%' }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, rgb(10 8 6 / 0.5) 0%, rgb(10 8 6 / 0.12) 26%, rgb(10 8 6 / 0.44) 56%, rgb(10 8 6 / 0.86) 88%, rgb(10 8 6 / 0.96) 100%)',
+          }}
+        />
         <TemplateArt
           templateId={theme.template.id as TemplateId}
-          className="absolute inset-0 h-full w-full text-[var(--inv-accent)] opacity-[0.24]"
+          className="absolute inset-0 h-full w-full text-[var(--inv-accent)] opacity-[0.1]"
         />
         {isCeleste && (
           <StarField className="absolute inset-0 h-full w-full text-[#efeaff] opacity-70" count={90} />
@@ -196,10 +210,10 @@ export function Hero({
         className="inv-hero-inner relative z-[2] flex min-h-[inherit] flex-1 flex-col items-center text-center"
         style={{ y: contentY, opacity: contentFade }}
       >
-        <div className="mt-[12svh] flex w-full max-w-4xl flex-col items-center text-[#fdf7ea]">
+        <div className="inv-hero-top flex w-full max-w-4xl flex-col items-center text-[#fdf7ea]">
           <span className="block overflow-hidden">
             <motion.span
-              className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-full border"
+              className="inv-hero-mono mx-auto mb-6 grid h-16 w-16 place-items-center rounded-full border"
               style={{
                 borderColor: 'color-mix(in srgb, var(--inv-accent) 65%, #fff)',
                 color: HERO_GOLD,
@@ -269,14 +283,32 @@ export function Hero({
           </motion.div>
         </div>
 
+        {/* a hairline drawn down the page, so the tall screen never feels empty */}
         <motion.div
-          className="mt-auto w-full max-w-[22rem] px-1 pt-10"
+          className="inv-hero-ornament flex flex-1 flex-col items-center justify-center py-7"
+          initial={reduce ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.6, delay: 1.2 }}
+          aria-hidden
+        >
+          <span
+            className="h-16 w-px"
+            style={{ background: 'linear-gradient(180deg, transparent, color-mix(in srgb, var(--inv-accent) 65%, transparent), transparent)' }}
+          />
+          <span
+            className="mt-3 size-1.5 rotate-45 border"
+            style={{ borderColor: 'color-mix(in srgb, var(--inv-accent) 80%, transparent)' }}
+          />
+        </motion.div>
+
+        <motion.div
+          className="inv-hero-card mt-auto w-full max-w-[22rem] px-1"
           initial={reduce ? false : { opacity: 0, y: 46 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.3, delay: 1.1, ease: EASE }}
         >
           <div
-            className="relative overflow-hidden px-7 pb-4 pt-6 text-center shadow-[0_30px_70px_-34px_rgba(0,0,0,0.7)]"
+            className="inv-hero-datecard relative overflow-hidden px-7 pb-4 pt-6 text-center shadow-[0_30px_70px_-34px_rgba(0,0,0,0.7)]"
             style={{
               background: 'color-mix(in srgb, var(--inv-surface) 94%, transparent)',
               color: 'var(--inv-ink)',
@@ -299,10 +331,7 @@ export function Hero({
             <div className="mt-3">
               <DiamondRule color="var(--inv-accent)" width="w-[4.5rem]" />
             </div>
-            <div
-              className="mt-4 flex items-center justify-center gap-6 text-[2.15rem] leading-none tracking-[0.06em]"
-              style={{ fontFamily: 'var(--inv-display)' }}
-            >
+            <div className="inv-date-big">
               {date ? (
                 <>
                   <span>
@@ -316,18 +345,19 @@ export function Hero({
               )}
             </div>
             <div
-              className="mt-5 flex items-center justify-between border-t pt-3 text-[0.66rem] font-medium uppercase tracking-[0.3em]"
+              className="mt-5 flex items-center justify-between gap-3 border-t pt-3 text-[0.66rem] font-medium uppercase tracking-[0.3em]"
               style={{
                 fontFamily: 'var(--inv-caps)',
                 borderColor: 'color-mix(in srgb, var(--inv-accent) 28%, transparent)',
                 color: 'var(--inv-accent)',
               }}
             >
-              <a href="#rsvp" className="transition hover:opacity-70">
-                {t(data.settings.language, 'rsvpCta')}
+              <a href="#rsvp" className="inv-hero-card-link transition hover:opacity-70">
+                <span className="inv-hero-card-link-long">{t(data.settings.language, 'rsvpCta')}</span>
+                <span className="inv-hero-card-link-short">RSVP</span>
               </a>
-              <a href="#welcome" className="transition hover:opacity-70" aria-label="Scroll to the welcome">
-                Scroll &darr;
+              <a href="#welcome" className="inv-hero-card-link transition hover:opacity-70" aria-label="Scroll to the welcome">
+                Scroll <span aria-hidden>&darr;</span>
               </a>
             </div>
           </div>

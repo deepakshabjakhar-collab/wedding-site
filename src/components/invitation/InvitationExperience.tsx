@@ -40,6 +40,7 @@ interface Props {
   mode: ExperienceMode;
   embedded?: boolean;
   initialOpen?: boolean;
+  bottomInset?: number;
   className?: string;
 }
 
@@ -82,6 +83,7 @@ export function InvitationExperience({
   mode,
   embedded,
   initialOpen,
+  bottomInset,
   className,
 }: Props) {
   const data = invitation.data;
@@ -119,7 +121,7 @@ export function InvitationExperience({
     if (!trackSrc || !data.music.startOnOpen) return;
     void player.play().then((ok) => {
       if (!ok) {
-        setMusicHint('Tap the play button to start the music.');
+        setMusicHint('Tap play for music');
         window.setTimeout(() => setMusicHint(null), 7000);
       }
     });
@@ -229,6 +231,11 @@ export function InvitationExperience({
                   <span className="hidden text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-[var(--inv-deep-ink)]/80 sm:block">
                     {data.coupleA} &amp; {data.coupleB}
                   </span>
+                  {guest?.name && data.settings.showGuestName && (
+                    <span className="text-[0.58rem] uppercase tracking-[0.18em] text-[var(--inv-deep-ink)]/60 sm:hidden">
+                      {guest.name}
+                    </span>
+                  )}
                 </span>
                 <span className="flex items-center gap-1.5">
                   {mode === 'live' && (
@@ -282,6 +289,7 @@ export function InvitationExperience({
               templateId={invitation.templateId}
               guestName={guest?.name}
               embedded={embedded}
+              bottomInset={bottomInset}
               onIntent={startMusic}
               onOpen={() => setOpened(true)}
             />
