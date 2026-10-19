@@ -4,7 +4,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Music2, RotateCcw } from 'lucide-react';
 import { TemplateArt } from '@/templates/art';
 import { DiamondRule, LaurelCrest, RoyalCorner } from '@/templates/ornaments';
-import { FASTENING, FasteningPieces, ReleasedCover } from '@/components/invitation/Fastening';
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 const EASE_PAGE = [0.65, 0, 0.2, 1] as const;
@@ -16,12 +15,10 @@ const GOLD = '#d5b274';
 /**
  * The invitation on the home page. Closed, it is the cover itself — a
  * photograph of the printed piece, whole, with the names set on its blank
- * face. Tapping runs the same two-act ceremony as the guest gate: first
- * the wax seal cracks and the gold bow unties, only then does the cover
- * part down the middle. Never a page being flipped.
+ * face. Tapping lifts it like a page; the inside is the same cover in velvet.
  */
 export function EnvelopeTeaser() {
-  const [stage, setStage] = useState<'closed' | 'fastening' | 'opening' | 'open'>('closed');
+  const [stage, setStage] = useState<'closed' | 'opening' | 'open'>('closed');
   const reduce = useReducedMotion();
   const timers = useRef<number[]>([]);
 
@@ -36,9 +33,8 @@ export function EnvelopeTeaser() {
       setStage('open');
       return;
     }
-    setStage('fastening');
-    timers.current.push(window.setTimeout(() => setStage('opening'), 1950));
-    timers.current.push(window.setTimeout(() => setStage('open'), 1950 + 1350));
+    setStage('opening');
+    timers.current.push(window.setTimeout(() => setStage('open'), 1200));
   };
 
   const reset = () => {
@@ -47,7 +43,6 @@ export function EnvelopeTeaser() {
   };
 
   const opening = stage === 'opening';
-  const released = stage !== 'closed';
 
   return (
     <div className="relative mx-auto w-full max-w-[460px] select-none">
@@ -86,39 +81,26 @@ export function EnvelopeTeaser() {
                 }}
               />
 
-              {/* the printed piece, whole — two gatefold halves under a live
-                  fastening. Act I unties it; Act II parts the halves. */}
+              {/* the printed piece, whole */}
               <motion.div
                 className="absolute inset-0"
+                style={{ perspective: '1800px', transformStyle: 'preserve-3d' }}
                 animate={opening ? { opacity: 0 } : { opacity: 1 }}
-                transition={{ duration: 0.25, delay: opening ? 1.05 : 0 }}
+                transition={{ duration: 0.2, delay: opening ? 0.85 : 0 }}
               >
-                {(['left', 'right'] as const).map((side) => (
-                  <motion.div
-                    key={side}
-                    className="absolute top-0 bottom-0 overflow-hidden"
-                    style={{ [side]: 0, width: '50.4%', zIndex: 10 } as React.CSSProperties}
-                    initial={false}
-                    animate={opening ? { x: side === 'left' ? '-104%' : '104%' } : { x: '0%' }}
-                    transition={{ duration: 1.3, ease: EASE_PAGE }}
-                  >
-                    <div
-                      className="absolute top-0 bottom-0"
-                      style={{ width: '198.4%', [side === 'left' ? 'left' : 'right']: 0 } as React.CSSProperties}
-                    >
-                      <ReleasedCover src="/covers/aurelia.jpg" spec={FASTENING.aurelia} tint="#f8f4ea" />
-                    </div>
-                  </motion.div>
-                ))}
-                <div className="absolute inset-0" style={{ zIndex: 20, pointerEvents: 'none' }}>
-                  <FasteningPieces src="/covers/aurelia.jpg" spec={FASTENING.aurelia} released={released} />
-                </div>
-                <motion.div
-                  className="relative h-full w-full"
-                  style={{ zIndex: 15, pointerEvents: 'none' }}
-                  animate={{ opacity: opening ? 0 : 1 }}
-                  transition={{ duration: 0.3 }}
-                >
+              <motion.div
+                className="absolute inset-0 overflow-hidden"
+                style={{ transformOrigin: 'left center', backfaceVisibility: 'hidden' }}
+                animate={opening ? { opacity: 0, scale: 1.035, filter: 'blur(6px)' } : { opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                transition={{ duration: 1.1, ease: EASE_PAGE }}
+              >
+                <div className="relative h-full w-full">
+                  <img
+                    src="/covers/aurelia.jpg"
+                    alt="A cream invitation tied with gold silk and sealed in burgundy wax"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    draggable={false}
+                  />
                   {/* the names, printed on the card's blank face */}
                   <div
                     className="absolute left-[23%] right-[31%] top-[17%] text-center"
@@ -155,7 +137,8 @@ export function EnvelopeTeaser() {
                       22 January 2027<span className="mx-[0.4em] opacity-50">·</span>Lake Como
                     </p>
                   </div>
-                </motion.div>
+                </div>
+              </motion.div>
               </motion.div>
 
               <div className="absolute inset-x-0 top-0 flex justify-center pt-[6.4%]">
@@ -183,7 +166,7 @@ export function EnvelopeTeaser() {
 
               <motion.div
                 className="absolute inset-x-0 bottom-[5.6%] z-20 flex flex-col items-center gap-[1.6cqw]"
-                animate={released ? { opacity: 0 } : { opacity: 1 }}
+                animate={opening ? { opacity: 0 } : { opacity: 1 }}
                 transition={{ duration: 0.4 }}
               >
                 <span
