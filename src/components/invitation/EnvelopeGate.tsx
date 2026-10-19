@@ -3,61 +3,38 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Music2 } from 'lucide-react';
 import type { InvitationData } from '@shared/types';
 import { getTemplate } from '@/templates/registry';
-import { coverKind } from '@/templates/cover';
 import { playCinematicOpening, type OpeningSoundHandle } from '@/lib/openingSound';
 import { formatDateShort } from '@/lib/format';
 import { OpeningLetter } from './OpeningLetter';
+import { FASTENING_CONFIG, FASTEN_MS, FasteningLayer } from './FasteningLayer';
 import { t } from './i18n';
 
 const EASE_SILK = [0.22, 0.61, 0.36, 1] as const;
-const EASE_FILM = [0.45, 0, 0.2, 1] as const;
+const EASE_DOOR = [0.7, 0, 0.24, 1] as const;
 
-/**
- * The ceremony as one continuous piece of film.
- *
- * Every cover exists in three photographed states of the same scene:
- * fastened, released, and open (see public/covers, covers-untied,
- * covers-open). Tapping plays them as a single shot — the camera drifts
- * slowly inward while the ribbon comes undone, the seal breaks, or the
- * curtains draw back; then the cover opens in the same light; then the
- * photographed page gives way to the letter itself. Nothing is drawn,
- * clipped or flipped: it is the invitation, filmed.
- */
-
-/** Frames that already exist as “cover open in the photograph”. Templates
- *  without one yet dissolve from the released cover straight to the letter. */
-const HAS_OPEN_FRAME = new Set(['salento', 'noir', 'miel']);
-
-const UNTIE_MS = 2000;
-const OPEN_MS = 1700;
+const TURN_MS = 1750;
 const LETTER_MS = 1200;
 
-interface Frame {
-  src: string;
-  line: string;
-}
+const FASTENING_LINE: Record<string, string> = {
+  'bow': 'The ribbon comes undone…',
+  'bow-seal': 'The seal breaks, the ribbon loosens…',
+  'seal': 'The seal is broken…',
+  'band-seal': 'The seal breaks, the band falls away…',
+  'curtain': 'The curtains draw back…',
+};
 
-function framesFor(templateId: string, kind: string): Frame[] {
-  if (kind === 'curtain') {
-    // Belgrave begins behind closed drapes (the “untied” frame) and parts
-    // into the original photograph, where the card already glows.
-    return [
-      { src: `/covers-untied/${templateId}.jpg`, line: 'The curtains draw back…' },
-      { src: `/covers/${templateId}.jpg`, line: 'The cover opens…' },
-    ];
-  }
-  const fasteningLine =
-    kind === 'ribbon' ? 'The ribbon comes undone…' : kind === 'gatefold' ? 'The ribbon comes undone…' : 'The seal is broken…';
-  const frames: Frame[] = [
-    { src: `/covers/${templateId}.jpg`, line: fasteningLine },
-    { src: `/covers-untied/${templateId}.jpg`, line: 'The cover opens…' },
-  ];
-  if (HAS_OPEN_FRAME.has(templateId)) {
-    frames.push({ src: `/covers-open/${templateId}.jpg`, line: 'The cover opens…' });
-  }
-  return frames;
-}
-
+/**
+ * The opening, performed by the cover itself.
+ *
+ * The card on stage is the released cover — the photograph with its
+ * fastening already gone — closed by the real fastening, extracted from
+ * the tied photograph and laid back over it in perfect register.
+ * Act I: that fastening undoes itself (loops fold, tails fall, a seal
+ * cracks in two, a band slides off, drapes part). Act II: the two halves
+ * of the cover draw apart and the letter is there. One continuous piece
+ * of theatre, played by photographic objects — nothing drawn, nothing
+ * crossfaded.
+ */
 export function EnvelopeGate({
   data,
   templateId,
@@ -78,11 +55,12 @@ export function EnvelopeGate({
   const reduce = useReducedMotion();
   const template = getTemplate(templateId);
   const { gateBg, gateInk } = template.art;
-  const kind = coverKind(template.id);
   const language = data.settings.language;
-  const frames = useMemo(() => framesFor(template.id, kind), [template.id, kind]);
+  const config = FASTENING_CONFIG[template.id] ?? FASTENING_CONFIG.aurelia;
+  const curtain = config.type === 'curtain';
+  const coverSrc = curtain ? `/covers/${template.id}.jpg` : `/covers-untied/${template.id}.jpg`;
 
-  /** 0 = fastened · 1..n-1 = each photographed state · n = the letter */
+  /** 0 closed · 1 fastening · 2 cover opens · 3 the letter */
   const [phase, setPhase] = useState(0);
   const started = useRef(false);
   const timers = useRef<number[]>([]);
@@ -90,11 +68,11 @@ export function EnvelopeGate({
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    frames.forEach((frame) => {
+    [coverSrc, `/covers/${template.id}.jpg`].forEach((src) => {
       const img = new Image();
-      img.src = frame.src;
+      img.src = src;
     });
-  }, [frames]);
+  }, [coverSrc, template.id]);
 
   useEffect(() => {
     if (!embedded) buttonRef.current?.focus({ preventScroll: true });
@@ -113,33 +91,50 @@ export function EnvelopeGate({
     onIntent?.();
     if (!reduce) {
       sound.current = playCinematicOpening(
-        kind === 'ribbon' || kind === 'gatefold' ? 'ribbon' : kind === 'curtain' ? 'curtain' : 'seal',
+        config.type === 'bow' || config.type === 'bow-seal' ? 'ribbon' : curtain ? 'curtain' : 'seal',
       );
     }
     if (reduce) {
       onOpen();
       return;
     }
-    // One unbroken shot: each state dissolves into the next.
-    let at = 0;
-    frames.forEach((_, i) => {
-      if (i === 0) return;
-      at += i === 1 ? UNTIE_MS : OPEN_MS;
-      const atMs = at;
-      timers.current.push(window.setTimeout(() => setPhase(i), atMs));
-    });
-    timers.current.push(window.setTimeout(() => setPhase(frames.length), at + OPEN_MS));
-    timers.current.push(window.setTimeout(onOpen, at + OPEN_MS + LETTER_MS));
+    const fastenMs = FASTEN_MS[config.type];
+    timers.current.push(window.setTimeout(() => setPhase(1), 60));
+    timers.current.push(window.setTimeout(() => setPhase(2), fastenMs));
+    timers.current.push(window.setTimeout(() => setPhase(3), fastenMs + TURN_MS));
+    timers.current.push(window.setTimeout(onOpen, fastenMs + TURN_MS + LETTER_MS));
   };
 
-  const released = phase > 0;
-  const letterShown = phase >= frames.length;
+  const released = phase >= 1;
+  const opening = phase >= 2;
+  const letterShown = phase >= 3;
   const upper = template.cover.namesCase === 'upper';
   const caption = letterShown
     ? t(language, 'reveal')
-    : released
-      ? frames[Math.min(phase, frames.length - 1)].line
-      : '';
+    : phase === 1
+      ? FASTENING_LINE[config.type]
+      : phase === 2
+        ? curtain
+          ? 'The curtains part…'
+          : 'The cover opens…'
+        : '';
+
+  const letter = useMemo(
+    () => (
+      <OpeningLetter
+        template={template}
+        data={{
+          coupleA: data.coupleA,
+          coupleB: data.coupleB,
+          monogram: data.monogram,
+          weddingDate: data.weddingDate,
+          location: data.location,
+        }}
+        guestName={guestName && data.settings.showGuestName ? `${t(language, 'forGuest')} ${guestName}` : undefined}
+      />
+    ),
+    [template, data, guestName, language],
+  );
 
   return (
     <motion.div
@@ -148,11 +143,11 @@ export function EnvelopeGate({
       initial={reduce ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: EASE_SILK }}
-      data-kind={kind}
+      data-kind={config.type}
     >
-      {/* the room: the cover's own photograph, darkened to a backdrop */}
+      {/* the room: the scene itself, darkened to a backdrop */}
       <img
-        src={frames[0].src}
+        src={`/covers/${template.id}.jpg`}
         alt=""
         aria-hidden="true"
         className="absolute inset-0 h-full w-full scale-110 object-cover"
@@ -177,56 +172,123 @@ export function EnvelopeGate({
           {guestName && data.settings.showGuestName ? `${t(language, 'forGuest')} ${guestName}` : 'You are invited'}
         </motion.span>
 
-        {/* the filmed cover */}
+        {/* the card */}
         <div className="inv-gate-cardbox" style={{ overflow: 'hidden', background: '#141210' }}>
-          {frames.map((frame, i) => (
-            <motion.img
-              key={frame.src}
-              src={frame.src}
-              alt={i === 0 ? `${template.name} cover — ${template.descriptor}` : ''}
-              aria-hidden={i !== 0}
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-cover"
-              initial={false}
-              animate={{
-                opacity: phase >= i ? 1 : 0,
-                scale: letterShown ? 1.1 : phase >= i ? 1.045 : 1,
-              }}
-              transition={{
-                opacity: { duration: i === 0 ? 0.4 : 1.9, ease: EASE_FILM },
-                scale: { duration: letterShown ? 2.4 : 6.5, ease: 'linear' },
-              }}
-            />
-          ))}
-
-          {/* the letter itself, blooming out of the photographed page */}
+          {/* the letter, waiting inside */}
           <motion.div
             className="absolute inset-0"
             initial={false}
-            animate={{ opacity: letterShown ? 1 : 0, scale: letterShown ? 1 : 1.04 }}
-            transition={{ duration: 1.35, ease: EASE_FILM }}
-            aria-hidden={!letterShown}
+            animate={{ scale: opening ? 1 : 1.02, opacity: curtain && !letterShown ? 0 : 1 }}
+            transition={{ duration: 1.5, ease: EASE_DOOR }}
+            aria-hidden={!opening}
           >
-            <OpeningLetter
-              template={template}
-              data={{
-                coupleA: data.coupleA,
-                coupleB: data.coupleB,
-                monogram: data.monogram,
-                weddingDate: data.weddingDate,
-                location: data.location,
-              }}
-              guestName={guestName && data.settings.showGuestName ? `${t(language, 'forGuest')} ${guestName}` : undefined}
-            />
+            {letter}
           </motion.div>
 
-          {/* one breath of light across the whole shot */}
+          {curtain ? (
+            <>
+              {/* the photographed stage, glowing between the drapes */}
+              <motion.img
+                src={coverSrc}
+                alt={`${template.name} cover — ${template.descriptor}`}
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-cover"
+                initial={false}
+                animate={{ opacity: letterShown ? 0 : 1, scale: opening ? 1.05 : 1 }}
+                transition={{ duration: 1.8, ease: EASE_DOOR }}
+              />
+              {/* the closed drapes, in two photographic panels */}
+              {(['left', 'right'] as const).map((side) => (
+                <motion.div
+                  key={side}
+                  aria-hidden="true"
+                  className="absolute top-0 bottom-0 overflow-hidden"
+                  style={{
+                    [side]: 0,
+                    width: '52%',
+                    zIndex: 10,
+                    transformOrigin: side === 'left' ? '0% 50%' : '100% 50%',
+                    willChange: 'transform, opacity',
+                  } as React.CSSProperties}
+                  initial={false}
+                  animate={
+                    opening
+                      ? { x: side === 'left' ? '-64%' : '64%', scaleX: 0.55, opacity: letterShown ? 0 : 1 }
+                      : { x: '0%', scaleX: 1, opacity: 1 }
+                  }
+                  transition={{ duration: TURN_MS / 1000, ease: EASE_DOOR }}
+                >
+                  <div
+                    className="absolute top-0 bottom-0"
+                    style={{ width: '192.3%', [side === 'left' ? 'left' : 'right']: 0 } as React.CSSProperties}
+                  >
+                    <img
+                      src={`/covers-untied/${template.id}.jpg`}
+                      alt=""
+                      draggable={false}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </>
+          ) : (
+            <>
+              {/* Act II — the released cover, in two halves */}
+              {(['left', 'right'] as const).map((side) => (
+                <motion.div
+                  key={side}
+                  aria-hidden="true"
+                  className="absolute top-0 bottom-0 overflow-hidden"
+                  style={{
+                    [side]: 0,
+                    width: '50.4%',
+                    zIndex: 10,
+                    willChange: 'transform, opacity',
+                    boxShadow:
+                      side === 'left' ? '-22px 0 38px -24px rgba(0,0,0,0.6)' : '22px 0 38px -24px rgba(0,0,0,0.6)',
+                  } as React.CSSProperties}
+                  initial={false}
+                  animate={opening ? { x: side === 'left' ? '-103%' : '103%', opacity: letterShown ? 0 : 1 } : { x: '0%', opacity: 1 }}
+                  transition={{ duration: TURN_MS / 1000, ease: EASE_DOOR }}
+                >
+                  <div
+                    className="absolute top-0 bottom-0"
+                    style={{ width: '198.4%', [side === 'left' ? 'left' : 'right']: 0 } as React.CSSProperties}
+                  >
+                    <img
+                      src={coverSrc}
+                      alt={side === 'left' ? `${template.name} cover — ${template.descriptor}` : ''}
+                      draggable={false}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  </div>
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 bottom-0 w-px"
+                    style={{
+                      [side === 'left' ? 'right' : 'left']: 0,
+                      background:
+                        'linear-gradient(180deg, transparent, rgba(30,20,8,0.3) 22%, rgba(30,20,8,0.3) 78%, transparent)',
+                    } as React.CSSProperties}
+                  />
+                </motion.div>
+              ))}
+
+              {/* Act I — the fastening undoes itself over the cover */}
+              <div className="absolute inset-0" style={{ zIndex: 30, pointerEvents: 'none' }}>
+                <FasteningLayer templateId={template.id} released={released} />
+              </div>
+            </>
+          )}
+
+          {/* one breath of light across the card */}
           <motion.div
             className="inv-gate-sheen"
             aria-hidden="true"
             initial={false}
-            animate={released && !letterShown ? { x: '170%', opacity: [0, 0.35, 0] } : { x: '-120%', opacity: 0 }}
-            transition={{ duration: 2.2, ease: EASE_SILK }}
+            animate={released && !opening ? { x: '170%', opacity: [0, 0.32, 0] } : { x: '-120%', opacity: 0 }}
+            transition={{ duration: 2, ease: EASE_SILK }}
           />
         </div>
 
