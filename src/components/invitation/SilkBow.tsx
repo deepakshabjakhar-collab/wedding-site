@@ -65,7 +65,7 @@ export function SilkBow({
         <path d="M96 66 C66 36 38 34 34 52 C58 44 80 50 96 66 Z" fill="#fff" opacity="0.2" />
         <path d="M100 76 C74 58 48 54 30 60" fill="none" stroke={tones.dark} strokeOpacity="0.25" strokeWidth="1.2" />
       </motion.g>
-      <motion.g {...anim({ opacity: 0, scale: 0.25, rotate: 18, x: -10 }, 0.12, 0.95)} style={{ transformBox: 'fill-box', transformOrigin: '0% 60%' }}>
+      <motion.g {...anim({ opacity: 0, scale: 0.22, rotate: 18, x: -10 }, 0.56, 1.1)} style={{ transformBox: 'fill-box', transformOrigin: '0% 60%' }}>
         <path d="M112 74 C158 22 206 26 200 58 C195 86 146 92 112 80 Z" fill={`url(#${silk})`} />
         <path d="M112 74 C158 22 206 26 200 58" fill="none" stroke={tones.dark} strokeOpacity="0.4" strokeWidth="1" />
         <path d="M124 66 C154 36 182 34 186 52 C162 44 140 50 124 66 Z" fill="#fff" opacity="0.2" />
