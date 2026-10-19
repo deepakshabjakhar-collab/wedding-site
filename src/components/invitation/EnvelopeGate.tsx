@@ -1,53 +1,63 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Music2 } from 'lucide-react';
 import type { InvitationData } from '@shared/types';
 import { getTemplate } from '@/templates/registry';
-import { coverKind, coverTokens } from '@/templates/cover';
-import { WaxSeal } from '@/templates/art';
-import { RoyalCorner } from '@/templates/ornaments';
+import { coverKind } from '@/templates/cover';
 import { playCinematicOpening, type OpeningSoundHandle } from '@/lib/openingSound';
 import { formatDateShort } from '@/lib/format';
 import { OpeningLetter } from './OpeningLetter';
-import { RibbonBand, SilkBow, type SilkTones } from './SilkBow';
 import { t } from './i18n';
 
 const EASE_SILK = [0.22, 0.61, 0.36, 1] as const;
-const EASE_DOOR = [0.7, 0, 0.24, 1] as const;
-
-/** Act I durations — the fastening gets its own unhurried moment. */
-const FASTEN_MS = { ribbon: 1650, seal: 1350, curtain: 950, gatefold: 1300 } as const;
-const TURN_MS = 1450;
-const LETTER_BEAT_MS = 1050;
-
-/** Silk, dyed for each ribbon world. */
-const RIBBON_TONES: Record<string, SilkTones> = {
-  maison: { light: '#c2ceb2', mid: '#7d8b6a', dark: '#4f603c' },
-  salento: { light: '#eda87e', mid: '#c06a3d', dark: '#8a3f20' },
-  heirloom: { light: '#e2c491', mid: '#a97e4e', dark: '#71522c' },
-  miel: { light: '#f2d18d', mid: '#d9a44f', dark: '#9c6f27' },
-};
-const GOLD_TONES: SilkTones = { light: '#f4e2ab', mid: '#d5ae62', dark: '#8f6c30' };
-const SILVER_TONES: SilkTones = { light: '#eef1f8', mid: '#b3c0da', dark: '#7488ad' };
-const SEAL_COLOUR: Record<string, string> = { aurelia: '#7b2938', celeste: '#93a7cf' };
-
-const FASTENING_LINE: Record<string, string> = {
-  ribbon: 'The ribbon is untied…',
-  seal: 'The seal is broken…',
-  curtain: 'The tiebacks are released…',
-  gatefold: 'The seal is broken…',
-};
+const EASE_FILM = [0.45, 0, 0.2, 1] as const;
 
 /**
- * The opening ceremony, in two acts.
+ * The ceremony as one continuous piece of film.
  *
- * The cover is a finished piece of stationery in the template's own world —
- * paper, foil keylines, engraved corners — closed by a real fastening:
- * a silk bow, a wax seal, a pair of velvet drapes. Act I undoes only the
- * fastening: the bow unties, the seal cracks, the tassels drop. Act II
- * then swings the gatefold doors (or parts the drapes) to reveal the
- * letter inside. Slow, quiet, and physical — never a page being flipped.
+ * Every cover exists in three photographed states of the same scene:
+ * fastened, released, and open (see public/covers, covers-untied,
+ * covers-open). Tapping plays them as a single shot — the camera drifts
+ * slowly inward while the ribbon comes undone, the seal breaks, or the
+ * curtains draw back; then the cover opens in the same light; then the
+ * photographed page gives way to the letter itself. Nothing is drawn,
+ * clipped or flipped: it is the invitation, filmed.
  */
+
+/** Frames that already exist as “cover open in the photograph”. Templates
+ *  without one yet dissolve from the released cover straight to the letter. */
+const HAS_OPEN_FRAME = new Set(['salento', 'noir', 'miel']);
+
+const UNTIE_MS = 2000;
+const OPEN_MS = 1700;
+const LETTER_MS = 1200;
+
+interface Frame {
+  src: string;
+  line: string;
+}
+
+function framesFor(templateId: string, kind: string): Frame[] {
+  if (kind === 'curtain') {
+    // Belgrave begins behind closed drapes (the “untied” frame) and parts
+    // into the original photograph, where the card already glows.
+    return [
+      { src: `/covers-untied/${templateId}.jpg`, line: 'The curtains draw back…' },
+      { src: `/covers/${templateId}.jpg`, line: 'The cover opens…' },
+    ];
+  }
+  const fasteningLine =
+    kind === 'ribbon' ? 'The ribbon comes undone…' : kind === 'gatefold' ? 'The ribbon comes undone…' : 'The seal is broken…';
+  const frames: Frame[] = [
+    { src: `/covers/${templateId}.jpg`, line: fasteningLine },
+    { src: `/covers-untied/${templateId}.jpg`, line: 'The cover opens…' },
+  ];
+  if (HAS_OPEN_FRAME.has(templateId)) {
+    frames.push({ src: `/covers-open/${templateId}.jpg`, line: 'The cover opens…' });
+  }
+  return frames;
+}
+
 export function EnvelopeGate({
   data,
   templateId,
@@ -68,17 +78,23 @@ export function EnvelopeGate({
   const reduce = useReducedMotion();
   const template = getTemplate(templateId);
   const { gateBg, gateInk } = template.art;
-  const tokens = coverTokens(template);
   const kind = coverKind(template.id);
   const language = data.settings.language;
-  const tones = kind === 'gatefold' ? SILVER_TONES : (RIBBON_TONES[template.id] ?? GOLD_TONES);
-  const fastenMs = FASTEN_MS[kind];
+  const frames = useMemo(() => framesFor(template.id, kind), [template.id, kind]);
 
-  const [stage, setStage] = useState<'closed' | 'fastening' | 'opening' | 'open'>('closed');
+  /** 0 = fastened · 1..n-1 = each photographed state · n = the letter */
+  const [phase, setPhase] = useState(0);
   const started = useRef(false);
   const timers = useRef<number[]>([]);
   const sound = useRef<OpeningSoundHandle | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    frames.forEach((frame) => {
+      const img = new Image();
+      img.src = frame.src;
+    });
+  }, [frames]);
 
   useEffect(() => {
     if (!embedded) buttonRef.current?.focus({ preventScroll: true });
@@ -97,37 +113,33 @@ export function EnvelopeGate({
     onIntent?.();
     if (!reduce) {
       sound.current = playCinematicOpening(
-        kind === 'ribbon' ? 'ribbon' : kind === 'curtain' ? 'curtain' : kind === 'gatefold' ? 'celeste' : 'seal',
+        kind === 'ribbon' || kind === 'gatefold' ? 'ribbon' : kind === 'curtain' ? 'curtain' : 'seal',
       );
     }
     if (reduce) {
       onOpen();
       return;
     }
-    setStage('fastening');
-    timers.current.push(window.setTimeout(() => setStage('opening'), fastenMs));
-    timers.current.push(window.setTimeout(() => setStage('open'), fastenMs + TURN_MS));
-    timers.current.push(window.setTimeout(onOpen, fastenMs + TURN_MS + LETTER_BEAT_MS));
+    // One unbroken shot: each state dissolves into the next.
+    let at = 0;
+    frames.forEach((_, i) => {
+      if (i === 0) return;
+      at += i === 1 ? UNTIE_MS : OPEN_MS;
+      const atMs = at;
+      timers.current.push(window.setTimeout(() => setPhase(i), atMs));
+    });
+    timers.current.push(window.setTimeout(() => setPhase(frames.length), at + OPEN_MS));
+    timers.current.push(window.setTimeout(onOpen, at + OPEN_MS + LETTER_MS));
   };
 
-  const released = stage !== 'closed';
-  const opening = stage === 'opening' || stage === 'open';
-  const curtain = kind === 'curtain';
+  const released = phase > 0;
+  const letterShown = phase >= frames.length;
   const upper = template.cover.namesCase === 'upper';
-  const caption =
-    stage === 'open'
-      ? t(language, 'reveal')
-      : stage === 'fastening'
-        ? FASTENING_LINE[kind]
-        : stage === 'opening'
-          ? curtain
-            ? 'The curtains part…'
-            : 'The cover opens…'
-          : '';
-
-  const doorBg = curtain
-    ? `repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 10px, rgba(0,0,0,0.16) 10px 22px), linear-gradient(100deg, ${tokens.bg} 0%, color-mix(in srgb, ${tokens.bg} 82%, #000) 55%, ${tokens.bg} 100%)`
-    : `linear-gradient(155deg, color-mix(in srgb, ${tokens.bg} 92%, #fff) 0%, ${tokens.bg} 48%, color-mix(in srgb, ${tokens.bg} 84%, ${tokens.accentSoft}) 100%)`;
+  const caption = letterShown
+    ? t(language, 'reveal')
+    : released
+      ? frames[Math.min(phase, frames.length - 1)].line
+      : '';
 
   return (
     <motion.div
@@ -138,12 +150,20 @@ export function EnvelopeGate({
       transition={{ duration: 0.5, ease: EASE_SILK }}
       data-kind={kind}
     >
-      {/* the room: a pool of light on the template's own colour */}
+      {/* the room: the cover's own photograph, darkened to a backdrop */}
+      <img
+        src={frames[0].src}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover"
+        style={{ filter: 'blur(46px) saturate(0.7) brightness(0.4)' }}
+      />
       <div
         aria-hidden="true"
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(88% 60% at 50% 40%, color-mix(in srgb, ${gateInk} 16%, transparent), transparent 62%), linear-gradient(180deg, rgba(0,0,0,0.24), transparent 30%, transparent 70%, rgba(0,0,0,0.34))`,
+          background:
+            'radial-gradient(90% 62% at 50% 42%, rgba(255,246,226,0.13), transparent 62%), linear-gradient(180deg, rgba(0,0,0,0.42), transparent 30%, transparent 68%, rgba(0,0,0,0.6))',
         }}
       />
 
@@ -157,17 +177,35 @@ export function EnvelopeGate({
           {guestName && data.settings.showGuestName ? `${t(language, 'forGuest')} ${guestName}` : 'You are invited'}
         </motion.span>
 
-        {/* ------------------------------------------------------------ */}
-        {/* the card                                                      */}
-        {/* ------------------------------------------------------------ */}
-        <div className="inv-gate-cardbox" style={{ perspective: '1600px' }}>
-          {/* the letter, waiting inside */}
+        {/* the filmed cover */}
+        <div className="inv-gate-cardbox" style={{ overflow: 'hidden', background: '#141210' }}>
+          {frames.map((frame, i) => (
+            <motion.img
+              key={frame.src}
+              src={frame.src}
+              alt={i === 0 ? `${template.name} cover — ${template.descriptor}` : ''}
+              aria-hidden={i !== 0}
+              draggable={false}
+              className="absolute inset-0 h-full w-full object-cover"
+              initial={false}
+              animate={{
+                opacity: phase >= i ? 1 : 0,
+                scale: letterShown ? 1.1 : phase >= i ? 1.045 : 1,
+              }}
+              transition={{
+                opacity: { duration: i === 0 ? 0.4 : 1.9, ease: EASE_FILM },
+                scale: { duration: letterShown ? 2.4 : 6.5, ease: 'linear' },
+              }}
+            />
+          ))}
+
+          {/* the letter itself, blooming out of the photographed page */}
           <motion.div
             className="absolute inset-0"
             initial={false}
-            animate={{ scale: opening ? 1 : 1.02 }}
-            transition={{ duration: 1.5, ease: EASE_DOOR }}
-            aria-hidden={!opening}
+            animate={{ opacity: letterShown ? 1 : 0, scale: letterShown ? 1 : 1.04 }}
+            transition={{ duration: 1.35, ease: EASE_FILM }}
+            aria-hidden={!letterShown}
           >
             <OpeningLetter
               template={template}
@@ -181,179 +219,14 @@ export function EnvelopeGate({
               guestName={guestName && data.settings.showGuestName ? `${t(language, 'forGuest')} ${guestName}` : undefined}
             />
           </motion.div>
-          <motion.div
-            aria-hidden="true"
-            className="absolute inset-0 z-[5]"
-            style={{ background: 'linear-gradient(180deg, rgba(24,16,6,0.26), rgba(24,16,6,0.04) 42%, rgba(24,16,6,0.3))' }}
-            initial={false}
-            animate={{ opacity: opening ? 0 : 1 }}
-            transition={{ duration: TURN_MS / 1000, ease: EASE_DOOR }}
-          />
 
-          {/* Act II — the two doors. Gatefolds swing from their outer
-              hinges; drapes bunch into the wings. */}
-          {(['left', 'right'] as const).map((side) => (
-            <motion.div
-              key={side}
-              aria-hidden="true"
-              className="absolute top-0 bottom-0"
-              style={{
-                [side]: 0,
-                width: '50.3%',
-                zIndex: 10,
-                transformOrigin: side === 'left' ? '0% 50%' : '100% 50%',
-                transformStyle: 'preserve-3d',
-                backfaceVisibility: 'hidden',
-                willChange: 'transform, opacity',
-              } as React.CSSProperties}
-              initial={false}
-              animate={
-                opening
-                  ? curtain
-                    ? { x: side === 'left' ? '-72%' : '72%', scaleX: 0.5, opacity: stage === 'open' ? 0 : 1 }
-                    : { rotateY: side === 'left' ? -102 : 102, opacity: stage === 'open' ? 0 : 1 }
-                  : curtain
-                    ? { x: '0%', scaleX: 1, opacity: 1 }
-                    : { rotateY: 0, opacity: 1 }
-              }
-              transition={{ duration: TURN_MS / 1000, ease: EASE_DOOR }}
-            >
-              <div className="absolute inset-0 overflow-hidden" style={{ background: doorBg, boxShadow: 'inset 0 0 60px rgba(20,14,6,0.14)' }}>
-                {/* foil keyline, inset from the trim */}
-                <div
-                  className="pointer-events-none absolute border"
-                  style={{
-                    inset: '4.5%',
-                    [side === 'left' ? 'right' : 'left']: '7%',
-                    borderColor: `color-mix(in srgb, ${tokens.accent} 42%, transparent)`,
-                  } as React.CSSProperties}
-                />
-                <div className="pointer-events-none absolute inset-[4.5%]" style={{ color: tokens.accent }}>
-                  {side === 'left' ? (
-                    <>
-                      <RoyalCorner className="absolute left-0 top-0 h-[9%] w-auto opacity-70" />
-                      <RoyalCorner className="absolute bottom-0 left-0 h-[9%] w-auto -scale-y-100 opacity-70" />
-                    </>
-                  ) : (
-                    <>
-                      <RoyalCorner className="absolute right-0 top-0 h-[9%] w-auto -scale-x-100 opacity-70" />
-                      <RoyalCorner className="absolute bottom-0 right-0 h-[9%] w-auto -scale-100 opacity-70" />
-                    </>
-                  )}
-                </div>
-                {/* the centre edge catches the light as the door turns */}
-                <span
-                  aria-hidden="true"
-                  className="absolute top-0 bottom-0 w-[3px]"
-                  style={{
-                    [side === 'left' ? 'right' : 'left']: 0,
-                    background: curtain
-                      ? `repeating-linear-gradient(180deg, ${tokens.accent} 0 5px, transparent 5px 9px)`
-                      : 'linear-gradient(180deg, transparent, rgba(30,20,8,0.3) 20%, rgba(30,20,8,0.3) 80%, transparent)',
-                  } as React.CSSProperties}
-                />
-                {curtain && (
-                  /* the tassel that holds this drape — it drops in Act I */
-                  <motion.span
-                    aria-hidden="true"
-                    className="absolute"
-                    style={{
-                      [side === 'left' ? 'right' : 'left']: '9%',
-                      top: '58%',
-                      width: 3,
-                      height: '16%',
-                      background: `linear-gradient(180deg, transparent, ${tokens.accent})`,
-                    } as React.CSSProperties}
-                    initial={false}
-                    animate={released && !opening ? { y: 90, opacity: 0 } : { y: 0, opacity: 1 }}
-                    transition={{ duration: 0.8, ease: EASE_SILK }}
-                  />
-                )}
-              </div>
-            </motion.div>
-          ))}
-
-          {/* what is printed on the closed cover: the couple's mark above
-              the fastening, the house name below it */}
-          <motion.div
-            aria-hidden="true"
-            className="absolute inset-x-0 top-[10%] z-[15] flex flex-col items-center"
-            initial={false}
-            animate={{ opacity: opening ? 0 : 1 }}
-            transition={{ duration: 0.4, ease: EASE_SILK }}
-          >
-            <span
-              style={{
-                fontFamily: template.script,
-                fontSize: 'clamp(28px, 11cqw, 44px)',
-                lineHeight: 1,
-                color: tokens.accent,
-              }}
-            >
-              {data.monogram}
-            </span>
-            <span
-              className="mt-2 flex items-center gap-2"
-              style={{ color: `color-mix(in srgb, ${tokens.accent} 78%, transparent)` }}
-            >
-              <span className="h-px w-7 bg-current opacity-60" />
-              <span className="size-1 rotate-45 border border-current" />
-              <span className="h-px w-7 bg-current opacity-60" />
-            </span>
-          </motion.div>
-          <motion.span
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-[7%] z-[15] text-center uppercase"
-            style={{
-              fontFamily: "'Cinzel', Georgia, serif",
-              fontSize: 'clamp(7px, 2cqw, 10px)',
-              letterSpacing: '0.44em',
-              paddingLeft: '0.44em',
-              color: `color-mix(in srgb, ${tokens.ink} 58%, transparent)`,
-              opacity: opening ? 0 : 1,
-            }}
-          >
-            {template.name}
-          </motion.span>
-
-          {/* Act I — the fastening, and only the fastening */}
-          {kind === 'ribbon' && (
-            <>
-              <RibbonBand tones={tones} released={released} />
-              <motion.div
-                className="absolute left-1/2 top-[50%] z-[26] w-[62%]"
-                style={{ x: '-50%', y: '-50%' }}
-                initial={false}
-                animate={released ? { y: '-46%' } : { y: '-50%' }}
-                transition={{ duration: 1.2, ease: EASE_SILK }}
-              >
-                <SilkBow tones={tones} untied={released} className="h-auto w-full drop-shadow-[0_14px_18px_rgba(40,26,8,0.35)]" />
-              </motion.div>
-            </>
-          )}
-
-          {(kind === 'seal' || kind === 'gatefold') && (
-            <>
-              <RibbonBand tones={tones} released={released} delay={0.6} />
-              <motion.div
-                className="absolute left-1/2 top-[50%] z-[26] w-[27%]"
-                style={{ x: '-50%', y: '-50%', color: SEAL_COLOUR[template.id] ?? '#7b2938' }}
-                initial={false}
-                animate={released ? { scale: 0.92, opacity: 0, y: '-38%' } : { scale: 1, opacity: 1 }}
-                transition={{ duration: 0.9, delay: released ? 0.55 : 0, ease: EASE_SILK }}
-              >
-                <WaxSeal monogram={data.monogram} cracked={released} className="h-auto w-full drop-shadow-[0_14px_20px_rgba(40,16,20,0.4)]" />
-              </motion.div>
-            </>
-          )}
-
-          {/* a single pass of light as the fastening gives */}
+          {/* one breath of light across the whole shot */}
           <motion.div
             className="inv-gate-sheen"
             aria-hidden="true"
             initial={false}
-            animate={released && !opening ? { x: '160%', opacity: [0, 0.45, 0] } : { x: '-120%', opacity: 0 }}
-            transition={{ duration: 1.3, ease: EASE_SILK }}
+            animate={released && !letterShown ? { x: '170%', opacity: [0, 0.35, 0] } : { x: '-120%', opacity: 0 }}
+            transition={{ duration: 2.2, ease: EASE_SILK }}
           />
         </div>
 
@@ -366,10 +239,17 @@ export function EnvelopeGate({
           >
             <h1
               className={`inv-gate-names ${upper ? 'uppercase' : ''}`}
-              style={{ letterSpacing: upper ? '0.06em' : template.cover.tracking, color: gateInk, textShadow: 'none', fontFamily: template.display }}
+              style={{
+                letterSpacing: upper ? '0.06em' : template.cover.tracking,
+                color: gateInk,
+                textShadow: 'none',
+                fontFamily: template.display,
+              }}
             >
               {data.coupleA}
-              <span className="inv-gate-amp" style={{ fontFamily: template.script }}>&amp;</span>
+              <span className="inv-gate-amp" style={{ fontFamily: template.script }}>
+                &amp;
+              </span>
               {data.coupleB}
             </h1>
             <p className="inv-gate-date" style={{ color: gateInk }}>
@@ -392,14 +272,19 @@ export function EnvelopeGate({
                 </span>
               )}
             </motion.div>
-            <motion.div className="inv-gate-progress" animate={{ opacity: released ? 1 : 0 }} transition={{ duration: 0.35 }} aria-hidden="true">
+            <motion.div
+              className="inv-gate-progress"
+              animate={{ opacity: released ? 1 : 0 }}
+              transition={{ duration: 0.35 }}
+              aria-hidden="true"
+            >
               <span className="inv-gate-caption">{caption}</span>
             </motion.div>
           </div>
         </div>
       </div>
 
-      {!embedded && stage === 'closed' && (
+      {!embedded && phase === 0 && (
         <button type="button" onClick={onOpen} className="inv-gate-skip" style={{ color: gateInk }}>
           Skip
         </button>

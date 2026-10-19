@@ -265,17 +265,17 @@ export function playCinematicOpening(
     paper(audio, out, now + 0.35, 0.7);
   }
 
-  // Act II — the cover parts / the letter is drawn into the light.
-  paper(audio, out, now + 1.75, 1.5);
+  // Act II — the cover opens in the same light / the letter is drawn out.
+  paper(audio, out, now + 2.0, 1.6);
 
   // Act III — the reveal: a rising D-major answer, wider and quicker.
   const ascent = [587.33, 739.99, 880, 1108.73, 1318.51, 1466.83];
-  ascent.forEach((note, index) => pluck(audio, out, note, now + 3.1 + index * 0.12, 0.13));
+  ascent.forEach((note, index) => pluck(audio, out, note, now + 4.2 + index * 0.12, 0.13));
 
   // Act IV — resolution as the invitation lands.
   const resolve = [293.66, 587.33, 880, 1174.66];
-  resolve.forEach((note, index) => pluck(audio, out, note, now + 4.0 + index * 0.07, 0.09));
-  pluck(audio, out, 1760, now + 4.6, 0.05);
+  resolve.forEach((note, index) => pluck(audio, out, note, now + 5.2 + index * 0.07, 0.09));
+  pluck(audio, out, 1760, now + 5.9, 0.05);
 
   return {
     release(ms = 700) {
