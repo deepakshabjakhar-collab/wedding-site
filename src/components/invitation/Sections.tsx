@@ -159,9 +159,24 @@ export function Hero({
               'linear-gradient(180deg, color-mix(in srgb, var(--inv-deep) 86%, #000) 0%, var(--inv-deep) 46%, color-mix(in srgb, var(--inv-deep) 78%, var(--inv-accent)) 100%)',
           }}
         />
+        {/* the cover's own photograph, so the invitation opens in the same light */}
+        <img
+          src={`/covers/${theme.template.id}.jpg`}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ objectPosition: 'center 42%' }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, rgb(10 8 6 / 0.5) 0%, rgb(10 8 6 / 0.12) 26%, rgb(10 8 6 / 0.44) 56%, rgb(10 8 6 / 0.86) 88%, rgb(10 8 6 / 0.96) 100%)',
+          }}
+        />
         <TemplateArt
           templateId={theme.template.id as TemplateId}
-          className="absolute inset-0 h-full w-full text-[var(--inv-accent)] opacity-[0.24]"
+          className="absolute inset-0 h-full w-full text-[var(--inv-accent)] opacity-[0.1]"
         />
         {isCeleste && (
           <StarField className="absolute inset-0 h-full w-full text-[#efeaff] opacity-70" count={90} />

@@ -1,33 +1,21 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, RotateCcw } from 'lucide-react';
-import { TemplateArt, WaxSeal } from '@/templates/art';
-import { RoyalCorner, LaurelCrest, DiamondRule } from '@/templates/ornaments';
+import { ArrowRight, Music2, RotateCcw } from 'lucide-react';
+import { TemplateArt } from '@/templates/art';
+import { DiamondRule, LaurelCrest, RoyalCorner } from '@/templates/ornaments';
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 const EASE_PAGE = [0.65, 0, 0.2, 1] as const;
 
 const GREEN = '#10241b';
 const GREEN_DEEP = '#081510';
-const GREEN_LIGHT = '#19382a';
 const GOLD = '#d5b274';
-const GOLD_SOFT = '#a8865a';
-const CREAM = '#fbf5e7';
-const CREAM_DEEP = '#f1e6d0';
-const INK = '#241d14';
-const WAX = '#6d2638';
-
-const STAGE_BACKGROUND = `
-  radial-gradient(90% 62% at 50% 10%, rgba(102,141,110,0.36), transparent 64%),
-  radial-gradient(70% 50% at 50% 110%, rgba(0,0,0,0.6), transparent 70%),
-  linear-gradient(168deg, ${GREEN_LIGHT} 0%, ${GREEN} 46%, ${GREEN_DEEP} 100%)
-`;
 
 /**
- * The invitation on the home page: a royal cover — deep boxwood velvet, foil
- * ornament, a cream plate tied with silk and sealed in burgundy wax. Opening it
- * is a page lift, never a zoom.
+ * The invitation on the home page. Closed, it is the cover itself — a
+ * photograph of the printed piece, whole, with the names set on its blank
+ * face. Tapping lifts it like a page; the inside is the same cover in velvet.
  */
 export function EnvelopeTeaser() {
   const [stage, setStage] = useState<'closed' | 'opening' | 'open'>('closed');
@@ -46,7 +34,7 @@ export function EnvelopeTeaser() {
       return;
     }
     setStage('opening');
-    timers.current.push(window.setTimeout(() => setStage('open'), 1500));
+    timers.current.push(window.setTimeout(() => setStage('open'), 1200));
   };
 
   const reset = () => {
@@ -57,183 +45,108 @@ export function EnvelopeTeaser() {
   const opening = stage === 'opening';
 
   return (
-    <div className="relative mx-auto w-full max-w-[440px] select-none">
+    <div className="relative mx-auto w-full max-w-[460px] select-none">
       <div
-        className="pointer-events-none absolute -inset-6 rounded-[50%] opacity-70 blur-3xl"
-        style={{ background: `radial-gradient(ellipse, ${GOLD}22, transparent 68%)` }}
+        className="pointer-events-none absolute -inset-6 rounded-[50%] opacity-60 blur-3xl"
+        style={{ background: `radial-gradient(ellipse, ${GOLD}1f, transparent 68%)` }}
       />
 
       <div
-        className="relative aspect-[0.79/1] overflow-hidden shadow-[0_50px_90px_-40px_rgba(20,32,24,0.8)]"
-        style={{ background: STAGE_BACKGROUND, containerType: 'inline-size' }}
+        className="relative aspect-[3/4] overflow-hidden shadow-[0_54px_90px_-44px_rgba(12,20,15,0.75)]"
+        style={{ containerType: 'inline-size' }}
       >
-        {/* velvet engraving + grain */}
-        <div className="pointer-events-none absolute inset-0" style={{ color: GOLD }}>
-          <TemplateArt templateId="aurelia" className="h-full w-full opacity-[0.16]" />
-        </div>
-        <div className="cover-damask pointer-events-none absolute inset-0" style={{ color: GOLD, opacity: 0.1 }} />
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ boxShadow: 'inset 0 0 90px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)' }}
-        />
-
-        {/* gold keylines on the velvet stage */}
-        <div className="pointer-events-none absolute inset-[3.4%] border" style={{ borderColor: `${GOLD}66` }} />
-        <div className="pointer-events-none absolute inset-[4.6%] border" style={{ borderColor: `${GOLD}2e` }} />
-        <div className="pointer-events-none absolute inset-[3.4%]" style={{ color: GOLD }}>
-          <RoyalCorner className="absolute left-[-1px] top-[-1px] h-[9.5cqw] w-[9.5cqw] opacity-80" />
-          <RoyalCorner className="absolute right-[-1px] top-[-1px] h-[9.5cqw] w-[9.5cqw] -scale-x-100 opacity-80" />
-          <RoyalCorner className="absolute bottom-[-1px] left-[-1px] h-[9.5cqw] w-[9.5cqw] -scale-y-100 opacity-80" />
-          <RoyalCorner className="absolute bottom-[-1px] right-[-1px] h-[9.5cqw] w-[9.5cqw] -scale-100 opacity-80" />
-        </div>
-
         <AnimatePresence>
           {stage !== 'open' && (
             <motion.div
               key="cover"
-              className="absolute inset-0 z-10"
-              initial={reduce ? false : { opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14, transition: { duration: 0.55, ease: EASE } }}
-              transition={{ duration: 1.1, ease: EASE }}
+              className="absolute inset-0"
+              initial={reduce ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: EASE }}
             >
-              <span
-                className="absolute inset-x-0 top-[5.6%] z-20 text-center text-[clamp(8px,2.3cqw,10.5px)] uppercase"
-                style={{ fontFamily: 'var(--font-caps)', letterSpacing: '0.42em', color: `${GOLD}d9` }}
-              >
-                The royal invitation
-              </span>
-
-              {/* the cream plate, closed with silk and wax */}
-              <motion.div
-                className="absolute inset-x-[9.5%] top-[10.2%] bottom-[17.4%] overflow-hidden"
+              {/* the room — the same photograph, out of focus */}
+              <img
+                src="/covers/aurelia.jpg"
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full scale-110 object-cover"
+                style={{ filter: 'blur(24px) saturate(0.92) brightness(0.6)' }}
+                draggable={false}
+              />
+              <div
+                className="pointer-events-none absolute inset-0"
                 style={{
-                  background: `linear-gradient(163deg, #fffdf6 0%, ${CREAM} 42%, ${CREAM_DEEP} 100%)`,
-                  color: INK,
-                  boxShadow: '0 34px 60px -30px rgba(0,0,0,0.7), 0 2px 0 rgba(255,255,255,0.4) inset',
+                  background: `radial-gradient(92% 66% at 50% 32%, transparent 28%, ${GREEN_DEEP}f2 100%)`,
                 }}
-                animate={opening ? { y: '-2.4%' } : { y: '0%' }}
-                transition={{ duration: 1.5, ease: EASE }}
+              />
+
+              {/* the printed piece, whole */}
+              <motion.div
+                className="absolute left-1/2 top-[40%] w-[78%] -translate-x-1/2 -translate-y-1/2"
+                animate={opening ? { y: '-16%', opacity: 0 } : { y: '0%', opacity: 1 }}
+                transition={{ duration: 1.15, ease: EASE_PAGE }}
               >
-                <div className="pointer-events-none absolute inset-0" style={{ color: GOLD }}>
-                  <TemplateArt templateId="aurelia" className="h-full w-full opacity-[0.13]" />
-                </div>
-                <div
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    background:
-                      'radial-gradient(78% 46% at 50% 0%, rgba(255,255,255,0.85), transparent 62%), radial-gradient(60% 40% at 50% 100%, rgba(168,134,90,0.14), transparent 70%)',
-                  }}
-                />
-                <div className="pointer-events-none absolute inset-[4%] border" style={{ borderColor: `${GOLD}99` }} />
-                <div className="pointer-events-none absolute inset-[5.4%] border" style={{ borderColor: `${GOLD}4d` }} />
-                <div className="pointer-events-none absolute inset-[4%]" style={{ color: GOLD }}>
-                  <RoyalCorner className="absolute left-[-1px] top-[-1px] h-[8.4cqw] w-[8.4cqw] opacity-90" />
-                  <RoyalCorner className="absolute right-[-1px] top-[-1px] h-[8.4cqw] w-[8.4cqw] -scale-x-100 opacity-90" />
-                  <RoyalCorner className="absolute bottom-[-1px] left-[-1px] h-[8.4cqw] w-[8.4cqw] -scale-y-100 opacity-90" />
-                  <RoyalCorner className="absolute bottom-[-1px] right-[-1px] h-[8.4cqw] w-[8.4cqw] -scale-100 opacity-90" />
-                </div>
-
-                <div className="absolute inset-0 px-[9%] pt-[8.6%] text-center">
-                  {/* crest */}
-                  <span
-                    className="relative mx-auto grid h-[17cqw] w-[17cqw] place-items-center rounded-full border"
-                    style={{ borderColor: `${GOLD}80`, color: GOLD_SOFT }}
+                <div className="relative shadow-[0_40px_70px_-34px_rgba(0,0,0,0.85)]">
+                  <img
+                    src="/covers/aurelia.jpg"
+                    alt="A cream invitation tied with gold silk and sealed in burgundy wax"
+                    className="block w-full"
+                    draggable={false}
+                  />
+                  {/* the names, printed on the card's blank face */}
+                  <div
+                    className="absolute left-[18.5%] right-[26%] top-[15.5%] text-center"
+                    style={{ color: '#33271a', transform: 'rotate(-1.6deg)' }}
                   >
-                    <LaurelCrest className="absolute inset-[6%] h-[88%] w-[88%] opacity-55" />
-                    <span
-                      className="relative"
-                      style={{ fontFamily: 'var(--font-script)', fontSize: 'clamp(15px, 6.6cqw, 26px)', lineHeight: 1, paddingTop: '0.14em', color: WAX }}
+                    <p
+                      className="uppercase"
+                      style={{ fontFamily: 'var(--font-caps)', fontSize: '1.55cqw', letterSpacing: '0.3em', color: '#6f5b40' }}
                     >
-                      C&amp;J
-                    </span>
-                  </span>
-
-                  <p
-                    className="mx-auto mt-[4.4%] uppercase"
-                    style={{ fontFamily: 'var(--font-caps)', fontSize: 'clamp(7.5px, 2.35cqw, 10px)', letterSpacing: '0.34em', color: '#7d6a52' }}
-                  >
-                    Together with our families
-                  </p>
-
-                  <p
-                    className="mx-auto mt-[4%] leading-[1.02]"
-                    style={{
-                      fontFamily: 'var(--font-editorial)',
-                      fontSize: 'clamp(26px, 7.9cqw, 38px)',
-                      letterSpacing: '-0.028em',
-                      color: INK,
-                    }}
-                  >
-                    Clara
-                    <span
-                      className="mx-[2.4%] inline-block align-middle"
-                      style={{ fontFamily: 'var(--font-script)', fontSize: '0.72em', color: GOLD_SOFT, letterSpacing: 0 }}
+                      Together with our families
+                    </p>
+                    <p
+                      className="mt-[2.4%] leading-[1.02]"
+                      style={{ fontFamily: 'var(--font-editorial)', fontSize: '4.7cqw', letterSpacing: '-0.02em' }}
                     >
-                      &amp;
+                      Clara
+                      <span
+                        className="mx-[0.14em] align-middle"
+                        style={{ fontFamily: 'var(--font-script)', fontSize: '0.72em', color: '#9a7c4d', letterSpacing: 0 }}
+                      >
+                        &amp;
+                      </span>
+                      Julien
+                    </p>
+                    <span className="mx-auto mt-[3.4%] flex w-[46%] items-center gap-[3%]" style={{ color: '#a8865c' }} aria-hidden>
+                      <span className="h-px flex-1 bg-current opacity-70" />
+                      <span className="size-[0.8cqw] rotate-45 border border-current" />
+                      <span className="h-px flex-1 bg-current opacity-70" />
                     </span>
-                    Julien
-                  </p>
-
-                  <span className="mx-auto mt-[4.4%] flex w-[46%] items-center justify-center gap-[2%]" style={{ color: GOLD }} aria-hidden>
-                    <span className="h-px flex-1 bg-current opacity-60" />
-                    <span className="size-[1.1cqw] rotate-45 border border-current" />
-                    <span className="h-px flex-1 bg-current opacity-60" />
-                  </span>
-
-                  <p
-                    className="mt-[4.2%] uppercase"
-                    style={{ fontFamily: 'var(--font-caps)', fontSize: 'clamp(8px, 2.45cqw, 10.5px)', letterSpacing: '0.26em', color: '#6f5c45' }}
-                  >
-                    22 January 2027
-                    <span className="mx-[2%] opacity-45">·</span>
-                    Lake Como
-                  </p>
-
-                  <div className="absolute inset-x-0 bottom-[6.4%] flex flex-col items-center">
-                    <span
-                      className="text-[clamp(6.5px,1.95cqw,8px)] uppercase"
-                      style={{ fontFamily: 'var(--font-caps)', letterSpacing: '0.34em', color: '#8a7458' }}
+                    <p
+                      className="mt-[3%] uppercase"
+                      style={{ fontFamily: 'var(--font-caps)', fontSize: '1.5cqw', letterSpacing: '0.26em', color: '#5f4d36' }}
                     >
-                      Villa Serena · An invitation
-                    </span>
+                      22 January 2027<span className="mx-[0.4em] opacity-50">·</span>Lake Como
+                    </p>
                   </div>
-
-                  {/* silk belly band, tied below the words */}
-                  <motion.div
-                    className="absolute"
-                    style={{ top: '68.4%', height: '10.2%', left: '-9%', right: '-9%' }}
-                    animate={opening ? { y: '200%', opacity: 0 } : { y: '0%', opacity: 1 }}
-                    transition={{ duration: 1.1, ease: EASE_PAGE }}
-                  >
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background:
-                          'repeating-linear-gradient(96deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 7px), linear-gradient(180deg, #a9803f 0%, #e8cd93 26%, #f3e2b8 50%, #d3ac6d 74%, #9c7438 100%)',
-                        boxShadow: '0 10px 18px -12px rgba(60,40,16,0.55), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(80,52,18,0.35)',
-                      }}
-                    />
-                    <div className="absolute inset-y-0 left-[7%] w-px bg-[#7d5a2b]/35" />
-                    <div className="absolute inset-y-0 right-[7%] w-px bg-[#7d5a2b]/35" />
-                  </motion.div>
-
-                  <motion.div
-                    className="absolute left-1/2 z-20 -translate-x-1/2"
-                    style={{ top: '63.4%' }}
-                    animate={opening ? { y: 30, opacity: 0 } : { y: 0, opacity: 1 }}
-                    transition={{ duration: 0.85, ease: EASE }}
-                  >
-                    <span className="block" style={{ color: WAX }}>
-                      <WaxSeal
-                        monogram="C&J"
-                        cracked={false}
-                        className="h-[19.5cqw] w-[19.5cqw] drop-shadow-[0_12px_16px_rgba(40,16,22,0.45)]"
-                      />
-                    </span>
-                  </motion.div>
                 </div>
               </motion.div>
+
+              <div className="absolute inset-x-0 top-0 flex justify-center pt-[6.4%]">
+                <span
+                  className="uppercase"
+                  style={{
+                    fontFamily: 'var(--font-caps)',
+                    fontSize: 'clamp(8px, 2.2cqw, 10px)',
+                    letterSpacing: '0.42em',
+                    color: `${GOLD}b8`,
+                    paddingLeft: '0.42em',
+                  }}
+                >
+                  The royal invitation
+                </span>
+              </div>
 
               <button
                 type="button"
@@ -243,17 +156,27 @@ export function EnvelopeTeaser() {
                 className="absolute inset-0 z-30 cursor-pointer disabled:cursor-default"
               />
 
-              <div className="absolute inset-x-0 bottom-[5%] z-20 flex flex-col items-center gap-[1cqw]">
+              <motion.div
+                className="absolute inset-x-0 bottom-[5.6%] z-20 flex flex-col items-center gap-[1.6cqw]"
+                animate={opening ? { opacity: 0 } : { opacity: 1 }}
+                transition={{ duration: 0.4 }}
+              >
                 <span
-                  className="text-[clamp(8px,2.35cqw,10.5px)] uppercase"
-                  style={{ fontFamily: 'var(--font-caps)', letterSpacing: '0.34em', color: `${GOLD}e6` }}
+                  className="uppercase"
+                  style={{
+                    fontFamily: 'var(--font-caps)',
+                    fontSize: 'clamp(8px, 2.3cqw, 10.5px)',
+                    letterSpacing: '0.36em',
+                    color: `${GOLD}e6`,
+                    paddingLeft: '0.36em',
+                  }}
                 >
-                  {opening ? 'Lifting the seal' : 'Tap the seal'}
+                  Tap the seal
                 </span>
-                <span className="text-[clamp(7.5px,2.1cqw,9.5px)] italic" style={{ color: 'rgba(245,235,214,0.6)' }}>
-                  A little theatre, before the vows
+                <span className="flex items-center gap-1.5 text-[clamp(7px,1.95cqw,9px)] uppercase tracking-[0.2em] text-[#e8d7b8]/55">
+                  <Music2 size={10} aria-hidden /> Music begins as it opens
                 </span>
-              </div>
+              </motion.div>
             </motion.div>
           )}
 
@@ -266,7 +189,7 @@ export function EnvelopeTeaser() {
               exit={{ opacity: 0 }}
               transition={{ duration: 1.05, ease: EASE_PAGE }}
               style={{
-                background: STAGE_BACKGROUND,
+                background: `radial-gradient(120% 70% at 50% 6%, #1d3d2d, ${GREEN} 44%, ${GREEN_DEEP} 100%)`,
                 boxShadow: '0 -30px 60px -30px rgba(0,0,0,0.65)',
               }}
             >
@@ -274,18 +197,12 @@ export function EnvelopeTeaser() {
                 <TemplateArt templateId="aurelia" className="h-full w-full opacity-[0.2]" />
               </div>
               <div className="cover-damask pointer-events-none absolute inset-0" style={{ color: GOLD, opacity: 0.1 }} />
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.5)' }}
-              />
-              {/* the light falls away at the foot of the card, so the seal's echo and the
-                  gold step read cleanly against the velvet */}
+              <div className="pointer-events-none absolute inset-0" style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.5)' }} />
               <div
                 className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%]"
                 style={{ background: `linear-gradient(180deg, ${GREEN}00 0%, ${GREEN}99 42%, ${GREEN_DEEP}e6 100%)` }}
               />
 
-              {/* the inside of the card: one gilded frame, like the cover */}
               <div className="pointer-events-none absolute inset-[4.4%] border" style={{ borderColor: `${GOLD}52` }} />
               <div className="pointer-events-none absolute inset-[5.6%] border" style={{ borderColor: `${GOLD}26` }} />
               <div className="pointer-events-none absolute inset-[4.4%]" style={{ color: GOLD }}>
@@ -338,7 +255,6 @@ export function EnvelopeTeaser() {
                     <span className="mx-[0.5em] opacity-50">·</span>
                     Lake Como
                   </p>
-
                   <p
                     className="mt-[8%] leading-[1.25]"
                     style={{ fontFamily: 'var(--font-script)', fontSize: 'clamp(16px, 4.6cqw, 23px)', color: '#e3cfa4' }}
@@ -373,8 +289,12 @@ export function EnvelopeTeaser() {
         </AnimatePresence>
       </div>
 
-      <p className="mt-4 text-center text-[0.62rem] uppercase tracking-[0.24em] text-muted/70">
-        Cover · Aurelia, in the royal palette
+      <p className="mt-4 flex items-center justify-center gap-2 text-[0.6rem] uppercase tracking-[0.24em] text-muted/75">
+        <span className="relative flex size-1.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-burgundy/40" />
+          <span className="relative inline-flex size-1.5 rounded-full bg-burgundy/70" />
+        </span>
+        {stage === 'open' ? 'Aurelia · the royal palette' : 'Tap the seal to open'}
       </p>
     </div>
   );

@@ -940,7 +940,7 @@ input[type='range']::-webkit-slider-thumb {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgb(12 9 6 / 0.28) 0%, rgb(12 9 6 / 0.08) 30%, rgb(12 9 6 / 0.34) 62%, rgb(12 9 6 / 0.5) 100%);
+    radial-gradient(96% 58% at 50% 18%, color-mix(in srgb, var(--inv-deep) 40%, transparent), transparent 72%);
 }
 
 .inv-hero-inner {
@@ -3021,4 +3021,243 @@ input[type='range']::-webkit-slider-thumb {
   background: radial-gradient(58% 100% at 50% 0%, rgba(0, 0, 0, 0.62), transparent 72%);
   filter: blur(7px);
   z-index: 5;
+}
+
+/* ------------------------------------------------------------------ */
+/* The opening: a cover that actually opens                            */
+/* ------------------------------------------------------------------ */
+
+.inv-gate-open {
+  overflow: hidden;
+  background: #100d0a;
+  isolation: isolate;
+}
+
+.inv-gate-inside {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  will-change: transform;
+}
+
+.inv-gate-inside-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.12) 34%, rgba(0, 0, 0, 0) 58%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent 24%, transparent 76%, rgba(0, 0, 0, 0.4));
+}
+
+.inv-gate-cover-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  transform-style: preserve-3d;
+}
+
+/* a silk-covered card turns from the spine */
+.inv-gate-sheet {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.85);
+}
+
+.inv-gate-sheet-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.inv-gate-sheet-back {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 26%);
+  pointer-events: none;
+}
+
+/* curtains and the gatefold part down the middle */
+.inv-gate-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.2%;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.inv-gate-door-left {
+  left: 0;
+}
+
+.inv-gate-door-right {
+  right: 0;
+}
+
+.inv-gate-door-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.inv-gate-door-img {
+  position: absolute;
+  top: 0;
+  width: 199.2%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.inv-gate-door-edge {
+  position: absolute;
+  inset-block: 0;
+  width: 10px;
+  pointer-events: none;
+}
+
+.inv-gate-door-left .inv-gate-door-edge {
+  right: 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.55));
+}
+
+.inv-gate-door-right .inv-gate-door-edge {
+  left: 0;
+  background: linear-gradient(270deg, transparent, rgba(0, 0, 0, 0.55));
+}
+
+/* light and air on the closed cover */
+.inv-gate-scrim {
+  position: absolute;
+  inset-inline: 0;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.inv-gate-scrim-top {
+  top: 0;
+  height: 24%;
+  background: linear-gradient(180deg, rgba(6, 5, 4, 0.6), rgba(6, 5, 4, 0));
+}
+
+.inv-gate-scrim-bottom {
+  bottom: 0;
+  height: 56%;
+  background: linear-gradient(180deg, rgba(6, 5, 4, 0) 0%, rgba(6, 5, 4, 0.42) 42%, rgba(6, 5, 4, 0.9) 100%);
+}
+
+.inv-gate-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  background: radial-gradient(124% 86% at 50% 38%, transparent 54%, rgba(0, 0, 0, 0.46) 100%);
+}
+
+.inv-gate-sheen {
+  position: absolute;
+  inset-block: -10%;
+  left: -40%;
+  width: 46%;
+  z-index: 14;
+  pointer-events: none;
+  transform: skewX(-12deg);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 250, 236, 0.24) 42%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  filter: blur(2px);
+}
+
+.inv-gate-cover-body {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(1.7rem, 5.4cqh) clamp(1.1rem, 5cqw, 2rem)
+    calc(max(1.9rem, 5.2cqh) + env(safe-area-inset-bottom, 0px) + var(--gate-bottom, 0px));
+  text-align: center;
+  pointer-events: none;
+}
+
+.inv-gate-cover-kicker {
+  font-family: var(--inv-caps);
+  font-size: clamp(0.6rem, 2.6cqw, 0.76rem);
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(248, 242, 228, 0.9);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+  padding-left: 0.4em;
+}
+
+.inv-gate-open .inv-gate-bottom {
+  min-height: 0;
+  gap: clamp(0.8rem, 2.2cqh, 1.4rem);
+  padding-bottom: 0;
+  color: #f8f2e4;
+}
+
+.inv-gate-open .inv-gate-names {
+  font-size: clamp(2.1rem, 9.2cqw, 3.4rem);
+  color: #fbf6ea;
+  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.5);
+}
+
+.inv-gate-open .inv-gate-amp {
+  color: #e6cf9e;
+}
+
+.inv-gate-open .inv-gate-date {
+  font-size: clamp(0.6rem, 2.6cqw, 0.72rem);
+  letter-spacing: 0.3em;
+  color: rgba(248, 242, 228, 0.84);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+  opacity: 1;
+}
+
+.inv-gate-open .inv-gate-tapline,
+.inv-gate-open .inv-gate-music {
+  color: rgba(247, 238, 219, 0.88);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+}
+
+.inv-gate-open .inv-gate-cue-wrap {
+  height: 2.4rem;
+}
+
+.inv-gate-open .inv-gate-caption {
+  color: rgba(247, 238, 219, 0.9);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+}
+
+@media (max-height: 700px) {
+  .inv-gate-open .inv-gate-names {
+    font-size: clamp(1.85rem, 7.8cqw, 2.6rem);
+  }
+
+  .inv-gate-cover-body {
+    padding-top: max(1.2rem, 4cqh);
+    padding-bottom: calc(max(1.3rem, 3.8cqh) + env(safe-area-inset-bottom, 0px) + var(--gate-bottom, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-gate-sheet,
+  .inv-gate-door {
+    transition: none !important;
+  }
 }
