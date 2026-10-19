@@ -15,7 +15,7 @@ const EASE_PAGE = [0.64, 0, 0.24, 1] as const;
 /** prelude, then the cover opens, a beat to see the letter, then hand over */
 const PRELUDE_MS = 260;
 const TURN_MS = 1180;
-const CEREMONY_MS = 2040;
+const CEREMONY_MS = 2680;
 
 /**
  * The opening. The cover — a photograph of the printed piece — fastens, then

@@ -83,20 +83,27 @@ export function EnvelopeTeaser() {
 
               {/* the printed piece, whole */}
               <motion.div
-                className="absolute left-1/2 top-[40%] w-[78%] -translate-x-1/2 -translate-y-1/2"
-                animate={opening ? { y: '-16%', opacity: 0 } : { y: '0%', opacity: 1 }}
+                className="absolute inset-0"
+                style={{ perspective: '1800px', transformStyle: 'preserve-3d' }}
+                animate={opening ? { opacity: 0 } : { opacity: 1 }}
+                transition={{ duration: 0.2, delay: opening ? 0.85 : 0 }}
+              >
+              <motion.div
+                className="absolute inset-0 overflow-hidden"
+                style={{ transformOrigin: 'left center', backfaceVisibility: 'hidden' }}
+                animate={opening ? { rotateY: -98, x: '-6%' } : { rotateY: 0, x: '0%' }}
                 transition={{ duration: 1.15, ease: EASE_PAGE }}
               >
-                <div className="relative shadow-[0_40px_70px_-34px_rgba(0,0,0,0.85)]">
+                <div className="relative h-full w-full">
                   <img
                     src="/covers/aurelia.jpg"
                     alt="A cream invitation tied with gold silk and sealed in burgundy wax"
-                    className="block w-full"
+                    className="absolute inset-0 h-full w-full object-cover"
                     draggable={false}
                   />
                   {/* the names, printed on the card's blank face */}
                   <div
-                    className="absolute left-[18.5%] right-[26%] top-[15.5%] text-center"
+                    className="absolute left-[23%] right-[31%] top-[17%] text-center"
                     style={{ color: '#33271a', transform: 'rotate(-1.6deg)' }}
                   >
                     <p
@@ -131,6 +138,7 @@ export function EnvelopeTeaser() {
                     </p>
                   </div>
                 </div>
+              </motion.div>
               </motion.div>
 
               <div className="absolute inset-x-0 top-0 flex justify-center pt-[6.4%]">

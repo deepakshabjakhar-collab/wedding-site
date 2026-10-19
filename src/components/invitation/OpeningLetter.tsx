@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { TemplateDefinition } from '@/templates/types';
 import { COVER_TONES, coverTokens } from '@/templates/cover';
-import { TemplateArt, TemplateMark, WaxSeal } from '@/templates/art';
+import { TemplateMark, WaxSeal } from '@/templates/art';
 import { DiamondRule, LaurelCrest, RoyalCorner } from '@/templates/ornaments';
 
 export interface LetterData {
@@ -56,7 +56,7 @@ export function OpeningLetter({
 
   const paper = dark
     ? `linear-gradient(168deg, color-mix(in srgb, ${tokens.bg} 86%, #fff) 0%, ${tokens.bg} 34%, color-mix(in srgb, ${tokens.bg} 72%, #000) 100%)`
-    : `linear-gradient(166deg, #fffdf7 0%, ${tokens.bg} 46%, color-mix(in srgb, ${tokens.bg} 88%, ${tokens.accentSoft}) 100%)`;
+    : `linear-gradient(166deg, #fffdf6 0%, color-mix(in srgb, ${tokens.bg} 92%, #fff) 40%, color-mix(in srgb, ${tokens.bg} 86%, ${tokens.accentSoft}) 100%)`;
 
   return (
     <div
@@ -76,28 +76,30 @@ export function OpeningLetter({
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover"
-        style={{ filter: `blur(48px) saturate(0.9)`, opacity: dark ? 0.42 : 0.3 }}
+        style={{ filter: 'blur(64px) saturate(0.85)', opacity: dark ? 0.3 : 0.24 }}
       />
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background: dark
-            ? `linear-gradient(170deg, color-mix(in srgb, ${tokens.bg} 72%, transparent), color-mix(in srgb, ${tokens.bg} 88%, transparent))`
-            : `linear-gradient(170deg, rgba(255,253,247,0.86), color-mix(in srgb, ${tokens.bg} 74%, transparent))`,
+            ? 'radial-gradient(90% 58% at 50% 4%, rgba(255,255,255,0.1), transparent 64%)'
+            : 'radial-gradient(86% 54% at 50% 2%, rgba(255,255,255,0.92), transparent 62%)',
         }}
       />
-
-      {/* the cover's own engraving, very quiet, so the paper belongs to it */}
-      <div className="pointer-events-none absolute inset-0" style={{ color: gold, opacity: dark ? 0.16 : 0.12 }}>
-        <TemplateArt templateId={template.id} className="h-full w-full" />
-      </div>
-      <div className="cover-damask pointer-events-none absolute inset-0" style={{ color: gold, opacity: 0.1 }} />
+      {/* the fold: light falls away at the spine and the edges of the page */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background: dark
-            ? 'radial-gradient(90% 60% at 50% 6%, rgba(255,255,255,0.1), transparent 62%)'
-            : 'radial-gradient(86% 56% at 50% 4%, rgba(255,255,255,0.9), transparent 60%)',
+          background:
+            'linear-gradient(90deg, rgba(38,26,12,0.16) 0%, rgba(38,26,12,0.03) 7%, transparent 18%), linear-gradient(270deg, rgba(38,26,12,0.1) 0%, transparent 14%)',
+          mixBlendMode: dark ? 'screen' : 'multiply',
+          opacity: dark ? 0.35 : 0.7,
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          boxShadow: dark ? 'inset 0 0 90px rgba(0,0,0,0.5)' : 'inset 0 0 70px rgba(96,70,38,0.12)',
         }}
       />
 
@@ -111,6 +113,22 @@ export function OpeningLetter({
         <RoyalCorner className="absolute bottom-[-1px] right-[-1px] h-[7.4cqw] w-[7.4cqw] -scale-100 opacity-75" />
       </div>
 
+      {/* the couple's mark, blind-engraved into the page */}
+      <span
+        className="pointer-events-none absolute left-1/2 top-[68%] -translate-x-1/2 -translate-y-1/2 select-none"
+        aria-hidden="true"
+        style={{
+          fontFamily: template.script,
+          fontSize: '44cqw',
+          lineHeight: 1,
+          color: gold,
+          opacity: dark ? 0.06 : 0.045,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {data.monogram}
+      </span>
+
       <div className="relative flex h-full flex-col items-center px-[13%] pb-[10.5%] pt-[11%] text-center">
         {/* crest: wax where the cover was sealed, a monogram roundel otherwise */}
         {template.envelope === 'seal' && !dark ? (
@@ -122,7 +140,7 @@ export function OpeningLetter({
             className="relative grid size-[18cqw] place-items-center rounded-full border"
             style={{ borderColor: `color-mix(in srgb, ${gold} 62%, transparent)`, color: gold }}
           >
-            <LaurelCrest className="absolute inset-[7%] h-[86%] w-[86%] opacity-55" />
+            <LaurelCrest className="absolute inset-[8%] h-[84%] w-[84%] opacity-40" />
             <span
               className="relative"
               style={{
@@ -155,7 +173,7 @@ export function OpeningLetter({
             className={`leading-[0.97] ${upper ? 'uppercase' : ''}`}
             style={{
               fontFamily: template.display,
-              fontSize: upper ? 'clamp(24px, 8.4cqw, 54px)' : 'clamp(30px, 12cqw, 72px)',
+              fontSize: upper ? 'clamp(24px, 8.6cqw, 58px)' : 'clamp(30px, 12.6cqw, 78px)',
               letterSpacing: upper ? '0.04em' : template.cover.tracking,
               color: ink,
               textWrap: 'balance',
